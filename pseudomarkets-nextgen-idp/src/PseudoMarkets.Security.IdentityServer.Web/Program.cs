@@ -22,11 +22,6 @@ public class Program
 
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Configuration.AddJsonFile(
-            $"appsettings.{builder.Environment.EnvironmentName}.json",
-            optional: true,
-            reloadOnChange: true);
-
         builder.Services.AddControllers();
         builder.Services.AddAuthorization();
         builder.Services.AddExceptionHandler<IdentityExceptionHandler>();

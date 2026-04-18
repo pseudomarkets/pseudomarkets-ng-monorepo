@@ -5,6 +5,7 @@
     <ProjectReference Include="..\PseudoMarkets.MarketData.Contracts\PseudoMarkets.MarketData.Contracts.csproj" />
     <ProjectReference Include="..\PseudoMarkets.MarketData.Core\PseudoMarkets.MarketData.Core.csproj" />
     <ProjectReference Include="..\PseudoMarkets.MarketData.Providers\PseudoMarkets.MarketData.Providers.csproj" />
+    <ProjectReference Include="..\..\..\pseudomarkets-nextgen-shared-auth\src\PseudoMarkets.Shared.Authorization\PseudoMarkets.Shared.Authorization.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -15,6 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
+    <PackageReference Include="Microsoft.OpenApi" Version="2.4.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
   </ItemGroup>
 

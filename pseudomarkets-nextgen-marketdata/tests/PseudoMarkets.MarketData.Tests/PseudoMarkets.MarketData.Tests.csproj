@@ -22,6 +22,7 @@
     <ProjectReference Include="..\..\src\PseudoMarkets.MarketData.Core\PseudoMarkets.MarketData.Core.csproj" />
     <ProjectReference Include="..\..\src\PseudoMarkets.MarketData.Providers\PseudoMarkets.MarketData.Providers.csproj" />
     <ProjectReference Include="..\..\src\PseudoMarkets.MarketData.Service\PseudoMarkets.MarketData.Service.csproj" />
+    <ProjectReference Include="..\..\..\pseudomarkets-nextgen-shared-auth\src\PseudoMarkets.Shared.Authorization\PseudoMarkets.Shared.Authorization.csproj" />
   </ItemGroup>
 
 </Project>

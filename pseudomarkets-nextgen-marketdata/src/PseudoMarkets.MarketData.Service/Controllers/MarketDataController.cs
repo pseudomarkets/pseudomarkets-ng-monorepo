@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using PseudoMarkets.MarketData.Contracts.Quotes;
 using PseudoMarkets.MarketData.Core.Exceptions;
 using PseudoMarkets.MarketData.Core.Interfaces;
+using PseudoMarkets.Shared.Authorization.Attributes;
+using PseudoMarkets.Shared.Authorization.Constants;
 
 namespace PseudoMarkets.MarketData.Service.Controllers;
 
@@ -16,6 +18,7 @@ public class MarketDataController : ControllerBase
         _quoteService = quoteService;
     }
 
+    [RequireIdentityAction(PlatformAuthorizationActions.ViewMarketData)]
     [HttpGet("quote/{symbol}")]
     public async Task<ActionResult<QuoteResponse>> GetQuote(string symbol, CancellationToken cancellationToken)
     {
@@ -72,6 +75,7 @@ public class MarketDataController : ControllerBase
         }
     }
 
+    [RequireIdentityAction(PlatformAuthorizationActions.ViewMarketData)]
     [HttpGet("quote/{symbol}/detailed")]
     public async Task<ActionResult<DetailedQuoteResponse>> GetDetailedQuote(string symbol, [FromQuery] string interval = "1min", CancellationToken cancellationToken = default)
     {
@@ -103,6 +107,7 @@ public class MarketDataController : ControllerBase
         }
     }
 
+    [RequireIdentityAction(PlatformAuthorizationActions.ViewMarketData)]
     [HttpGet("indices")]
     public async Task<ActionResult<IndicesResponse>> GetIndices(CancellationToken cancellationToken)
     {

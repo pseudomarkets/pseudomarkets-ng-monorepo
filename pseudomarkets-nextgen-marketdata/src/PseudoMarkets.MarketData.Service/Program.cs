@@ -1,10 +1,12 @@
 using System;
 using System.IO;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi;
 using PseudoMarkets.MarketData.Cache.DependencyInjection;
 using PseudoMarkets.MarketData.Core.Configuration;
 using PseudoMarkets.MarketData.Core.DependencyInjection;
 using PseudoMarkets.MarketData.Providers.DependencyInjection;
+using PseudoMarkets.Shared.Authorization.DependencyInjection;
 
 namespace PseudoMarkets.MarketData.Service;
 
@@ -16,16 +18,33 @@ public class Program
 
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Configuration.AddJsonFile(
-            $"appsettings.{builder.Environment.EnvironmentName}.json",
-            optional: true,
-            reloadOnChange: true);
-
         builder.Services.AddControllers();
+        builder.Services.AddAuthorization();
         builder.Services.AddProblemDetails();
         builder.Services.AddHealthChecks();
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddSwaggerGen(options =>
+        {
+            var bearerScheme = new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "Enter a valid IDP JWT Bearer token."
+            };
+
+            options.AddSecurityDefinition("Bearer", bearerScheme);
+
+            options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecuritySchemeReference("Bearer", document, null!),
+                    []
+                }
+            });
+        });
         builder.Services.Configure<AerospikeConfiguration>(builder.Configuration.GetRequiredSection("Aerospike"));
         builder.Services.Configure<TwelveDataConfiguration>(builder.Configuration.GetRequiredSection("TwelveData"));
         builder.Services.Configure<MarketDataCacheConfiguration>(builder.Configuration.GetRequiredSection("MarketDataCache"));
@@ -35,6 +54,7 @@ public class Program
         builder.Services.AddMarketDataCore();
         builder.Services.AddMarketDataProviders();
         builder.Services.AddMarketDataCache();
+        builder.Services.AddPseudoMarketsSharedAuthorization(builder.Configuration);
 
         var app = builder.Build();
 
@@ -54,6 +74,7 @@ public class Program
             app.UseHttpsRedirection();
         }
 
+        app.UseAuthorization();
         app.MapHealthChecks("/health");
         app.MapControllers();
 

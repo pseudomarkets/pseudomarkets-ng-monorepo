@@ -16,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.MarketData.Tests", "tests\PseudoMarkets.MarketData.Tests\PseudoMarkets.MarketData.Tests.csproj", "{FD55E641-2045-4572-9F3B-DE81DBB4C0B3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.Shared.Authorization", "..\pseudomarkets-nextgen-shared-auth\src\PseudoMarkets.Shared.Authorization\PseudoMarkets.Shared.Authorization.csproj", "{29D693EE-756F-4E44-9F27-CD8A8A157436}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -98,6 +100,18 @@ Global
 		{FD55E641-2045-4572-9F3B-DE81DBB4C0B3}.Release|x64.Build.0 = Release|Any CPU
 		{FD55E641-2045-4572-9F3B-DE81DBB4C0B3}.Release|x86.ActiveCfg = Release|Any CPU
 		{FD55E641-2045-4572-9F3B-DE81DBB4C0B3}.Release|x86.Build.0 = Release|Any CPU
+		{29D693EE-756F-4E44-9F27-CD8A8A157436}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29D693EE-756F-4E44-9F27-CD8A8A157436}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29D693EE-756F-4E44-9F27-CD8A8A157436}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{29D693EE-756F-4E44-9F27-CD8A8A157436}.Debug|x64.Build.0 = Debug|Any CPU
+		{29D693EE-756F-4E44-9F27-CD8A8A157436}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{29D693EE-756F-4E44-9F27-CD8A8A157436}.Debug|x86.Build.0 = Debug|Any CPU
+		{29D693EE-756F-4E44-9F27-CD8A8A157436}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29D693EE-756F-4E44-9F27-CD8A8A157436}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29D693EE-756F-4E44-9F27-CD8A8A157436}.Release|x64.ActiveCfg = Release|Any CPU
+		{29D693EE-756F-4E44-9F27-CD8A8A157436}.Release|x64.Build.0 = Release|Any CPU
+		{29D693EE-756F-4E44-9F27-CD8A8A157436}.Release|x86.ActiveCfg = Release|Any CPU
+		{29D693EE-756F-4E44-9F27-CD8A8A157436}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
