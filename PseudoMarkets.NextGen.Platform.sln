@@ -33,6 +33,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.MarketData.Pr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.MarketData.Cache", "pseudomarkets-nextgen-marketdata\src\PseudoMarkets.MarketData.Cache\PseudoMarkets.MarketData.Cache.csproj", "{3E411AE8-B059-46B0-ADF2-20F20BCDCFCF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A14BD249-3F11-78CC-058D-DD74AF9F65CF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.MarketData.Tests", "pseudomarkets-nextgen-marketdata\tests\PseudoMarkets.MarketData.Tests\PseudoMarkets.MarketData.Tests.csproj", "{995D7E58-0434-454F-940D-77F57801A7BF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -151,6 +155,18 @@ Global
 		{3E411AE8-B059-46B0-ADF2-20F20BCDCFCF}.Release|x64.Build.0 = Release|Any CPU
 		{3E411AE8-B059-46B0-ADF2-20F20BCDCFCF}.Release|x86.ActiveCfg = Release|Any CPU
 		{3E411AE8-B059-46B0-ADF2-20F20BCDCFCF}.Release|x86.Build.0 = Release|Any CPU
+		{995D7E58-0434-454F-940D-77F57801A7BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{995D7E58-0434-454F-940D-77F57801A7BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{995D7E58-0434-454F-940D-77F57801A7BF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{995D7E58-0434-454F-940D-77F57801A7BF}.Debug|x64.Build.0 = Debug|Any CPU
+		{995D7E58-0434-454F-940D-77F57801A7BF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{995D7E58-0434-454F-940D-77F57801A7BF}.Debug|x86.Build.0 = Debug|Any CPU
+		{995D7E58-0434-454F-940D-77F57801A7BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{995D7E58-0434-454F-940D-77F57801A7BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{995D7E58-0434-454F-940D-77F57801A7BF}.Release|x64.ActiveCfg = Release|Any CPU
+		{995D7E58-0434-454F-940D-77F57801A7BF}.Release|x64.Build.0 = Release|Any CPU
+		{995D7E58-0434-454F-940D-77F57801A7BF}.Release|x86.ActiveCfg = Release|Any CPU
+		{995D7E58-0434-454F-940D-77F57801A7BF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -168,5 +184,7 @@ Global
 		{1C495887-7F60-4B18-8906-13454BE57AA7} = {A25A878F-38DD-1B4D-321A-757881C896A2}
 		{391B6341-4340-48BA-B058-799836383C91} = {A25A878F-38DD-1B4D-321A-757881C896A2}
 		{3E411AE8-B059-46B0-ADF2-20F20BCDCFCF} = {A25A878F-38DD-1B4D-321A-757881C896A2}
+		{A14BD249-3F11-78CC-058D-DD74AF9F65CF} = {898EF159-B67A-4F1F-818E-D6A245EFD94D}
+		{995D7E58-0434-454F-940D-77F57801A7BF} = {A14BD249-3F11-78CC-058D-DD74AF9F65CF}
 	EndGlobalSection
 EndGlobal

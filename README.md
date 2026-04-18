@@ -30,6 +30,8 @@ The long-term monorepo goals are:
   Root solution for opening the platform in Visual Studio or Rider.
 - `compose.yaml`
   Root Docker Compose entrypoint for running platform services together.
+- `infrastructure/aerospike/`
+  Shared Aerospike configuration for platform-local Docker stacks.
 - `pseudomarkets-nextgen-idp/`
   Identity provider service for authentication, authorization, and account provisioning.
 - `pseudomarkets-nextgen-marketdata/`
@@ -41,7 +43,7 @@ Today, the monorepo is structured to support platform growth:
 
 - the root platform solution opens the currently implemented service projects together
 - the identity service already has its own service-local solution, tests, and Docker workflow
-- the root Docker Compose file acts as the future aggregation point for bringing multiple services up together
+- the root Docker Compose file brings multiple services up together against one shared Aerospike container
 - additional service folders can be added without restructuring the monorepo again
 
 ## IDE Workflow
@@ -58,13 +60,30 @@ Open `PseudoMarkets.NextGen.Platform.sln` in Visual Studio, Rider, or another co
 
 ## Docker Workflow
 
+Before starting the platform stack, create the shared root secrets file:
+
+```bash
+cp .env.example .env
+```
+
+Then update `.env` with the values you want to use locally, including:
+
+- `JwtConfiguration__Key`
+- `TwelveData__ApiKey`
+
 Run the platform stack from the monorepo root:
 
 ```bash
 docker compose -f compose.yaml up --build
 ```
 
-As new microservices are added, their service-local Compose files can be included from the root `compose.yaml`.
+Current local browser endpoints:
+
+- Identity server Swagger UI: [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
+- Market data Swagger UI: [http://localhost:8081/swagger/index.html](http://localhost:8081/swagger/index.html)
+
+The root Compose stack uses the shared Aerospike config at `infrastructure/aerospike/aerospike.conf` and stores Aerospike data in `./.docker-data/aerospike`.
+Application secrets are loaded from the shared root `.env` file.
 
 ## Service Model
 
@@ -79,6 +98,6 @@ Each service folder can own:
 - its own test projects
 - its own service-level solution file when useful
 - its own Dockerfile and service-local Compose configuration
-- its own infrastructure or configuration assets
+- service-specific configuration assets, while shared infrastructure can live at the repository root
 
 This keeps the platform modular while still allowing the full system to be opened and eventually orchestrated together from the monorepo root.

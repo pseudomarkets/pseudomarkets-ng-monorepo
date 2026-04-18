@@ -8,7 +8,10 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddMarketDataProviders(this IServiceCollection services)
     {
-        services.AddHttpClient<IMarketDataProvider, TwelveDataMarketDataProvider>();
+        services.AddHttpClient<IMarketDataProvider, TwelveDataMarketDataProvider>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(10);
+        });
 
         return services;
     }

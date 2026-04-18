@@ -1,10 +1,64 @@
 name: pseudomarkets-nextgen-platform
 
-include:
-  - ./pseudomarkets-nextgen-idp/compose.yaml
+services:
+  aerospike:
+    image: aerospike:ce-8.1.1.1_1
+    container_name: pseudomarkets-nextgen-aerospike
+    platform: linux/arm64
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "asinfo -v 'status' | grep -q '^ok$'"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    volumes:
+      - ./.docker-data/aerospike:/opt/aerospike/data
+      - ./infrastructure/aerospike/aerospike.conf:/opt/aerospike/etc/aerospike.conf:ro
+    command:
+      - "--config-file"
+      - "/opt/aerospike/etc/aerospike.conf"
+    restart: unless-stopped
 
-# Add future service-local compose files here as more microservices are introduced.
-# Example:
-# include:
-#   - ./pseudomarkets-nextgen-idp/compose.yaml
-#   - ./pseudomarkets-nextgen-marketdata/compose.yaml
+  pseudomarkets.security.identityserver.web:
+    image: pseudomarkets.security.identityserver.web
+    build:
+      context: ./pseudomarkets-nextgen-idp
+      dockerfile: src/PseudoMarkets.Security.IdentityServer.Web/Dockerfile
+    container_name: pseudomarkets-nextgen-idp-web
+    env_file:
+      - ./.env
+    depends_on:
+      aerospike:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Aerospike__Host: aerospike
+      Aerospike__Port: 3000
+      JwtConfiguration__Issuer: pseudomarkets-idp
+      JwtConfiguration__Audience: pseudomarkets-platform
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  pseudomarkets.marketdata.service:
+    image: pseudomarkets.marketdata.service
+    build:
+      context: ./pseudomarkets-nextgen-marketdata
+      dockerfile: src/PseudoMarkets.MarketData.Service/Dockerfile
+    container_name: pseudomarkets-nextgen-marketdata-service
+    env_file:
+      - ./.env
+    depends_on:
+      aerospike:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8081
+      Aerospike__Host: aerospike
+      Aerospike__Port: 3000
+    ports:
+      - "8081:8081"
+    restart: unless-stopped

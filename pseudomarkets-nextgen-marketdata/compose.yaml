@@ -19,12 +19,12 @@ services:
       - "/opt/aerospike/etc/aerospike.conf"
     restart: unless-stopped
 
-  pseudomarkets.security.identityserver.web:
-    image: pseudomarkets.security.identityserver.web
+  pseudomarkets.marketdata.service:
+    image: pseudomarkets.marketdata.service
     build:
       context: .
-      dockerfile: src/PseudoMarkets.Security.IdentityServer.Web/Dockerfile
-    container_name: pseudomarkets-nextgen-idp-web
+      dockerfile: src/PseudoMarkets.MarketData.Service/Dockerfile
+    container_name: pseudomarkets-nextgen-marketdata-service
     env_file:
       - ../.env
     depends_on:
@@ -32,11 +32,9 @@ services:
         condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_URLS: http://+:8081
       Aerospike__Host: aerospike
       Aerospike__Port: 3000
-      JwtConfiguration__Issuer: pseudomarkets-idp
-      JwtConfiguration__Audience: pseudomarkets-platform
     ports:
-      - "8080:8080"
+      - "8081:8081"
     restart: unless-stopped

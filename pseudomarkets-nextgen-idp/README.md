@@ -35,14 +35,15 @@ Aerospike uses the namespace `nsPseudoMarkets` and persists data to disk via the
 ```text
 pseudomarkets-nextgen-idp/
 ├── compose.yaml
-├── infrastructure/
-│   └── aerospike/
-│       └── aerospike.conf
 ├── src/
 │   ├── PseudoMarkets.Security.IdentityServer.Core/
 │   └── PseudoMarkets.Security.IdentityServer.Web/
 └── PseudoMarkets.Security.IdentityServer.sln
 ```
+
+Shared Aerospike infrastructure now lives at the repository root:
+
+- `../infrastructure/aerospike/aerospike.conf`
 
 ## Running Without Docker
 
@@ -73,7 +74,21 @@ dotnet dev-certs https --trust
 
 Depending on your OS, you may be prompted to approve certificate trust through the local certificate store or keychain UI.
 
-### 3. Run the web project
+### 3. Create the shared local secrets file
+
+From the repository root:
+
+```bash
+cp .env.example .env
+```
+
+Then set at least:
+
+- `JwtConfiguration__Key`
+
+The identity server now loads the shared root `.env` file automatically for local non-Docker runs.
+
+### 4. Run the web project
 
 From the `pseudomarkets-nextgen-idp` folder:
 
@@ -129,9 +144,10 @@ docker compose -f compose.yaml down
 
 - The Compose file waits for Aerospike to become healthy before starting the identity server.
 - The web container uses `Aerospike__Host=aerospike`, so it talks to the database over the Compose network instead of `localhost`.
-- Aerospike data is persisted in `./.docker-data/aerospike`.
+- Aerospike data is persisted in the shared repo-root directory `../.docker-data/aerospike`.
 - The Compose stack runs the identity server in `Development` mode so Swagger UI and development-only flows are available locally.
-- The Compose file does not hardcode a container CPU architecture, so Docker can pull the appropriate image variant for Windows, Linux, Intel/AMD, and Apple Silicon environments where the upstream image supports it.
+- The service-local Compose file pins Aerospike to `linux/arm64`, which keeps it aligned with Apple Silicon / M-series development machines.
+- The JWT signing key is read from the shared repo-root `.env` file through `../.env`.
 
 ## Configuration
 
@@ -142,7 +158,8 @@ docker compose -f compose.yaml down
 - Aerospike host/port
 - JWT issuer
 - JWT audience
-- JWT signing key
+
+Secrets are centralized in the repository-root `.env` file instead of committed appsettings files.
 
 ### Container configuration
 
@@ -154,7 +171,7 @@ When running in Docker Compose, the web container overrides configuration with e
 - `JwtConfiguration__Audience`
 - `JwtConfiguration__Key`
 
-If you want different values, update `compose.yaml`.
+The Compose files load `JwtConfiguration__Key` from the shared repo-root `.env` file.
 
 ## API Overview
 

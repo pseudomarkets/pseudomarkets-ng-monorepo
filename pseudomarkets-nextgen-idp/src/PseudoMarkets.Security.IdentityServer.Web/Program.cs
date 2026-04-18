@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using Microsoft.Extensions.Options;
 using PseudoMarkets.Security.IdentityServer.Core.Accounts.Implementations;
 using PseudoMarkets.Security.IdentityServer.Core.Accounts.Interfaces;
@@ -16,6 +18,8 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        LoadSharedEnvironmentFile();
+
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Configuration.AddJsonFile(
@@ -26,8 +30,9 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddAuthorization();
         builder.Services.AddExceptionHandler<IdentityExceptionHandler>();
-        builder.Services.AddOpenApi();
         builder.Services.AddProblemDetails();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
         builder.Services.Configure<AerospikeConfiguration>(builder.Configuration.GetRequiredSection("Aerospike"));
         builder.Services.Configure<JwtConfiguration>(builder.Configuration.GetRequiredSection("JwtConfiguration"));
         builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<AerospikeConfiguration>>().Value);
@@ -41,18 +46,83 @@ public class Program
 
         if (app.Environment.IsDevelopment())
         {
-            app.MapOpenApi();
-            app.UseSwaggerUI(options =>
-            {
-                options.SwaggerEndpoint("/openapi/v1.json", "v1");
-            });
+            app.UseSwagger();
+            app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1"));
         }
 
         app.UseExceptionHandler();
-        app.UseHttpsRedirection();
+
+        if (!string.Equals(
+                Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"),
+                "true",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            app.UseHttpsRedirection();
+        }
+
         app.UseAuthorization();
         app.MapControllers();
 
         app.Run();
+    }
+
+    private static void LoadSharedEnvironmentFile()
+    {
+        var envFilePath = FindEnvironmentFile(Directory.GetCurrentDirectory())
+            ?? FindEnvironmentFile(AppContext.BaseDirectory);
+
+        if (envFilePath is null)
+        {
+            return;
+        }
+
+        foreach (var rawLine in File.ReadLines(envFilePath))
+        {
+            var line = rawLine.Trim();
+            if (string.IsNullOrWhiteSpace(line) || line.StartsWith('#'))
+            {
+                continue;
+            }
+
+            var separatorIndex = line.IndexOf('=');
+            if (separatorIndex <= 0)
+            {
+                continue;
+            }
+
+            var key = line[..separatorIndex].Trim();
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                continue;
+            }
+
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable(key)))
+            {
+                continue;
+            }
+
+            var value = line[(separatorIndex + 1)..].Trim().Trim('"');
+            Environment.SetEnvironmentVariable(key, value);
+        }
+    }
+
+    private static string? FindEnvironmentFile(string startPath)
+    {
+        DirectoryInfo? directory = Directory.Exists(startPath)
+            ? new DirectoryInfo(startPath)
+            : new FileInfo(startPath).Directory;
+
+        while (directory is not null)
+        {
+            var candidate = Path.Combine(directory.FullName, ".env");
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            directory = directory.Parent;
+        }
+
+        return null;
     }
 }
