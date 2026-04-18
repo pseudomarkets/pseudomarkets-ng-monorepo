@@ -1,7 +1,9 @@
 using Aerospike.Client;
+using Microsoft.Extensions.Logging;
 using PseudoMarkets.Security.IdentityServer.Core.Configuration;
 using PseudoMarkets.Security.IdentityServer.Core.Constants;
 using PseudoMarkets.Security.IdentityServer.Core.Database.Interfaces;
+using PseudoMarkets.Security.IdentityServer.Core.Exceptions;
 using PseudoMarkets.Security.IdentityServer.Core.Models;
 
 namespace PseudoMarkets.Security.IdentityServer.Core.Database.Implementations;
@@ -9,6 +11,7 @@ namespace PseudoMarkets.Security.IdentityServer.Core.Database.Implementations;
 public class AccountRepository : IAccountRepository
 {
     private readonly IAerospikeClient _aerospikeClient;
+    private readonly ILogger<AccountRepository> _logger;
     private readonly Policy _readPolicy = new Policy()
     {
         sendKey = true
@@ -27,29 +30,112 @@ public class AccountRepository : IAccountRepository
         durableDelete = true,
         recordExistsAction = RecordExistsAction.UPDATE_ONLY
     };
-    
-    public AccountRepository(AerospikeConfiguration aerospikeConfiguration)
+
+    private readonly WritePolicy _writePolicyDelete = new WritePolicy()
     {
-        _aerospikeClient = new AerospikeClient(aerospikeConfiguration.Host, aerospikeConfiguration.Port);
+        durableDelete = true
+    };
+    
+    public AccountRepository(AerospikeConfiguration aerospikeConfiguration, ILogger<AccountRepository> logger)
+    {
+        _logger = logger;
+
+        try
+        {
+            _aerospikeClient = new AerospikeClient(aerospikeConfiguration.Host, aerospikeConfiguration.Port);
+        }
+        catch (AerospikeException ex)
+        {
+            _logger.LogError(ex, "Failed to create Aerospike client for identity storage.");
+            throw new IdentityDependencyException("Unable to initialize the identity data store.", ex);
+        }
     }
     
     public Account? GetAccount(string loginId)
     {
-        var record = _aerospikeClient.Get(_readPolicy, new Key(DatabaseConstants.Namespace, DatabaseConstants.AccountsSet, loginId));
-        if(record == null)
-            return null;
-        
-        return MapFromRecord(record);
+        try
+        {
+            var record = _aerospikeClient.Get(_readPolicy, new Key(DatabaseConstants.Namespace, DatabaseConstants.AccountsSet, loginId));
+            if (record == null)
+            {
+                return null;
+            }
+
+            return MapFromRecord(loginId, record);
+        }
+        catch (AerospikeException ex)
+        {
+            _logger.LogError(ex, "Failed to read account {LoginId} from Aerospike.", loginId);
+            throw new IdentityDependencyException("Unable to access the identity data store.", ex);
+        }
+    }
+
+    public bool TryReserveUserId(long userId, string loginId)
+    {
+        try
+        {
+            var reservationBins = new[]
+            {
+                new Bin(DatabaseConstants.UserIdBin, userId),
+                new Bin(DatabaseConstants.LoginIdBin, loginId)
+            };
+
+            _aerospikeClient.Put(
+                _writePolicyCreate,
+                new Key(DatabaseConstants.Namespace, DatabaseConstants.UserIdsSet, userId),
+                reservationBins);
+
+            return true;
+        }
+        catch (AerospikeException ex) when (ex.Result == ResultCode.KEY_EXISTS_ERROR)
+        {
+            _logger.LogDebug("User ID {UserId} is already reserved.", userId);
+            return false;
+        }
+        catch (AerospikeException ex)
+        {
+            _logger.LogError(ex, "Failed to reserve user ID {UserId} for {LoginId}.", userId, loginId);
+            throw new IdentityDependencyException("Unable to reserve a unique user ID.", ex);
+        }
+    }
+
+    public void ReleaseReservedUserId(long userId)
+    {
+        try
+        {
+            _aerospikeClient.Delete(_writePolicyDelete, new Key(DatabaseConstants.Namespace, DatabaseConstants.UserIdsSet, userId));
+        }
+        catch (AerospikeException ex)
+        {
+            _logger.LogWarning(ex, "Failed to release reserved user ID {UserId}.", userId);
+            throw new IdentityDependencyException("Unable to release the reserved user ID.", ex);
+        }
     }
 
     public void UpdateAccount(Account account)
     {
-        _aerospikeClient.Put(_writePolicyUpdate, new Key(DatabaseConstants.Namespace, DatabaseConstants.AccountsSet, account.LoginId), MapToBins(account).ToArray());
+        try
+        {
+            _aerospikeClient.Put(_writePolicyUpdate, new Key(DatabaseConstants.Namespace, DatabaseConstants.AccountsSet, account.LoginId), MapToBins(account).ToArray());
+        }
+        catch (AerospikeException ex)
+        {
+            _logger.LogError(ex, "Failed to update account {LoginId} in Aerospike.", account.LoginId);
+            throw new IdentityDependencyException("Unable to update identity data.", ex);
+        }
     }
     
     public void CreateAccount(Account account)
     {
-        _aerospikeClient.Put(_writePolicyCreate, new Key(DatabaseConstants.Namespace, DatabaseConstants.AccountsSet, account.LoginId), MapToBins(account).ToArray());
+        try
+        {
+            _aerospikeClient.Put(_writePolicyCreate, new Key(DatabaseConstants.Namespace, DatabaseConstants.AccountsSet, account.LoginId), MapToBins(account).ToArray());
+        }
+        catch (AerospikeException ex)
+        {
+            _logger.LogError(ex, "Failed to create account {LoginId} in Aerospike.", account.LoginId);
+            throw new IdentityDependencyException("Unable to create identity data.", ex);
+        }
     }
 
     private List<Bin> MapToBins(Account account)
@@ -68,22 +154,27 @@ public class AccountRepository : IAccountRepository
         return bins;
     }
 
-    private Account MapFromRecord(Record record)
+    private Account MapFromRecord(string loginId, Record record)
     {
         var userId = record.GetLong(DatabaseConstants.UserIdBin);
-        var hashedPassword = record.GetString(DatabaseConstants.HashedPasswordBin);
-        var accountType = record.GetString(DatabaseConstants.AccountTypeBin);
+        var hashedPassword = record.GetString(DatabaseConstants.HashedPasswordBin) ?? string.Empty;
+        var accountType = record.GetString(DatabaseConstants.AccountTypeBin) ?? string.Empty;
         var isActive = record.GetBool(DatabaseConstants.ActiveBin);
-        var rawRoles = record.GetList(DatabaseConstants.RolesBin);
+        var rawRoles = record.GetList(DatabaseConstants.RolesBin)?.Cast<object?>() ?? Array.Empty<object?>();
 
         var roles = new List<string>();
         foreach (var role in rawRoles)
         {
-            roles.Add(Convert.ToString(role));
+            var roleAsString = Convert.ToString(role);
+            if (!string.IsNullOrWhiteSpace(roleAsString))
+            {
+                roles.Add(roleAsString);
+            }
         }
         
         return new Account()
         {
+            LoginId = loginId,
             UserId = userId,
             HashedPassword = hashedPassword,
             AccountType = accountType,

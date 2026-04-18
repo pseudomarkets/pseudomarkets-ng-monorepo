@@ -8,6 +8,7 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["src/PseudoMarkets.Security.IdentityServer.Web/PseudoMarkets.Security.IdentityServer.Web.csproj", "src/PseudoMarkets.Security.IdentityServer.Web/"]
+COPY ["src/PseudoMarkets.Security.IdentityServer.Core/PseudoMarkets.Security.IdentityServer.Core.csproj", "src/PseudoMarkets.Security.IdentityServer.Core/"]
 RUN dotnet restore "src/PseudoMarkets.Security.IdentityServer.Web/PseudoMarkets.Security.IdentityServer.Web.csproj"
 COPY . .
 WORKDIR "/src/src/PseudoMarkets.Security.IdentityServer.Web"

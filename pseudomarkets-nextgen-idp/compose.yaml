@@ -1,7 +1,40 @@
 ﻿services:
+  aerospike:
+    image: aerospike:ce-8.1.1.1_1
+    container_name: pseudomarkets-nextgen-aerospike
+    platform: linux/arm64
+    ports:
+      - "127.0.0.1:3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "asinfo -v 'status' | grep -q '^ok$'"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    volumes:
+      - ./.docker-data/aerospike:/opt/aerospike/data
+      - ./infrastructure/aerospike/aerospike.conf:/opt/aerospike/etc/aerospike.conf:ro
+    command:
+      - "--config-file"
+      - "/opt/aerospike/etc/aerospike.conf"
+    restart: unless-stopped
   pseudomarkets.security.identityserver.web:
     image: pseudomarkets.security.identityserver.web
     build:
       context: .
       dockerfile: src/PseudoMarkets.Security.IdentityServer.Web/Dockerfile
-
+    container_name: pseudomarkets-nextgen-idp-web
+    depends_on:
+      aerospike:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Aerospike__Host: aerospike
+      Aerospike__Port: 3000
+      JwtConfiguration__Issuer: pseudomarkets-idp
+      JwtConfiguration__Audience: pseudomarkets-platform
+      JwtConfiguration__Key: vGG2kp6lqlCbaJIINMc0zPeINaPqZ+NfMnwRj7TxIZw=
+    ports:
+      - "127.0.0.1:8080:8080"
+    restart: unless-stopped

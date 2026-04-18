@@ -9,6 +9,11 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2"/>
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.7" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\PseudoMarkets.Security.IdentityServer.Core\PseudoMarkets.Security.IdentityServer.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>
