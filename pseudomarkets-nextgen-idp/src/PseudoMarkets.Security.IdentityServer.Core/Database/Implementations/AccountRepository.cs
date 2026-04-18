@@ -50,6 +50,12 @@ public class AccountRepository : IAccountRepository
             throw new IdentityDependencyException("Unable to initialize the identity data store.", ex);
         }
     }
+
+    public AccountRepository(IAerospikeClient aerospikeClient, ILogger<AccountRepository> logger)
+    {
+        _aerospikeClient = aerospikeClient;
+        _logger = logger;
+    }
     
     public Account? GetAccount(string loginId)
     {
