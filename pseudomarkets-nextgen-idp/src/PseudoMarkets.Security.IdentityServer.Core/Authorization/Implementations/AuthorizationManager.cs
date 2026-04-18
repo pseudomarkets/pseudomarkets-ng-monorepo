@@ -24,7 +24,7 @@ public class AuthorizationManager : IAuthorizationManager
     {
         if (string.IsNullOrWhiteSpace(request.Token) || string.IsNullOrWhiteSpace(request.Action))
         {
-            return new AuthorizationResult(false, "Authorization Failed");
+            return new AuthorizationResult(false, "Authorization Failed", 0);
         }
 
         try
@@ -51,27 +51,29 @@ public class AuthorizationManager : IAuthorizationManager
             if (claimsPrincipal != null && securityToken != null)
             {
                 var roles = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == "roles");
-                if (roles != null)
+                var userId = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == "id")?.Value;
+                if (roles != null && userId != null)
                 {
+                    var id = Convert.ToInt64(userId);
                     var rolesAsList = roles.Value.Split(',').ToList();
                     if (rolesAsList.Contains(request.Action))
                     {
-                        return new AuthorizationResult(true, $"Authorization Successful");
+                        return new AuthorizationResult(true, $"Authorization Successful", id);
                     }
                     
-                    return new AuthorizationResult(false, "Unauthorized");
+                    return new AuthorizationResult(false, "Unauthorized", 0);
                 }
             }
         }
         catch (SecurityTokenException ex)
         {
             _logger.LogInformation(ex, "Token validation failed during authorization.");
-            return new AuthorizationResult(false, "Authorization Failed");
+            return new AuthorizationResult(false, "Authorization Failed", 0);
         }
         catch (ArgumentException ex)
         {
             _logger.LogInformation(ex, "Authorization request contained an invalid token payload.");
-            return new AuthorizationResult(false, "Authorization Failed");
+            return new AuthorizationResult(false, "Authorization Failed", 0);
         }
         catch (Exception ex)
         {
@@ -79,6 +81,6 @@ public class AuthorizationManager : IAuthorizationManager
             throw new IdentityServiceException("Unable to complete authorization.", ex);
         }
 
-        return new  AuthorizationResult(false, "Authorization Failed");
+        return new  AuthorizationResult(false, "Authorization Failed", 0);
     }
 }

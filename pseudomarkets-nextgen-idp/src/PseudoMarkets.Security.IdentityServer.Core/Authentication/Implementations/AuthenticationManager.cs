@@ -29,13 +29,14 @@ public class AuthenticationManager : IAuthenticationManager
         _logger = logger;
     }
     
-    private string GenerateToken(string loginId, int expiresIn, string roles)
+    private string GenerateToken(string loginId, int expiresIn, string roles, long userId)
     {
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, loginId),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim("roles",  roles)
+            new Claim("roles",  roles),
+            new Claim("id", userId.ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfiguration.Key));
@@ -68,7 +69,7 @@ public class AuthenticationManager : IAuthenticationManager
             if (account != null && VerifyPassword(account.HashedPassword, password))
             {
                 var roles = string.Join(",", account.Roles);
-                return new AuthenticationResult(true, GenerateToken(loginId, 60, roles), DateTime.UtcNow.AddMinutes(60));
+                return new AuthenticationResult(true, GenerateToken(loginId, 60, roles, account.UserId), DateTime.UtcNow.AddMinutes(60));
             }
 
             return new AuthenticationResult(false, string.Empty, DateTime.MinValue);

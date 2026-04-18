@@ -157,7 +157,7 @@ public class IdentityControllerTests
     {
         _authorizationManager
             .Setup(x => x.Authorize(It.IsAny<AuthorizationRequest>()))
-            .Returns(new AuthorizationResult(true, "Authorization Successful"));
+            .Returns(new AuthorizationResult(true, "Authorization Successful", 1));
 
         var sut = CreateSut();
 
@@ -171,7 +171,7 @@ public class IdentityControllerTests
     {
         _authorizationManager
             .Setup(x => x.Authorize(It.IsAny<AuthorizationRequest>()))
-            .Returns(new AuthorizationResult(false, "Unauthorized"));
+            .Returns(new AuthorizationResult(false, "Unauthorized", 0));
 
         var sut = CreateSut();
 

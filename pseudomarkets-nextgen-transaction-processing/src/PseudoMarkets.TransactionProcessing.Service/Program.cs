@@ -1,9 +1,11 @@
 using System;
 using System.IO;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using PseudoMarkets.Shared.Authorization.DependencyInjection;
 using PseudoMarkets.TransactionProcessing.Core.DependencyInjection;
+using PseudoMarkets.TransactionProcessing.Persistence.Database;
 using PseudoMarkets.TransactionProcessing.Persistence.DependencyInjection;
 using PseudoMarkets.TransactionProcessing.Service.Infrastructure;
 
@@ -49,6 +51,7 @@ public class Program
         builder.Services.AddPseudoMarketsSharedAuthorization(builder.Configuration);
 
         var app = builder.Build();
+        ApplyEfCoreMigration(app);
 
         if (app.Environment.IsDevelopment())
         {
@@ -73,6 +76,15 @@ public class Program
         app.Run();
     }
 
+    private static void ApplyEfCoreMigration(WebApplication app)
+    {
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<TransactionProcessingDbContext>();
+            db.Database.Migrate();
+        }
+    } 
+    
     private static void LoadSharedEnvironmentFile()
     {
         var envFilePath = FindEnvironmentFile(Directory.GetCurrentDirectory())
