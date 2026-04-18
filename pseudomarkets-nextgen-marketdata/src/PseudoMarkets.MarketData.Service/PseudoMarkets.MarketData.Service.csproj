@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\PseudoMarkets.MarketData.Cache\PseudoMarkets.MarketData.Cache.csproj" />
+    <ProjectReference Include="..\PseudoMarkets.MarketData.Contracts\PseudoMarkets.MarketData.Contracts.csproj" />
+    <ProjectReference Include="..\PseudoMarkets.MarketData.Core\PseudoMarkets.MarketData.Core.csproj" />
+    <ProjectReference Include="..\PseudoMarkets.MarketData.Providers\PseudoMarkets.MarketData.Providers.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
+  </ItemGroup>
+
+</Project>

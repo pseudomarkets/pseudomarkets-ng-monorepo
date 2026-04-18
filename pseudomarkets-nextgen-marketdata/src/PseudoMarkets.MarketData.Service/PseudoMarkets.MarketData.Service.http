@@ -1,0 +1,6 @@
+@PseudoMarkets.MarketData.Service_HostAddress = https://localhost:7173
+
+GET {{PseudoMarkets.MarketData.Service_HostAddress}}/api/about
+Accept: application/json
+
+###
