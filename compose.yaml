@@ -1,0 +1,10 @@
+name: pseudomarkets-nextgen-platform
+
+include:
+  - ./pseudomarkets-nextgen-idp/compose.yaml
+
+# Add future service-local compose files here as more microservices are introduced.
+# Example:
+# include:
+#   - ./pseudomarkets-nextgen-idp/compose.yaml
+#   - ./pseudomarkets-nextgen-marketdata/compose.yaml

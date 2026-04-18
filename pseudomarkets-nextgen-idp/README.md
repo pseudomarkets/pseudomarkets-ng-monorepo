@@ -49,31 +49,36 @@ pseudomarkets-nextgen-idp/
 ### Prerequisites
 
 - .NET 10 SDK
-- Docker Desktop or another way to run Aerospike locally
+- Docker Desktop on Windows or macOS, or Docker Engine with Compose on Linux
 - A trusted ASP.NET Core development certificate for HTTPS
+- A shell such as PowerShell, Command Prompt, Bash, or Zsh
 
 ### 1. Start Aerospike
 
 The simplest local option is to use only the Aerospike service from Compose:
 
 ```bash
-docker compose -f /Users/shravanjambukesan/Documents/Projects/pseudomarkets-ng-monorepo/pseudomarkets-nextgen-idp/compose.yaml up -d aerospike
+docker compose -f compose.yaml up -d aerospike
 ```
 
 This exposes Aerospike on `localhost:3000`, which matches `appsettings.Development.json`.
 
 ### 2. Trust the ASP.NET Core HTTPS development certificate
 
+Windows, macOS, and Linux can all use the same .NET command:
+
 ```bash
 dotnet dev-certs https --trust
 ```
 
+Depending on your OS, you may be prompted to approve certificate trust through the local certificate store or keychain UI.
+
 ### 3. Run the web project
 
-From the monorepo root:
+From the `pseudomarkets-nextgen-idp` folder:
 
 ```bash
-dotnet run --project /Users/shravanjambukesan/Documents/Projects/pseudomarkets-ng-monorepo/pseudomarkets-nextgen-idp/src/PseudoMarkets.Security.IdentityServer.Web/PseudoMarkets.Security.IdentityServer.Web.csproj
+dotnet run --project src/PseudoMarkets.Security.IdentityServer.Web/PseudoMarkets.Security.IdentityServer.Web.csproj
 ```
 
 By default, the launch settings use:
@@ -92,26 +97,26 @@ Swagger UI is available at:
 The Compose stack brings up:
 
 - `aerospike`
-  ARM64 Aerospike CE with disk-backed persistence
+  Aerospike CE with disk-backed persistence
 - `pseudomarkets.security.identityserver.web`
   The ASP.NET Core identity server configured to connect to the Aerospike container
 
 ### Start the full stack
 
 ```bash
-docker compose -f /Users/shravanjambukesan/Documents/Projects/pseudomarkets-ng-monorepo/pseudomarkets-nextgen-idp/compose.yaml up --build
+docker compose -f compose.yaml up --build
 ```
 
 ### Run detached
 
 ```bash
-docker compose -f /Users/shravanjambukesan/Documents/Projects/pseudomarkets-ng-monorepo/pseudomarkets-nextgen-idp/compose.yaml up -d --build
+docker compose -f compose.yaml up -d --build
 ```
 
 ### Stop the stack
 
 ```bash
-docker compose -f /Users/shravanjambukesan/Documents/Projects/pseudomarkets-ng-monorepo/pseudomarkets-nextgen-idp/compose.yaml down
+docker compose -f compose.yaml down
 ```
 
 ### Service endpoints
@@ -126,6 +131,7 @@ docker compose -f /Users/shravanjambukesan/Documents/Projects/pseudomarkets-ng-m
 - The web container uses `Aerospike__Host=aerospike`, so it talks to the database over the Compose network instead of `localhost`.
 - Aerospike data is persisted in `./.docker-data/aerospike`.
 - The Compose stack runs the identity server in `Development` mode so Swagger UI and development-only flows are available locally.
+- The Compose file does not hardcode a container CPU architecture, so Docker can pull the appropriate image variant for Windows, Linux, Intel/AMD, and Apple Silicon environments where the upstream image supports it.
 
 ## Configuration
 
@@ -168,7 +174,7 @@ Use Swagger UI to inspect request and response schemas interactively.
 From the monorepo root:
 
 ```bash
-dotnet build /Users/shravanjambukesan/Documents/Projects/pseudomarkets-ng-monorepo/pseudomarkets-nextgen-idp/PseudoMarkets.Security.IdentityServer.sln
+dotnet build PseudoMarkets.Security.IdentityServer.sln
 ```
 
 ## Troubleshooting
@@ -185,7 +191,7 @@ dotnet build /Users/shravanjambukesan/Documents/Projects/pseudomarkets-ng-monore
 - In Docker Compose, verify both containers are up:
 
 ```bash
-docker compose -f /Users/shravanjambukesan/Documents/Projects/pseudomarkets-ng-monorepo/pseudomarkets-nextgen-idp/compose.yaml ps
+docker compose -f compose.yaml ps
 ```
 
 ### HTTPS certificate warnings locally
@@ -200,7 +206,16 @@ dotnet dev-certs https --trust
 
 Stop the Compose stack and remove the local data directory:
 
+macOS/Linux:
+
 ```bash
-docker compose -f /Users/shravanjambukesan/Documents/Projects/pseudomarkets-ng-monorepo/pseudomarkets-nextgen-idp/compose.yaml down
-rm -rf /Users/shravanjambukesan/Documents/Projects/pseudomarkets-ng-monorepo/pseudomarkets-nextgen-idp/.docker-data/aerospike
+docker compose -f compose.yaml down
+rm -rf ./.docker-data/aerospike
+```
+
+Windows PowerShell:
+
+```powershell
+docker compose -f compose.yaml down
+Remove-Item -Recurse -Force .\.docker-data\aerospike
 ```
