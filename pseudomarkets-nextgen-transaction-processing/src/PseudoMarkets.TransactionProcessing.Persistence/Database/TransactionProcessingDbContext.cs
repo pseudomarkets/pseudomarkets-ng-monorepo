@@ -17,6 +17,7 @@ public class TransactionProcessingDbContext : DbContext
     public DbSet<AccountBalanceEntity> AccountBalances => Set<AccountBalanceEntity>();
     public DbSet<PositionEntity> Positions => Set<PositionEntity>();
     public DbSet<PositionLotEntity> PositionLots => Set<PositionLotEntity>();
+    public DbSet<PositionLotClosureEntity> PositionLotClosures => Set<PositionLotClosureEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -79,6 +80,7 @@ public class TransactionProcessingDbContext : DbContext
             entity.Property(x => x.NetAmount).HasColumnName("net_amount").HasPrecision(18, 4).IsRequired();
             entity.Property(x => x.ExecutedAtUtc).HasColumnName("executed_at_utc");
             entity.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc");
+            entity.HasIndex(x => x.TransactionId).IsUnique();
             entity.HasIndex(x => x.ExternalExecutionId).IsUnique();
             entity.HasIndex(x => x.UserId);
             entity.HasIndex(x => x.Symbol);
@@ -96,13 +98,15 @@ public class TransactionProcessingDbContext : DbContext
             entity.Property(x => x.ReasonCode).HasColumnName("reason_code").HasMaxLength(50);
             entity.Property(x => x.OccurredAtUtc).HasColumnName("occurred_at_utc");
             entity.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc");
+            entity.HasIndex(x => x.TransactionId).IsUnique();
+            entity.HasIndex(x => x.UserId);
         });
 
         modelBuilder.Entity<AccountBalanceEntity>(entity =>
         {
             entity.ToTable("account_balances");
             entity.HasKey(x => x.UserId);
-            entity.Property(x => x.UserId).HasColumnName("user_id");
+            entity.Property(x => x.UserId).HasColumnName("user_id").ValueGeneratedNever();
             entity.Property(x => x.CashBalance).HasColumnName("cash_balance").HasPrecision(18, 4).IsRequired();
             entity.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc");
         });
@@ -139,6 +143,29 @@ public class TransactionProcessingDbContext : DbContext
             entity.HasIndex(x => new { x.UserId, x.Symbol });
             entity.HasIndex(x => x.OpeningTransactionId);
             entity.HasIndex(x => x.ClosingTransactionId);
+        });
+
+        modelBuilder.Entity<PositionLotClosureEntity>(entity =>
+        {
+            entity.ToTable("position_lot_closures");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.PositionLotId).HasColumnName("position_lot_id").IsRequired();
+            entity.Property(x => x.OpeningTransactionId).HasColumnName("opening_transaction_id").IsRequired();
+            entity.Property(x => x.ClosingTransactionId).HasColumnName("closing_transaction_id").IsRequired();
+            entity.Property(x => x.UserId).HasColumnName("user_id").IsRequired();
+            entity.Property(x => x.Symbol).HasColumnName("symbol").HasMaxLength(32).IsRequired();
+            entity.Property(x => x.QuantityClosed).HasColumnName("quantity_closed").HasPrecision(18, 6).IsRequired();
+            entity.Property(x => x.CostBasisAmount).HasColumnName("cost_basis_amount").HasPrecision(18, 4).IsRequired();
+            entity.Property(x => x.ClosedAtUtc).HasColumnName("closed_at_utc").IsRequired();
+            entity.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").IsRequired();
+            entity.HasIndex(x => x.PositionLotId);
+            entity.HasIndex(x => x.ClosingTransactionId);
+            entity.HasIndex(x => new { x.UserId, x.Symbol });
+            entity.HasOne(x => x.PositionLot)
+                .WithMany(x => x.Closures)
+                .HasForeignKey(x => x.PositionLotId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

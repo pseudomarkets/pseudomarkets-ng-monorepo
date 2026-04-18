@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialSchema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,8 +16,7 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
                 name: "account_balances",
                 columns: table => new
                 {
-                    user_id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    user_id = table.Column<long>(type: "bigint", nullable: false),
                     cash_balance = table.Column<decimal>(type: "numeric(18,4)", precision: 18, scale: 4, nullable: false),
                     updated_at_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -128,6 +127,33 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "position_lot_closures",
+                columns: table => new
+                {
+                    id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    position_lot_id = table.Column<long>(type: "bigint", nullable: false),
+                    opening_transaction_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    closing_transaction_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    user_id = table.Column<long>(type: "bigint", nullable: false),
+                    symbol = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
+                    quantity_closed = table.Column<decimal>(type: "numeric(18,6)", precision: 18, scale: 6, nullable: false),
+                    cost_basis_amount = table.Column<decimal>(type: "numeric(18,4)", precision: 18, scale: 4, nullable: false),
+                    closed_at_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    created_at_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_position_lot_closures", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_position_lot_closures_position_lots_position_lot_id",
+                        column: x => x.position_lot_id,
+                        principalTable: "position_lots",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ledger_transactions",
                 columns: table => new
                 {
@@ -158,6 +184,17 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_cash_movements_transaction_id",
+                table: "cash_movements",
+                column: "transaction_id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_cash_movements_user_id",
+                table: "cash_movements",
+                column: "user_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ledger_transactions_posting_batch_id",
                 table: "ledger_transactions",
                 column: "posting_batch_id");
@@ -177,6 +214,21 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
                 name: "IX_ledger_transactions_voids_transaction_id",
                 table: "ledger_transactions",
                 column: "voids_transaction_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_position_lot_closures_closing_transaction_id",
+                table: "position_lot_closures",
+                column: "closing_transaction_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_position_lot_closures_position_lot_id",
+                table: "position_lot_closures",
+                column: "position_lot_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_position_lot_closures_user_id_symbol",
+                table: "position_lot_closures",
+                columns: new[] { "user_id", "symbol" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_position_lots_closing_transaction_id",
@@ -217,6 +269,12 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
                 column: "symbol");
 
             migrationBuilder.CreateIndex(
+                name: "IX_trade_executions_transaction_id",
+                table: "trade_executions",
+                column: "transaction_id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_trade_executions_user_id",
                 table: "trade_executions",
                 column: "user_id");
@@ -235,7 +293,7 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
                 name: "ledger_transactions");
 
             migrationBuilder.DropTable(
-                name: "position_lots");
+                name: "position_lot_closures");
 
             migrationBuilder.DropTable(
                 name: "positions");
@@ -245,6 +303,9 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "posting_batches");
+
+            migrationBuilder.DropTable(
+                name: "position_lots");
         }
     }
 }

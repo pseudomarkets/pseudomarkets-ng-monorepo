@@ -1,9 +1,11 @@
 using System;
 using System.IO;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.OpenApi;
 using PseudoMarkets.Shared.Authorization.DependencyInjection;
 using PseudoMarkets.TransactionProcessing.Core.DependencyInjection;
 using PseudoMarkets.TransactionProcessing.Persistence.DependencyInjection;
+using PseudoMarkets.TransactionProcessing.Service.Infrastructure;
 
 namespace PseudoMarkets.TransactionProcessing.Service;
 
@@ -18,6 +20,7 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddAuthorization();
         builder.Services.AddProblemDetails();
+        builder.Services.AddExceptionHandler<TransactionProcessingExceptionHandler>();
         builder.Services.AddHealthChecks();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>

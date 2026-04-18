@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\PseudoMarkets.TransactionProcessing.Core\PseudoMarkets.TransactionProcessing.Core.csproj" />
     <ProjectReference Include="..\PseudoMarkets.TransactionProcessing.Contracts\PseudoMarkets.TransactionProcessing.Contracts.csproj" />
   </ItemGroup>
 

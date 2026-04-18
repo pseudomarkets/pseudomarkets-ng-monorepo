@@ -13,4 +13,6 @@ public class PositionLotEntity
     public decimal Price { get; set; }
     public DateTime OpenedAtUtc { get; set; }
     public DateTime UpdatedAtUtc { get; set; }
+
+    public ICollection<PositionLotClosureEntity> Closures { get; set; } = [];
 }

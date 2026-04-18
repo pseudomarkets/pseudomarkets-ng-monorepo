@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PseudoMarkets.TransactionProcessing.Contracts\PseudoMarkets.TransactionProcessing.Contracts.csproj" />
+    <ProjectReference Include="..\PseudoMarkets.TransactionProcessing.Persistence\PseudoMarkets.TransactionProcessing.Persistence.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -25,11 +25,8 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
             modelBuilder.Entity("PseudoMarkets.TransactionProcessing.Persistence.Entities.AccountBalanceEntity", b =>
                 {
                     b.Property<long>("UserId")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasColumnName("user_id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("UserId"));
 
                     b.Property<decimal>("CashBalance")
                         .HasPrecision(18, 4)
@@ -87,6 +84,11 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
                         .HasColumnName("user_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TransactionId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("cash_movements", (string)null);
                 });
@@ -217,6 +219,66 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("positions", (string)null);
+                });
+
+            modelBuilder.Entity("PseudoMarkets.TransactionProcessing.Persistence.Entities.PositionLotClosureEntity", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("ClosedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_at_utc");
+
+                    b.Property<Guid>("ClosingTransactionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("closing_transaction_id");
+
+                    b.Property<decimal>("CostBasisAmount")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasColumnName("cost_basis_amount");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at_utc");
+
+                    b.Property<Guid>("OpeningTransactionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("opening_transaction_id");
+
+                    b.Property<long>("PositionLotId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("position_lot_id");
+
+                    b.Property<decimal>("QuantityClosed")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("quantity_closed");
+
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("symbol");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClosingTransactionId");
+
+                    b.HasIndex("PositionLotId");
+
+                    b.HasIndex("UserId", "Symbol");
+
+                    b.ToTable("position_lot_closures", (string)null);
                 });
 
             modelBuilder.Entity("PseudoMarkets.TransactionProcessing.Persistence.Entities.PositionLotEntity", b =>
@@ -410,6 +472,9 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
 
                     b.HasIndex("Symbol");
 
+                    b.HasIndex("TransactionId")
+                        .IsUnique();
+
                     b.HasIndex("UserId");
 
                     b.ToTable("trade_executions", (string)null);
@@ -424,6 +489,22 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("PostingBatch");
+                });
+
+            modelBuilder.Entity("PseudoMarkets.TransactionProcessing.Persistence.Entities.PositionLotClosureEntity", b =>
+                {
+                    b.HasOne("PseudoMarkets.TransactionProcessing.Persistence.Entities.PositionLotEntity", "PositionLot")
+                        .WithMany("Closures")
+                        .HasForeignKey("PositionLotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PositionLot");
+                });
+
+            modelBuilder.Entity("PseudoMarkets.TransactionProcessing.Persistence.Entities.PositionLotEntity", b =>
+                {
+                    b.Navigation("Closures");
                 });
 
             modelBuilder.Entity("PseudoMarkets.TransactionProcessing.Persistence.Entities.PostingBatchEntity", b =>
