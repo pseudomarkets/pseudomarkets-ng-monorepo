@@ -38,6 +38,10 @@ The long-term monorepo goals are:
   Market data service for quotes, detailed quote snapshots, and market indices.
 - `pseudomarkets-nextgen-shared-auth/`
   Shared authorization library used by downstream services to call the identity provider authorization endpoint.
+- `pseudomarkets-nextgen-transaction-processing/`
+  Transaction posting service for trades, cash movement, and compensating void transactions backed by PostgreSQL.
+- `infrastructure/postgres/`
+  Shared location for platform-level PostgreSQL infrastructure files and scripts.
 
 ## Current State
 
@@ -47,8 +51,10 @@ Today, the monorepo is structured to support platform growth:
 - the identity service already has its own service-local solution, tests, and Docker workflow
 - the market data service already has its own service-local solution, tests, and Docker workflow
 - the shared authorization library has its own source project and standalone unit test project
-- the root Docker Compose file brings the identity service, market data service, and shared Aerospike container up together
+- the transaction processing service is scaffolded with its own service-local solution, tests, Docker workflow, and PostgreSQL-backed persistence model
+- the root Docker Compose file brings the identity service, market data service, transaction processing service, shared Aerospike container, and PostgreSQL up together
 - market data authorization is delegated to the identity service, so a JWT issued by the IDP can be reused across services
+- transaction write authorization is delegated to the identity service as well through the shared authorization library and the `UPDATE_TRANSACTIONS` action
 - additional service folders can be added without restructuring the monorepo again
 
 ## IDE Workflow
@@ -63,6 +69,7 @@ The root solution currently groups projects by service folder and already includ
 
 - the Pseudo Markets identity server source and tests
 - the Pseudo Markets market data source and tests
+- the Pseudo Markets transaction processing source and tests
 - the shared authorization library and tests
 
 Open `PseudoMarkets.NextGen.Platform.sln` in Visual Studio, Rider, or another compatible .NET IDE from the repository root.
@@ -85,6 +92,7 @@ Then update `.env` with the values you want to use locally, including:
 
 - `JwtConfiguration__Key`
 - `TwelveData__ApiKey`
+- `Postgres__Password`
 
 Run the platform stack from the monorepo root:
 
@@ -96,14 +104,16 @@ Current local browser endpoints:
 
 - Identity server Swagger UI: [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
 - Market data Swagger UI: [http://localhost:8081/swagger/index.html](http://localhost:8081/swagger/index.html)
+- Transaction processing Swagger UI: [http://localhost:8082/swagger/index.html](http://localhost:8082/swagger/index.html)
 
 The root Compose stack uses the shared Aerospike config at `infrastructure/aerospike/aerospike.conf` and stores Aerospike data in `./.docker-data/aerospike`.
-Application secrets are loaded from the shared root `.env` file.
+Application secrets are loaded from the shared root `.env` file, and PostgreSQL data is stored in `./.docker-data/postgres`.
 Market data endpoints are protected by the identity service, so the normal local flow is:
 
 1. Create or authenticate an account in the IDP Swagger UI.
 2. Copy the returned JWT.
 3. Open the Market data Swagger UI and use `Authorize` to paste the token.
+4. Open the Transaction processing Swagger UI and use `Authorize` to paste the same token for write operations.
 
 ## Service Model
 
@@ -111,6 +121,7 @@ Each microservice should live in its own top-level folder, for example:
 
 - `pseudomarkets-nextgen-idp`
 - `pseudomarkets-nextgen-marketdata`
+- `pseudomarkets-nextgen-transaction-processing`
 
 Each service folder can own:
 

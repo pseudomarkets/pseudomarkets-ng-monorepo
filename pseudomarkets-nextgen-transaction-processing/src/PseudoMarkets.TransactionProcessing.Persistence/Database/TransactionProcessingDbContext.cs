@@ -1,0 +1,144 @@
+using Microsoft.EntityFrameworkCore;
+using PseudoMarkets.TransactionProcessing.Persistence.Entities;
+
+namespace PseudoMarkets.TransactionProcessing.Persistence.Database;
+
+public class TransactionProcessingDbContext : DbContext
+{
+    public TransactionProcessingDbContext(DbContextOptions<TransactionProcessingDbContext> options)
+        : base(options)
+    {
+    }
+
+    public DbSet<PostingBatchEntity> PostingBatches => Set<PostingBatchEntity>();
+    public DbSet<LedgerTransactionEntity> LedgerTransactions => Set<LedgerTransactionEntity>();
+    public DbSet<TradeExecutionEntity> TradeExecutions => Set<TradeExecutionEntity>();
+    public DbSet<CashMovementEntity> CashMovements => Set<CashMovementEntity>();
+    public DbSet<AccountBalanceEntity> AccountBalances => Set<AccountBalanceEntity>();
+    public DbSet<PositionEntity> Positions => Set<PositionEntity>();
+    public DbSet<PositionLotEntity> PositionLots => Set<PositionLotEntity>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<PostingBatchEntity>(entity =>
+        {
+            entity.ToTable("posting_batches");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.IdempotencyKey).HasColumnName("idempotency_key").HasMaxLength(100).IsRequired();
+            entity.Property(x => x.UserId).HasColumnName("user_id").IsRequired();
+            entity.Property(x => x.RequestType).HasColumnName("request_type").HasMaxLength(50).IsRequired();
+            entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(20).IsRequired();
+            entity.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc");
+            entity.Property(x => x.CompletedAtUtc).HasColumnName("completed_at_utc");
+            entity.Property(x => x.ErrorMessage).HasColumnName("error_message");
+            entity.HasIndex(x => x.IdempotencyKey).IsUnique();
+        });
+
+        modelBuilder.Entity<LedgerTransactionEntity>(entity =>
+        {
+            entity.ToTable("ledger_transactions");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.TransactionId).HasColumnName("transaction_id").IsRequired();
+            entity.Property(x => x.PostingBatchId).HasColumnName("posting_batch_id").IsRequired();
+            entity.Property(x => x.UserId).HasColumnName("user_id").IsRequired();
+            entity.Property(x => x.TransactionKind).HasColumnName("transaction_kind").HasMaxLength(50).IsRequired();
+            entity.Property(x => x.Direction).HasColumnName("direction").HasMaxLength(20).IsRequired();
+            entity.Property(x => x.Amount).HasColumnName("amount").HasPrecision(18, 4).IsRequired();
+            entity.Property(x => x.TransactionDescription).HasColumnName("transaction_description").HasMaxLength(200).IsRequired();
+            entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(20).IsRequired();
+            entity.Property(x => x.OccurredAtUtc).HasColumnName("occurred_at_utc");
+            entity.Property(x => x.VoidsTransactionId).HasColumnName("voids_transaction_id");
+            entity.Property(x => x.ExternalReferenceId).HasColumnName("external_reference_id").HasMaxLength(100);
+            entity.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc");
+            entity.HasIndex(x => x.TransactionId).IsUnique();
+            entity.HasIndex(x => x.UserId);
+            entity.HasIndex(x => x.PostingBatchId);
+            entity.HasIndex(x => x.VoidsTransactionId);
+            entity.HasOne(x => x.PostingBatch)
+                .WithMany(x => x.LedgerTransactions)
+                .HasForeignKey(x => x.PostingBatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<TradeExecutionEntity>(entity =>
+        {
+            entity.ToTable("trade_executions");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.TransactionId).HasColumnName("transaction_id").IsRequired();
+            entity.Property(x => x.UserId).HasColumnName("user_id").IsRequired();
+            entity.Property(x => x.ExternalExecutionId).HasColumnName("external_execution_id").HasMaxLength(100).IsRequired();
+            entity.Property(x => x.Symbol).HasColumnName("symbol").HasMaxLength(32).IsRequired();
+            entity.Property(x => x.TradeSide).HasColumnName("trade_side").HasMaxLength(20).IsRequired();
+            entity.Property(x => x.Quantity).HasColumnName("quantity").HasPrecision(18, 6).IsRequired();
+            entity.Property(x => x.ExecutionPrice).HasColumnName("execution_price").HasPrecision(18, 6).IsRequired();
+            entity.Property(x => x.GrossAmount).HasColumnName("gross_amount").HasPrecision(18, 4).IsRequired();
+            entity.Property(x => x.Fees).HasColumnName("fees").HasPrecision(18, 4).IsRequired();
+            entity.Property(x => x.NetAmount).HasColumnName("net_amount").HasPrecision(18, 4).IsRequired();
+            entity.Property(x => x.ExecutedAtUtc).HasColumnName("executed_at_utc");
+            entity.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc");
+            entity.HasIndex(x => x.ExternalExecutionId).IsUnique();
+            entity.HasIndex(x => x.UserId);
+            entity.HasIndex(x => x.Symbol);
+        });
+
+        modelBuilder.Entity<CashMovementEntity>(entity =>
+        {
+            entity.ToTable("cash_movements");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.TransactionId).HasColumnName("transaction_id").IsRequired();
+            entity.Property(x => x.UserId).HasColumnName("user_id").IsRequired();
+            entity.Property(x => x.MovementType).HasColumnName("movement_type").HasMaxLength(30).IsRequired();
+            entity.Property(x => x.ExternalReferenceId).HasColumnName("external_reference_id").HasMaxLength(100);
+            entity.Property(x => x.ReasonCode).HasColumnName("reason_code").HasMaxLength(50);
+            entity.Property(x => x.OccurredAtUtc).HasColumnName("occurred_at_utc");
+            entity.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc");
+        });
+
+        modelBuilder.Entity<AccountBalanceEntity>(entity =>
+        {
+            entity.ToTable("account_balances");
+            entity.HasKey(x => x.UserId);
+            entity.Property(x => x.UserId).HasColumnName("user_id");
+            entity.Property(x => x.CashBalance).HasColumnName("cash_balance").HasPrecision(18, 4).IsRequired();
+            entity.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc");
+        });
+
+        modelBuilder.Entity<PositionEntity>(entity =>
+        {
+            entity.ToTable("positions");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.UserId).HasColumnName("user_id").IsRequired();
+            entity.Property(x => x.Symbol).HasColumnName("symbol").HasMaxLength(32).IsRequired();
+            entity.Property(x => x.PositionSide).HasColumnName("position_side").HasMaxLength(20).IsRequired();
+            entity.Property(x => x.Quantity).HasColumnName("quantity").HasPrecision(18, 6).IsRequired();
+            entity.Property(x => x.CostBasisTotal).HasColumnName("cost_basis_total").HasPrecision(18, 4).IsRequired();
+            entity.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc");
+            entity.HasIndex(x => new { x.UserId, x.Symbol }).IsUnique();
+        });
+
+        modelBuilder.Entity<PositionLotEntity>(entity =>
+        {
+            entity.ToTable("position_lots");
+            entity.HasKey(x => x.Id);
+            entity.Property(x => x.Id).HasColumnName("id");
+            entity.Property(x => x.UserId).HasColumnName("user_id").IsRequired();
+            entity.Property(x => x.Symbol).HasColumnName("symbol").HasMaxLength(32).IsRequired();
+            entity.Property(x => x.OpeningTransactionId).HasColumnName("opening_transaction_id").IsRequired();
+            entity.Property(x => x.ClosingTransactionId).HasColumnName("closing_transaction_id");
+            entity.Property(x => x.LotEntryType).HasColumnName("lot_entry_type").HasMaxLength(20).IsRequired();
+            entity.Property(x => x.QuantityOpened).HasColumnName("quantity_opened").HasPrecision(18, 6).IsRequired();
+            entity.Property(x => x.QuantityRemaining).HasColumnName("quantity_remaining").HasPrecision(18, 6).IsRequired();
+            entity.Property(x => x.Price).HasColumnName("price").HasPrecision(18, 6).IsRequired();
+            entity.Property(x => x.OpenedAtUtc).HasColumnName("opened_at_utc");
+            entity.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc");
+            entity.HasIndex(x => new { x.UserId, x.Symbol });
+            entity.HasIndex(x => x.OpeningTransactionId);
+            entity.HasIndex(x => x.ClosingTransactionId);
+        });
+    }
+}

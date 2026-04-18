@@ -1,0 +1,6 @@
+@PseudoMarkets.TransactionProcessing.Service_HostAddress = http://localhost:0
+
+GET {{PseudoMarkets.TransactionProcessing.Service_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
