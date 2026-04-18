@@ -1,0 +1,7 @@
+﻿services:
+  pseudomarkets.security.identityserver.web:
+    image: pseudomarkets.security.identityserver.web
+    build:
+      context: .
+      dockerfile: src/PseudoMarkets.Security.IdentityServer.Web/Dockerfile
+

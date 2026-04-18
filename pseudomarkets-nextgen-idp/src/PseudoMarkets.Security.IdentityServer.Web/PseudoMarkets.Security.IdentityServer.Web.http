@@ -1,0 +1,6 @@
+@PseudoMarkets.Security.IdentityServer.Web_HostAddress = http://localhost:5051
+
+GET {{PseudoMarkets.Security.IdentityServer.Web_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
