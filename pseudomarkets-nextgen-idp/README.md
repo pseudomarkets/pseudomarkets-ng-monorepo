@@ -10,6 +10,7 @@
 - JWT bearer token generation and validation
 - Swagger UI / OpenAPI for local API exploration
 - Docker and Docker Compose for local containerized development
+- NUnit, Moq, and Shouldly for unit testing
 
 ## Architecture
 
@@ -19,6 +20,8 @@ The project is split into two main application layers:
   Exposes the HTTP API, Swagger UI, exception handling, request contracts, and environment-specific behavior.
 - `src/PseudoMarkets.Security.IdentityServer.Core`
   Contains the identity domain logic, Aerospike repository, account provisioning, authentication, authorization, configuration objects, and constants.
+- `tests/`
+  Contains standalone NUnit test projects for the web and core layers.
 
 At runtime, the flow looks like this:
 
@@ -27,6 +30,7 @@ At runtime, the flow looks like this:
 3. Core managers use the Aerospike-backed repository for persistence and lookup.
 4. Authentication returns signed JWTs.
 5. Authorization validates JWTs and checks the `roles` claim.
+6. Downstream services can call `POST /api/identity/authorize` through the shared authorization library to centralize access checks.
 
 Aerospike uses the namespace `nsPseudoMarkets` and persists data to disk via the local bind-mounted data directory when running in Docker.
 
@@ -38,6 +42,9 @@ pseudomarkets-nextgen-idp/
 ├── src/
 │   ├── PseudoMarkets.Security.IdentityServer.Core/
 │   └── PseudoMarkets.Security.IdentityServer.Web/
+├── tests/
+│   ├── PseudoMarkets.Security.IdentityServer.Core.Tests/
+│   └── PseudoMarkets.Security.IdentityServer.Web.Tests/
 └── PseudoMarkets.Security.IdentityServer.sln
 ```
 
@@ -103,7 +110,9 @@ By default, the launch settings use:
 
 Swagger UI is available at:
 
-- [https://localhost:7092/swagger](https://localhost:7092/swagger)
+- [https://localhost:7092/swagger/index.html](https://localhost:7092/swagger/index.html)
+
+The market data service expects to call the IDP authorization endpoint at `http://localhost:5051/api/identity/authorize` during local non-Docker development.
 
 ## Running With Docker Compose
 
@@ -137,7 +146,7 @@ docker compose -f compose.yaml down
 ### Service endpoints
 
 - Identity server: [http://localhost:8080](http://localhost:8080)
-- Swagger UI: [http://localhost:8080/swagger](http://localhost:8080/swagger)
+- Swagger UI: [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
 - Aerospike: `localhost:3000`
 
 ### Notes about the Docker setup
@@ -182,7 +191,7 @@ Current primary endpoints include:
 - `POST /api/identity/authenticate`
   Validates credentials and returns a JWT.
 - `POST /api/identity/authorize`
-  Validates a JWT and checks whether the requested action is present in the `roles` claim.
+  Validates a JWT and checks whether the requested action is present in the `roles` claim. This is the endpoint consumed by the shared authorization library and the market data service.
 
 Use Swagger UI to inspect request and response schemas interactively.
 
@@ -191,15 +200,23 @@ Use Swagger UI to inspect request and response schemas interactively.
 From the monorepo root:
 
 ```bash
-dotnet build PseudoMarkets.Security.IdentityServer.sln
+dotnet build pseudomarkets-nextgen-idp/PseudoMarkets.Security.IdentityServer.sln
+```
+
+## Test
+
+From the monorepo root:
+
+```bash
+dotnet test pseudomarkets-nextgen-idp/PseudoMarkets.Security.IdentityServer.sln -m:1
 ```
 
 ## Troubleshooting
 
 ### Swagger is not available
 
-- Non-Docker local runs expose Swagger at `https://localhost:7092/swagger`.
-- Docker Compose exposes Swagger at `http://localhost:8080/swagger`.
+- Non-Docker local runs expose Swagger at `https://localhost:7092/swagger/index.html`.
+- Docker Compose exposes Swagger at `http://localhost:8080/swagger/index.html`.
 - Swagger is enabled only in Development mode.
 
 ### The app cannot connect to Aerospike

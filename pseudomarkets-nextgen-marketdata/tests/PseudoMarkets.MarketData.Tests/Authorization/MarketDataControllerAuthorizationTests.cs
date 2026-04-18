@@ -23,7 +23,7 @@ public class MarketDataControllerAuthorizationTests
 
         foreach (var method in endpointMethods)
         {
-            var attribute = method.GetCustomAttribute<RequireIdentityActionAttribute>(inherit: true);
+            var attribute = method.GetCustomAttribute<AuthorizeWithIdentityServer>(inherit: true);
             attribute.ShouldNotBeNull();
             attribute.Arguments.ShouldNotBeNull();
             attribute.Arguments.Single().ShouldBe(PlatformAuthorizationActions.ViewMarketData);

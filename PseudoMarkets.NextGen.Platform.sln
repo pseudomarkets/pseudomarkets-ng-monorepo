@@ -43,6 +43,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B8AC22FE-A4C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.Shared.Authorization", "pseudomarkets-nextgen-shared-auth\src\PseudoMarkets.Shared.Authorization\PseudoMarkets.Shared.Authorization.csproj", "{FAE97890-463F-48CE-9BA5-ECEF6CD01510}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E960BB88-D097-D88F-E1DF-44AF63B77C0E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.Shared.Authorization.Tests", "pseudomarkets-nextgen-shared-auth\tests\PseudoMarkets.Shared.Authorization.Tests\PseudoMarkets.Shared.Authorization.Tests.csproj", "{E540F2C9-5908-4BF7-B0CC-CFAEC6A47268}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -185,6 +189,18 @@ Global
 		{FAE97890-463F-48CE-9BA5-ECEF6CD01510}.Release|x64.Build.0 = Release|Any CPU
 		{FAE97890-463F-48CE-9BA5-ECEF6CD01510}.Release|x86.ActiveCfg = Release|Any CPU
 		{FAE97890-463F-48CE-9BA5-ECEF6CD01510}.Release|x86.Build.0 = Release|Any CPU
+		{E540F2C9-5908-4BF7-B0CC-CFAEC6A47268}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E540F2C9-5908-4BF7-B0CC-CFAEC6A47268}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E540F2C9-5908-4BF7-B0CC-CFAEC6A47268}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E540F2C9-5908-4BF7-B0CC-CFAEC6A47268}.Debug|x64.Build.0 = Debug|Any CPU
+		{E540F2C9-5908-4BF7-B0CC-CFAEC6A47268}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E540F2C9-5908-4BF7-B0CC-CFAEC6A47268}.Debug|x86.Build.0 = Debug|Any CPU
+		{E540F2C9-5908-4BF7-B0CC-CFAEC6A47268}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E540F2C9-5908-4BF7-B0CC-CFAEC6A47268}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E540F2C9-5908-4BF7-B0CC-CFAEC6A47268}.Release|x64.ActiveCfg = Release|Any CPU
+		{E540F2C9-5908-4BF7-B0CC-CFAEC6A47268}.Release|x64.Build.0 = Release|Any CPU
+		{E540F2C9-5908-4BF7-B0CC-CFAEC6A47268}.Release|x86.ActiveCfg = Release|Any CPU
+		{E540F2C9-5908-4BF7-B0CC-CFAEC6A47268}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -206,5 +222,7 @@ Global
 		{995D7E58-0434-454F-940D-77F57801A7BF} = {A14BD249-3F11-78CC-058D-DD74AF9F65CF}
 		{B8AC22FE-A4C2-3A1E-FF61-228D5AE67FFD} = {532C43EC-9DBB-700F-E725-93E16FD3DDA4}
 		{FAE97890-463F-48CE-9BA5-ECEF6CD01510} = {B8AC22FE-A4C2-3A1E-FF61-228D5AE67FFD}
+		{E960BB88-D097-D88F-E1DF-44AF63B77C0E} = {532C43EC-9DBB-700F-E725-93E16FD3DDA4}
+		{E540F2C9-5908-4BF7-B0CC-CFAEC6A47268} = {E960BB88-D097-D88F-E1DF-44AF63B77C0E}
 	EndGlobalSection
 EndGlobal

@@ -33,9 +33,11 @@ The long-term monorepo goals are:
 - `infrastructure/aerospike/`
   Shared Aerospike configuration for platform-local Docker stacks.
 - `pseudomarkets-nextgen-idp/`
-  Identity provider service for authentication, authorization, and account provisioning.
+  Identity provider service for account creation, authentication, and centralized authorization decisions.
 - `pseudomarkets-nextgen-marketdata/`
-  Market data service workspace.
+  Market data service for quotes, detailed quote snapshots, and market indices.
+- `pseudomarkets-nextgen-shared-auth/`
+  Shared authorization library used by downstream services to call the identity provider authorization endpoint.
 
 ## Current State
 
@@ -43,7 +45,10 @@ Today, the monorepo is structured to support platform growth:
 
 - the root platform solution opens the currently implemented service projects together
 - the identity service already has its own service-local solution, tests, and Docker workflow
-- the root Docker Compose file brings multiple services up together against one shared Aerospike container
+- the market data service already has its own service-local solution, tests, and Docker workflow
+- the shared authorization library has its own source project and standalone unit test project
+- the root Docker Compose file brings the identity service, market data service, and shared Aerospike container up together
+- market data authorization is delegated to the identity service, so a JWT issued by the IDP can be reused across services
 - additional service folders can be added without restructuring the monorepo again
 
 ## IDE Workflow
@@ -54,7 +59,11 @@ Open the root solution to work across services at once:
 dotnet build PseudoMarkets.NextGen.Platform.sln
 ```
 
-The root solution currently groups projects by service folder and already includes the Pseudo Markets identity server projects and tests.
+The root solution currently groups projects by service folder and already includes:
+
+- the Pseudo Markets identity server source and tests
+- the Pseudo Markets market data source and tests
+- the shared authorization library and tests
 
 Open `PseudoMarkets.NextGen.Platform.sln` in Visual Studio, Rider, or another compatible .NET IDE from the repository root.
 
@@ -64,6 +73,12 @@ Before starting the platform stack, create the shared root secrets file:
 
 ```bash
 cp .env.example .env
+```
+
+Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
 ```
 
 Then update `.env` with the values you want to use locally, including:
@@ -84,6 +99,11 @@ Current local browser endpoints:
 
 The root Compose stack uses the shared Aerospike config at `infrastructure/aerospike/aerospike.conf` and stores Aerospike data in `./.docker-data/aerospike`.
 Application secrets are loaded from the shared root `.env` file.
+Market data endpoints are protected by the identity service, so the normal local flow is:
+
+1. Create or authenticate an account in the IDP Swagger UI.
+2. Copy the returned JWT.
+3. Open the Market data Swagger UI and use `Authorize` to paste the token.
 
 ## Service Model
 
@@ -101,3 +121,17 @@ Each service folder can own:
 - service-specific configuration assets, while shared infrastructure can live at the repository root
 
 This keeps the platform modular while still allowing the full system to be opened and eventually orchestrated together from the monorepo root.
+
+## Testing
+
+Build the full platform:
+
+```bash
+dotnet build PseudoMarkets.NextGen.Platform.sln
+```
+
+Run the current platform test suites:
+
+```bash
+dotnet test PseudoMarkets.NextGen.Platform.sln -m:1
+```
