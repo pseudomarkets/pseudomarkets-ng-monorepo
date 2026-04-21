@@ -1,86 +1,48 @@
 # Pseudo Markets NextGen Platform
 
-Pseudo Markets is an open source stock trading simulation platform focused on realistic paper trading powered by real market data. The broader goal of the platform is to give users a practical way to learn, research, and simulate equities trading in an environment that feels closer to a real brokerage and exchange workflow, while remaining free to use and open source.
+Pseudo Markets NextGen is a .NET-based stock trading simulation platform. This monorepo contains the core backend services, shared libraries, database model, and local infrastructure needed to run the platform services together.
 
-Pseudo Markets is designed around:
+## Tech Stack
 
-- open source paper trading powered by real market data
-- a realistic simulated stock trading experience
-- near real-time data aggregation and simulated order execution
-- historical market data access for listed equities and ETFs
-- a cloud-based experience for research and trading workflows
-- a privacy-conscious approach with no ads, no tracking, and no data collection
+- .NET 10 and ASP.NET Core Web API
+- C# class libraries for shared platform concerns
+- Aerospike for identity-server account storage and market-data caching
+- PostgreSQL for relational platform data
+- Entity Framework Core with Npgsql for PostgreSQL access and migrations
+- Docker and Docker Compose for local orchestration
+- Swagger / OpenAPI for browser-based API exploration
+- NUnit, Moq, and Shouldly for tests
 
-More information about the project is available at [pseudomarkets.live](https://pseudomarkets.live/).
+## Architecture
 
-## Vision
+The platform is split into focused services and shared libraries:
 
-Pseudo Markets NextGen is intended to grow into a multi-service platform made up of focused microservices. The identity provider is the first concrete service in this monorepo, and additional services such as market data, trading, portfolios, analytics, and supporting infrastructure can be added alongside it over time.
+- `pseudomarkets-nextgen-idp`
+  Identity provider for account creation, authentication, JWT generation, and centralized authorization checks.
+- `pseudomarkets-nextgen-marketdata`
+  Market data API for quotes, detailed quotes, and indices. It uses Twelve Data for provider data and Aerospike for caching.
+- `pseudomarkets-nextgen-transaction-processing`
+  Write-side transaction processor for cash movements, trade postings, voids, balances, positions, lots, and settlement-date calculation.
+- `pseudomarkets-nextgen-shared-auth`
+  Shared authorization client and filters used by services that delegate authorization to the IDP.
+- `pseudomarkets-nextgen-shared-entities`
+  Shared EF Core entity model, `PseudoMarketsDbContext`, migrations, and platform reference data for `pseudomarkets_db`.
+- `infrastructure/aerospike`
+  Shared Aerospike configuration.
+- `infrastructure/postgres`
+  Reserved location for shared PostgreSQL scripts and operational assets.
 
-The long-term monorepo goals are:
+## Service Ports
 
-- open the entire platform in a single Visual Studio or Rider solution
-- develop each service in its own isolated folder with its own source, tests, and local Docker assets
-- run multiple services together from a root Docker Compose entrypoint
-- keep individual services independently evolvable while preserving a cohesive developer workflow
+- IDP Swagger: [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
+- Market Data Swagger: [http://localhost:8081/swagger/index.html](http://localhost:8081/swagger/index.html)
+- Transaction Processing Swagger: [http://localhost:8082/swagger/index.html](http://localhost:8082/swagger/index.html)
+- Aerospike: `localhost:3000`
+- PostgreSQL: `localhost:5432`
 
-## Repository Layout
+## Configuration
 
-- `PseudoMarkets.NextGen.Platform.sln`
-  Root solution for opening the platform in Visual Studio or Rider.
-- `compose.yaml`
-  Root Docker Compose entrypoint for running platform services together.
-- `infrastructure/aerospike/`
-  Shared Aerospike configuration for platform-local Docker stacks.
-- `pseudomarkets-nextgen-idp/`
-  Identity provider service for account creation, authentication, and centralized authorization decisions.
-- `pseudomarkets-nextgen-marketdata/`
-  Market data service for quotes, detailed quote snapshots, and market indices.
-- `pseudomarkets-nextgen-shared-auth/`
-  Shared authorization library used by downstream services to call the identity provider authorization endpoint.
-- `pseudomarkets-nextgen-shared-entities/`
-  Shared Entity Framework Core model, migrations, and `PseudoMarketsDbContext` for the platform PostgreSQL database.
-- `pseudomarkets-nextgen-transaction-processing/`
-  Transaction posting service for trades, cash movement, and compensating void transactions backed by the shared PostgreSQL database.
-- `infrastructure/postgres/`
-  Shared location for platform-level PostgreSQL infrastructure files and scripts.
-
-## Current State
-
-Today, the monorepo is structured to support platform growth:
-
-- the root platform solution opens the currently implemented service projects together
-- the identity service already has its own service-local solution, tests, and Docker workflow
-- the market data service already has its own service-local solution, tests, and Docker workflow
-- the shared authorization library has its own source project and standalone unit test project
-- the shared entities library owns the common EF Core entity model, migrations, `PseudoMarketsDbContext`, and platform reference data such as market holidays
-- the transaction processing service has its own service-local solution, tests, Docker workflow, and PostgreSQL-backed posting implementation
-- the root Docker Compose file brings the identity service, market data service, transaction processing service, shared Aerospike container, and PostgreSQL up together
-- market data authorization is delegated to the identity service, so a JWT issued by the IDP can be reused across services
-- transaction write authorization is delegated to the identity service as well through the shared authorization library and the `UPDATE_TRANSACTIONS` action
-- additional service folders can be added without restructuring the monorepo again
-
-## IDE Workflow
-
-Open the root solution to work across services at once:
-
-```bash
-dotnet build PseudoMarkets.NextGen.Platform.sln
-```
-
-The root solution currently groups projects by service folder and already includes:
-
-- the Pseudo Markets identity server source and tests
-- the Pseudo Markets market data source and tests
-- the Pseudo Markets transaction processing source and tests
-- the shared authorization library and tests
-- the shared entities library
-
-Open `PseudoMarkets.NextGen.Platform.sln` in Visual Studio, Rider, or another compatible .NET IDE from the repository root.
-
-## Docker Workflow
-
-Before starting the platform stack, create the shared root secrets file:
+Create a root `.env` file before running the Docker stack:
 
 ```bash
 cp .env.example .env
@@ -92,61 +54,89 @@ Windows PowerShell:
 Copy-Item .env.example .env
 ```
 
-Then update `.env` with the values you want to use locally, including:
+Set these values in `.env`:
 
 - `JwtConfiguration__Key`
 - `TwelveData__ApiKey`
 - `Postgres__Password`
 
-Run the platform stack from the monorepo root:
+The Docker stack loads this shared `.env` file into all services. PostgreSQL uses the database name `pseudomarkets_db`.
+
+## Run With Docker
+
+From the repository root:
 
 ```bash
-docker compose -f compose.yaml up --build
+docker compose -f compose.yaml up -d --build
 ```
 
-Current local browser endpoints:
+Stop the stack:
 
-- Identity server Swagger UI: [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
-- Market data Swagger UI: [http://localhost:8081/swagger/index.html](http://localhost:8081/swagger/index.html)
-- Transaction processing Swagger UI: [http://localhost:8082/swagger/index.html](http://localhost:8082/swagger/index.html)
+```bash
+docker compose -f compose.yaml down
+```
 
-The root Compose stack uses the shared Aerospike config at `infrastructure/aerospike/aerospike.conf` and stores Aerospike data in `./.docker-data/aerospike`.
-Application secrets are loaded from the shared root `.env` file, and PostgreSQL data for `pseudomarkets_db` is stored in `./.docker-data/postgres`.
-Market data endpoints are protected by the identity service, so the normal local flow is:
+Docker data is persisted under:
 
-1. Create or authenticate an account in the IDP Swagger UI.
-2. Copy the returned JWT.
-3. Open the Market data Swagger UI and use `Authorize` to paste the token.
-4. Open the Transaction processing Swagger UI and use `Authorize` to paste the same token for write operations.
+- `./.docker-data/aerospike`
+- `./.docker-data/postgres`
 
-## Service Model
+If PostgreSQL was initialized before the database was renamed to `pseudomarkets_db`, recreate `./.docker-data/postgres` or manually create `pseudomarkets_db` in the existing local PostgreSQL instance.
 
-Each microservice should live in its own top-level folder, for example:
+## Auth Flow For Swagger Testing
 
-- `pseudomarkets-nextgen-idp`
-- `pseudomarkets-nextgen-marketdata`
-- `pseudomarkets-nextgen-transaction-processing`
+1. Open the IDP Swagger UI.
+2. Create or authenticate an account.
+3. Copy the returned JWT.
+4. Open Market Data or Transaction Processing Swagger.
+5. Use the Swagger `Authorize` button and paste the JWT.
+6. Call protected endpoints.
 
-Each service folder can own:
+Market Data requires `VIEW_MARKET_DATA`. Transaction posting and void operations require `UPDATE_TRANSACTIONS`.
 
-- its own source projects
-- its own test projects
-- its own service-level solution file when useful
-- its own Dockerfile and service-local Compose configuration
-- service-specific configuration assets, while shared infrastructure can live at the repository root
+## Run Without Docker
 
-This keeps the platform modular while still allowing the full system to be opened and eventually orchestrated together from the monorepo root.
+Start dependencies first:
 
-## Testing
+- Aerospike on `localhost:3000`
+- PostgreSQL on `localhost:5432` with database `pseudomarkets_db`
 
-Build the full platform:
+Then run services from the repository root:
+
+```bash
+dotnet run --project pseudomarkets-nextgen-idp/src/PseudoMarkets.Security.IdentityServer.Web/PseudoMarkets.Security.IdentityServer.Web.csproj
+dotnet run --project pseudomarkets-nextgen-marketdata/src/PseudoMarkets.MarketData.Service/PseudoMarkets.MarketData.Service.csproj
+dotnet run --project pseudomarkets-nextgen-transaction-processing/src/PseudoMarkets.TransactionProcessing.Service/PseudoMarkets.TransactionProcessing.Service.csproj
+```
+
+The services load the root `.env` file for local development secrets.
+
+## Build And Test
+
+Build everything:
 
 ```bash
 dotnet build PseudoMarkets.NextGen.Platform.sln
 ```
 
-Run the current platform test suites:
+Run all tests:
 
 ```bash
 dotnet test PseudoMarkets.NextGen.Platform.sln -m:1
 ```
+
+Validate Compose configuration:
+
+```bash
+docker compose -f compose.yaml config
+```
+
+## Database Migrations
+
+The shared EF Core model and migrations live in:
+
+```text
+pseudomarkets-nextgen-shared-entities/src/PseudoMarkets.Shared.Entities
+```
+
+`PseudoMarketsDbContext` is applied at transaction-processing startup. Current relational tables include transaction posting tables, balance and position projection tables, trade lots, market holidays, and EF migration history.
