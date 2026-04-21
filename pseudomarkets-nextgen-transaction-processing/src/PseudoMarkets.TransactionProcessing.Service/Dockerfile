@@ -12,6 +12,7 @@ COPY ["pseudomarkets-nextgen-transaction-processing/src/PseudoMarkets.Transactio
 COPY ["pseudomarkets-nextgen-transaction-processing/src/PseudoMarkets.TransactionProcessing.Core/PseudoMarkets.TransactionProcessing.Core.csproj", "pseudomarkets-nextgen-transaction-processing/src/PseudoMarkets.TransactionProcessing.Core/"]
 COPY ["pseudomarkets-nextgen-transaction-processing/src/PseudoMarkets.TransactionProcessing.Persistence/PseudoMarkets.TransactionProcessing.Persistence.csproj", "pseudomarkets-nextgen-transaction-processing/src/PseudoMarkets.TransactionProcessing.Persistence/"]
 COPY ["pseudomarkets-nextgen-shared-auth/src/PseudoMarkets.Shared.Authorization/PseudoMarkets.Shared.Authorization.csproj", "pseudomarkets-nextgen-shared-auth/src/PseudoMarkets.Shared.Authorization/"]
+COPY ["pseudomarkets-nextgen-shared-entities/src/PseudoMarkets.Shared.Entities/PseudoMarkets.Shared.Entities.csproj", "pseudomarkets-nextgen-shared-entities/src/PseudoMarkets.Shared.Entities/"]
 RUN dotnet restore "pseudomarkets-nextgen-transaction-processing/src/PseudoMarkets.TransactionProcessing.Service/PseudoMarkets.TransactionProcessing.Service.csproj"
 COPY . .
 WORKDIR "/src/pseudomarkets-nextgen-transaction-processing/src/PseudoMarkets.TransactionProcessing.Service"

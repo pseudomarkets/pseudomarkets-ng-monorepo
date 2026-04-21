@@ -2,21 +2,18 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using PseudoMarkets.TransactionProcessing.Persistence.Database;
+using PseudoMarkets.Shared.Entities.Database;
 
 #nullable disable
 
-namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
+namespace PseudoMarkets.Shared.Entities.Migrations
 {
-    [DbContext(typeof(TransactionProcessingDbContext))]
-    [Migration("20260418213850_InitialSchema")]
-    partial class InitialSchema
+    [DbContext(typeof(PseudoMarketsDbContext))]
+    partial class PseudoMarketsDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,7 +22,76 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("PseudoMarkets.TransactionProcessing.Persistence.Entities.AccountBalanceEntity", b =>
+            modelBuilder.Entity("PseudoMarkets.Shared.Entities.Entities.Platform.MarketHolidayEntity", b =>
+                {
+                    b.Property<DateOnly>("HolidayDate")
+                        .HasColumnType("date")
+                        .HasColumnName("holiday_date");
+
+                    b.Property<string>("HolidayName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("holiday_name");
+
+                    b.HasKey("HolidayDate");
+
+                    b.ToTable("market_holidays", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            HolidayDate = new DateOnly(2026, 1, 1),
+                            HolidayName = "New Year's Day"
+                        },
+                        new
+                        {
+                            HolidayDate = new DateOnly(2026, 1, 19),
+                            HolidayName = "Martin Luther King, Jr. Day"
+                        },
+                        new
+                        {
+                            HolidayDate = new DateOnly(2026, 2, 16),
+                            HolidayName = "Washington's Birthday"
+                        },
+                        new
+                        {
+                            HolidayDate = new DateOnly(2026, 4, 3),
+                            HolidayName = "Good Friday"
+                        },
+                        new
+                        {
+                            HolidayDate = new DateOnly(2026, 5, 25),
+                            HolidayName = "Memorial Day"
+                        },
+                        new
+                        {
+                            HolidayDate = new DateOnly(2026, 6, 19),
+                            HolidayName = "Juneteenth National Independence Day"
+                        },
+                        new
+                        {
+                            HolidayDate = new DateOnly(2026, 7, 3),
+                            HolidayName = "Independence Day observed"
+                        },
+                        new
+                        {
+                            HolidayDate = new DateOnly(2026, 9, 7),
+                            HolidayName = "Labor Day"
+                        },
+                        new
+                        {
+                            HolidayDate = new DateOnly(2026, 11, 26),
+                            HolidayName = "Thanksgiving Day"
+                        },
+                        new
+                        {
+                            HolidayDate = new DateOnly(2026, 12, 25),
+                            HolidayName = "Christmas Day"
+                        });
+                });
+
+            modelBuilder.Entity("PseudoMarkets.Shared.Entities.Entities.TransactionProcessing.AccountBalanceEntity", b =>
                 {
                     b.Property<long>("UserId")
                         .HasColumnType("bigint")
@@ -45,7 +111,7 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
                     b.ToTable("account_balances", (string)null);
                 });
 
-            modelBuilder.Entity("PseudoMarkets.TransactionProcessing.Persistence.Entities.CashMovementEntity", b =>
+            modelBuilder.Entity("PseudoMarkets.Shared.Entities.Entities.TransactionProcessing.CashMovementEntity", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -96,7 +162,7 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
                     b.ToTable("cash_movements", (string)null);
                 });
 
-            modelBuilder.Entity("PseudoMarkets.TransactionProcessing.Persistence.Entities.LedgerTransactionEntity", b =>
+            modelBuilder.Entity("PseudoMarkets.Shared.Entities.Entities.TransactionProcessing.LedgerTransactionEntity", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -177,7 +243,7 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
                     b.ToTable("ledger_transactions", (string)null);
                 });
 
-            modelBuilder.Entity("PseudoMarkets.TransactionProcessing.Persistence.Entities.PositionEntity", b =>
+            modelBuilder.Entity("PseudoMarkets.Shared.Entities.Entities.TransactionProcessing.PositionEntity", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -224,7 +290,7 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
                     b.ToTable("positions", (string)null);
                 });
 
-            modelBuilder.Entity("PseudoMarkets.TransactionProcessing.Persistence.Entities.PositionLotClosureEntity", b =>
+            modelBuilder.Entity("PseudoMarkets.Shared.Entities.Entities.TransactionProcessing.PositionLotClosureEntity", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -284,7 +350,7 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
                     b.ToTable("position_lot_closures", (string)null);
                 });
 
-            modelBuilder.Entity("PseudoMarkets.TransactionProcessing.Persistence.Entities.PositionLotEntity", b =>
+            modelBuilder.Entity("PseudoMarkets.Shared.Entities.Entities.TransactionProcessing.PositionLotEntity", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -351,7 +417,7 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
                     b.ToTable("position_lots", (string)null);
                 });
 
-            modelBuilder.Entity("PseudoMarkets.TransactionProcessing.Persistence.Entities.PostingBatchEntity", b =>
+            modelBuilder.Entity("PseudoMarkets.Shared.Entities.Entities.TransactionProcessing.PostingBatchEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -400,7 +466,7 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
                     b.ToTable("posting_batches", (string)null);
                 });
 
-            modelBuilder.Entity("PseudoMarkets.TransactionProcessing.Persistence.Entities.TradeExecutionEntity", b =>
+            modelBuilder.Entity("PseudoMarkets.Shared.Entities.Entities.TransactionProcessing.TradeExecutionEntity", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -448,11 +514,19 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
                         .HasColumnType("numeric(18,6)")
                         .HasColumnName("quantity");
 
+                    b.Property<DateOnly>("SettlementDate")
+                        .HasColumnType("date")
+                        .HasColumnName("settlement_date");
+
                     b.Property<string>("Symbol")
                         .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
                         .HasColumnName("symbol");
+
+                    b.Property<DateOnly>("TradeDate")
+                        .HasColumnType("date")
+                        .HasColumnName("trade_date");
 
                     b.Property<string>("TradeSide")
                         .IsRequired()
@@ -475,6 +549,10 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
 
                     b.HasIndex("Symbol");
 
+                    b.HasIndex("SettlementDate");
+
+                    b.HasIndex("TradeDate");
+
                     b.HasIndex("TransactionId")
                         .IsUnique();
 
@@ -483,9 +561,9 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
                     b.ToTable("trade_executions", (string)null);
                 });
 
-            modelBuilder.Entity("PseudoMarkets.TransactionProcessing.Persistence.Entities.LedgerTransactionEntity", b =>
+            modelBuilder.Entity("PseudoMarkets.Shared.Entities.Entities.TransactionProcessing.LedgerTransactionEntity", b =>
                 {
-                    b.HasOne("PseudoMarkets.TransactionProcessing.Persistence.Entities.PostingBatchEntity", "PostingBatch")
+                    b.HasOne("PseudoMarkets.Shared.Entities.Entities.TransactionProcessing.PostingBatchEntity", "PostingBatch")
                         .WithMany("LedgerTransactions")
                         .HasForeignKey("PostingBatchId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -494,9 +572,9 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
                     b.Navigation("PostingBatch");
                 });
 
-            modelBuilder.Entity("PseudoMarkets.TransactionProcessing.Persistence.Entities.PositionLotClosureEntity", b =>
+            modelBuilder.Entity("PseudoMarkets.Shared.Entities.Entities.TransactionProcessing.PositionLotClosureEntity", b =>
                 {
-                    b.HasOne("PseudoMarkets.TransactionProcessing.Persistence.Entities.PositionLotEntity", "PositionLot")
+                    b.HasOne("PseudoMarkets.Shared.Entities.Entities.TransactionProcessing.PositionLotEntity", "PositionLot")
                         .WithMany("Closures")
                         .HasForeignKey("PositionLotId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -505,12 +583,12 @@ namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
                     b.Navigation("PositionLot");
                 });
 
-            modelBuilder.Entity("PseudoMarkets.TransactionProcessing.Persistence.Entities.PositionLotEntity", b =>
+            modelBuilder.Entity("PseudoMarkets.Shared.Entities.Entities.TransactionProcessing.PositionLotEntity", b =>
                 {
                     b.Navigation("Closures");
                 });
 
-            modelBuilder.Entity("PseudoMarkets.TransactionProcessing.Persistence.Entities.PostingBatchEntity", b =>
+            modelBuilder.Entity("PseudoMarkets.Shared.Entities.Entities.TransactionProcessing.PostingBatchEntity", b =>
                 {
                     b.Navigation("LedgerTransactions");
                 });

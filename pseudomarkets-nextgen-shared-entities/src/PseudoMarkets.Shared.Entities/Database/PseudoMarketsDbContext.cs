@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
-using PseudoMarkets.TransactionProcessing.Persistence.Entities;
+using PseudoMarkets.Shared.Entities.Entities.Platform;
+using PseudoMarkets.Shared.Entities.Entities.TransactionProcessing;
 
-namespace PseudoMarkets.TransactionProcessing.Persistence.Database;
+namespace PseudoMarkets.Shared.Entities.Database;
 
-public class TransactionProcessingDbContext : DbContext
+public class PseudoMarketsDbContext : DbContext
 {
-    public TransactionProcessingDbContext(DbContextOptions<TransactionProcessingDbContext> options)
+    public PseudoMarketsDbContext(DbContextOptions<PseudoMarketsDbContext> options)
         : base(options)
     {
     }
@@ -18,8 +19,37 @@ public class TransactionProcessingDbContext : DbContext
     public DbSet<PositionEntity> Positions => Set<PositionEntity>();
     public DbSet<PositionLotEntity> PositionLots => Set<PositionLotEntity>();
     public DbSet<PositionLotClosureEntity> PositionLotClosures => Set<PositionLotClosureEntity>();
+    public DbSet<MarketHolidayEntity> MarketHolidays => Set<MarketHolidayEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        ConfigurePlatformModel(modelBuilder);
+        ConfigureTransactionProcessingModel(modelBuilder);
+    }
+
+    private static void ConfigurePlatformModel(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<MarketHolidayEntity>(entity =>
+        {
+            entity.ToTable("market_holidays");
+            entity.HasKey(x => x.HolidayDate);
+            entity.Property(x => x.HolidayDate).HasColumnName("holiday_date").IsRequired();
+            entity.Property(x => x.HolidayName).HasColumnName("holiday_name").HasMaxLength(100).IsRequired();
+            entity.HasData(
+                new MarketHolidayEntity { HolidayDate = new DateOnly(2026, 1, 1), HolidayName = "New Year's Day" },
+                new MarketHolidayEntity { HolidayDate = new DateOnly(2026, 1, 19), HolidayName = "Martin Luther King, Jr. Day" },
+                new MarketHolidayEntity { HolidayDate = new DateOnly(2026, 2, 16), HolidayName = "Washington's Birthday" },
+                new MarketHolidayEntity { HolidayDate = new DateOnly(2026, 4, 3), HolidayName = "Good Friday" },
+                new MarketHolidayEntity { HolidayDate = new DateOnly(2026, 5, 25), HolidayName = "Memorial Day" },
+                new MarketHolidayEntity { HolidayDate = new DateOnly(2026, 6, 19), HolidayName = "Juneteenth National Independence Day" },
+                new MarketHolidayEntity { HolidayDate = new DateOnly(2026, 7, 3), HolidayName = "Independence Day observed" },
+                new MarketHolidayEntity { HolidayDate = new DateOnly(2026, 9, 7), HolidayName = "Labor Day" },
+                new MarketHolidayEntity { HolidayDate = new DateOnly(2026, 11, 26), HolidayName = "Thanksgiving Day" },
+                new MarketHolidayEntity { HolidayDate = new DateOnly(2026, 12, 25), HolidayName = "Christmas Day" });
+        });
+    }
+
+    private static void ConfigureTransactionProcessingModel(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<PostingBatchEntity>(entity =>
         {
@@ -79,11 +109,15 @@ public class TransactionProcessingDbContext : DbContext
             entity.Property(x => x.Fees).HasColumnName("fees").HasPrecision(18, 4).IsRequired();
             entity.Property(x => x.NetAmount).HasColumnName("net_amount").HasPrecision(18, 4).IsRequired();
             entity.Property(x => x.ExecutedAtUtc).HasColumnName("executed_at_utc");
+            entity.Property(x => x.TradeDate).HasColumnName("trade_date").IsRequired();
+            entity.Property(x => x.SettlementDate).HasColumnName("settlement_date").IsRequired();
             entity.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc");
             entity.HasIndex(x => x.TransactionId).IsUnique();
             entity.HasIndex(x => x.ExternalExecutionId).IsUnique();
             entity.HasIndex(x => x.UserId);
             entity.HasIndex(x => x.Symbol);
+            entity.HasIndex(x => x.TradeDate);
+            entity.HasIndex(x => x.SettlementDate);
         });
 
         modelBuilder.Entity<CashMovementEntity>(entity =>

@@ -1,4 +1,4 @@
-namespace PseudoMarkets.TransactionProcessing.Persistence.Entities;
+namespace PseudoMarkets.Shared.Entities.Entities.TransactionProcessing;
 
 public class PositionLotClosureEntity
 {

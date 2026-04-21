@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace PseudoMarkets.TransactionProcessing.Persistence.Migrations
+namespace PseudoMarkets.Shared.Entities.Migrations
 {
     /// <inheritdoc />
     public partial class InitialSchema : Migration

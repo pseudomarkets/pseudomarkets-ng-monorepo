@@ -53,6 +53,38 @@ public class TradeTransactionPostingServiceTests : TransactionProcessingTestBase
     }
 
     [Test]
+    public async Task PostTradeAsync_ShouldPersistTradeDateAndSettlementDate()
+    {
+        await CashMovementPostingService.PostDepositAsync(new PostCashDepositRequest
+        {
+            IdempotencyKey = "seed-cash-dates",
+            UserId = 1000000001,
+            Amount = 500m,
+            OccurredAtUtc = DateTime.UtcNow,
+            ExternalReferenceId = "dep-seed-dates"
+        });
+
+        var response = await TradeTransactionPostingService.PostTradeAsync(new PostTradeTransactionRequest
+        {
+            IdempotencyKey = "buy-dates-1",
+            UserId = 1000000001,
+            Symbol = "MSFT",
+            TradeSide = TradeSide.Buy,
+            Quantity = 1m,
+            ExecutionPrice = 100m,
+            GrossAmount = 100m,
+            Fees = 0m,
+            NetAmount = 100m,
+            ExecutedAtUtc = new DateTime(2026, 1, 15, 20, 30, 0, DateTimeKind.Utc),
+            ExternalExecutionId = "exec-buy-dates-1"
+        });
+
+        var tradeExecution = await DbContext.TradeExecutions.SingleAsync(x => x.TransactionId == response.TransactionId);
+        tradeExecution.TradeDate.ShouldBe(new DateOnly(2026, 1, 15));
+        tradeExecution.SettlementDate.ShouldBe(new DateOnly(2026, 1, 16));
+    }
+
+    [Test]
     public async Task PostTradeAsync_SellShouldConsumeLotsFifoAndCreditCash()
     {
         await SeedBuyAsync("buy-a", 2m, 100m, 0m, "exec-buy-a");

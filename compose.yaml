@@ -68,7 +68,7 @@ services:
     image: postgres:17
     container_name: pseudomarkets-nextgen-postgres
     environment:
-      POSTGRES_DB: pseudomarkets_transaction_processing
+      POSTGRES_DB: pseudomarkets_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${Postgres__Password:-postgres}
     ports:
@@ -93,7 +93,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8082
-      ConnectionStrings__TransactionProcessingDb: Host=postgres;Port=5432;Database=pseudomarkets_transaction_processing;Username=postgres;Password=${Postgres__Password:-postgres}
+      ConnectionStrings__PseudoMarketsDb: Host=postgres;Port=5432;Database=pseudomarkets_db;Username=postgres;Password=${Postgres__Password:-postgres}
       IdentityAuthorization__IdentityServerBaseUrl: http://pseudomarkets-nextgen-idp-web:8080
     ports:
       - "8082:8082"

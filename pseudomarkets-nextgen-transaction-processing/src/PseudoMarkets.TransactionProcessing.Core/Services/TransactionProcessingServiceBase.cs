@@ -4,15 +4,15 @@ using PseudoMarkets.TransactionProcessing.Contracts.Enums;
 using PseudoMarkets.TransactionProcessing.Contracts.Transactions;
 using PseudoMarkets.TransactionProcessing.Core.Exceptions;
 using PseudoMarkets.TransactionProcessing.Core.Interfaces;
-using PseudoMarkets.TransactionProcessing.Persistence.Database;
-using PseudoMarkets.TransactionProcessing.Persistence.Entities;
+using PseudoMarkets.Shared.Entities.Database;
+using PseudoMarkets.Shared.Entities.Entities.TransactionProcessing;
 
 namespace PseudoMarkets.TransactionProcessing.Core.Services;
 
 public abstract class TransactionProcessingServiceBase
 {
     protected TransactionProcessingServiceBase(
-        TransactionProcessingDbContext dbContext,
+        PseudoMarketsDbContext dbContext,
         ITransactionDescriptionService transactionDescriptionService,
         ILogger logger)
     {
@@ -21,7 +21,7 @@ public abstract class TransactionProcessingServiceBase
         Logger = logger;
     }
 
-    protected TransactionProcessingDbContext DbContext { get; }
+    protected PseudoMarketsDbContext DbContext { get; }
     protected ITransactionDescriptionService TransactionDescriptionService { get; }
     protected ILogger Logger { get; }
 

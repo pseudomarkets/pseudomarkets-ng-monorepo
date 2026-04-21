@@ -1,28 +1,27 @@
 # Pseudo Markets NextGen Transaction Processing
 
-`pseudomarkets-nextgen-transaction-processing` is the write-side financial posting service for the Pseudo Markets platform. It is responsible for posting trade transactions, cash movements, and compensating void transactions while maintaining internal balance and position state in PostgreSQL.
+`pseudomarkets-nextgen-transaction-processing` is the write-side financial posting service for the Pseudo Markets platform. It is responsible for posting trade transactions, cash movements, and compensating void transactions while maintaining internal balance and position state in the shared PostgreSQL database, `pseudomarkets_db`.
 
 ## Tech Stack
 
 - .NET 10 ASP.NET Core Web API
 - PostgreSQL
 - Entity Framework Core with `Npgsql`
+- Shared EF Core model via `PseudoMarkets.Shared.Entities`
 - Shared IDP-backed authorization via `PseudoMarkets.Shared.Authorization`
 - Swagger UI / OpenAPI
 - Docker and Docker Compose
 - NUnit, Moq, and Shouldly
 
-## Current Scaffold State
+## Current State
 
-The service is scaffolded with:
+The service currently includes:
 
 - write endpoints for trades, deposits, withdrawals, adjustments, and voids
-- PostgreSQL-backed EF Core DbContext and entities
+- PostgreSQL-backed posting logic using the shared `PseudoMarketsDbContext`
 - shared authorization wiring using `UPDATE_TRANSACTIONS`
 - Dockerfile and service-local Compose file
-- a first-pass domain/service structure ready for implementation
-
-The posting services currently return scaffold placeholder responses while the real persistence and mutation logic is implemented in the next phase.
+- idempotent posting, balance mutation, position updates, FIFO lot handling, and compensating void transactions
 
 ## Project Layout
 
@@ -39,6 +38,8 @@ pseudomarkets-nextgen-transaction-processing/
 │   └── PseudoMarkets.TransactionProcessing.Tests/
 └── PseudoMarkets.TransactionProcessing.sln
 ```
+
+The EF Core entities, generic `PseudoMarketsDbContext`, and migrations live in the shared library at `../pseudomarkets-nextgen-shared-entities/src/PseudoMarkets.Shared.Entities`. The transaction processing persistence project registers the shared DbContext against PostgreSQL.
 
 ## Running Without Docker
 
@@ -71,6 +72,10 @@ Use your local PostgreSQL instance, or start the service-local Compose stack’s
 docker compose -f compose.yaml up -d postgres
 ```
 
+The expected database name is `pseudomarkets_db`.
+
+If your local Docker Postgres data directory was initialized before the database rename, Docker may still only contain the older database. Recreate `../.docker-data/postgres` or manually create `pseudomarkets_db` in the existing local Postgres instance.
+
 ### 3. Start the identity server
 
 All write endpoints are protected, so local non-Docker development also requires the IDP to be running. From the repository root:
@@ -100,7 +105,7 @@ The service-local Compose stack brings up:
 - `pseudomarkets.security.identityserver.web`
   The ASP.NET Core identity server used as the authorization source
 - `postgres`
-  PostgreSQL 17 with a local bind-mounted data directory
+  PostgreSQL 17 with a local bind-mounted data directory and the `pseudomarkets_db` database
 - `pseudomarkets.transactionprocessing.service`
   The ASP.NET Core transaction processing service configured to connect to PostgreSQL and call the IDP authorization endpoint
 
@@ -127,7 +132,7 @@ Use the IDP Swagger UI to authenticate first, then paste the returned JWT into t
 
 All write endpoints are protected using the shared authorization library and require the `UPDATE_TRANSACTIONS` action from the IDP.
 
-For the scaffold phase, the service exposes only write endpoints and health checks. Balance and position reads are intentionally out of scope for this service and will live in a future read-oriented service.
+Balance and position reads are intentionally out of scope for this service and will live in a future read-oriented service.
 
 ## API Surface
 

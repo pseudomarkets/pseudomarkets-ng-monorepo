@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\PseudoMarkets.TransactionProcessing.Contracts\PseudoMarkets.TransactionProcessing.Contracts.csproj" />
     <ProjectReference Include="..\PseudoMarkets.TransactionProcessing.Persistence\PseudoMarkets.TransactionProcessing.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\pseudomarkets-nextgen-shared-entities\src\PseudoMarkets.Shared.Entities\PseudoMarkets.Shared.Entities.csproj" />
   </ItemGroup>
 
   <ItemGroup>

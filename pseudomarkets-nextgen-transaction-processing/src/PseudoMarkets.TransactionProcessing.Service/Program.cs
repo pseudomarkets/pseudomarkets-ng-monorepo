@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using PseudoMarkets.Shared.Authorization.DependencyInjection;
+using PseudoMarkets.Shared.Entities.Database;
 using PseudoMarkets.TransactionProcessing.Core.DependencyInjection;
-using PseudoMarkets.TransactionProcessing.Persistence.Database;
 using PseudoMarkets.TransactionProcessing.Persistence.DependencyInjection;
 using PseudoMarkets.TransactionProcessing.Service.Infrastructure;
 
@@ -80,7 +80,7 @@ public class Program
     {
         using (var scope = app.Services.CreateScope())
         {
-            var db = scope.ServiceProvider.GetRequiredService<TransactionProcessingDbContext>();
+            var db = scope.ServiceProvider.GetRequiredService<PseudoMarketsDbContext>();
             db.Database.Migrate();
         }
     } 

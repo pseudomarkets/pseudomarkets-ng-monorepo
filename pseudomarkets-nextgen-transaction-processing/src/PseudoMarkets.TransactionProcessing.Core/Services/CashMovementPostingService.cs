@@ -4,15 +4,15 @@ using PseudoMarkets.TransactionProcessing.Contracts.Enums;
 using PseudoMarkets.TransactionProcessing.Contracts.Transactions;
 using PseudoMarkets.TransactionProcessing.Core.Exceptions;
 using PseudoMarkets.TransactionProcessing.Core.Interfaces;
-using PseudoMarkets.TransactionProcessing.Persistence.Database;
-using PseudoMarkets.TransactionProcessing.Persistence.Entities;
+using PseudoMarkets.Shared.Entities.Database;
+using PseudoMarkets.Shared.Entities.Entities.TransactionProcessing;
 
 namespace PseudoMarkets.TransactionProcessing.Core.Services;
 
 public class CashMovementPostingService : TransactionProcessingServiceBase, ICashMovementPostingService
 {
     public CashMovementPostingService(
-        TransactionProcessingDbContext dbContext,
+        PseudoMarketsDbContext dbContext,
         ITransactionDescriptionService transactionDescriptionService,
         ILogger<CashMovementPostingService> logger)
         : base(dbContext, transactionDescriptionService, logger)

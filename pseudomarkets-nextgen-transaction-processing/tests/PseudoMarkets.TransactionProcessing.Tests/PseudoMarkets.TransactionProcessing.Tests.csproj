@@ -23,6 +23,7 @@
     <ProjectReference Include="..\..\src\PseudoMarkets.TransactionProcessing.Persistence\PseudoMarkets.TransactionProcessing.Persistence.csproj" />
     <ProjectReference Include="..\..\src\PseudoMarkets.TransactionProcessing.Service\PseudoMarkets.TransactionProcessing.Service.csproj" />
     <ProjectReference Include="..\..\..\pseudomarkets-nextgen-shared-auth\src\PseudoMarkets.Shared.Authorization\PseudoMarkets.Shared.Authorization.csproj" />
+    <ProjectReference Include="..\..\..\pseudomarkets-nextgen-shared-entities\src\PseudoMarkets.Shared.Entities\PseudoMarkets.Shared.Entities.csproj" />
   </ItemGroup>
 
 </Project>

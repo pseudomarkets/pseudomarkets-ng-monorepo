@@ -4,20 +4,24 @@ using PseudoMarkets.TransactionProcessing.Contracts.Enums;
 using PseudoMarkets.TransactionProcessing.Contracts.Transactions;
 using PseudoMarkets.TransactionProcessing.Core.Exceptions;
 using PseudoMarkets.TransactionProcessing.Core.Interfaces;
-using PseudoMarkets.TransactionProcessing.Persistence.Database;
-using PseudoMarkets.TransactionProcessing.Persistence.Entities;
+using PseudoMarkets.Shared.Entities.Database;
+using PseudoMarkets.Shared.Entities.Entities.TransactionProcessing;
 
 namespace PseudoMarkets.TransactionProcessing.Core.Services;
 
 public class TradeTransactionPostingService : TransactionProcessingServiceBase, ITradeTransactionPostingService
 {
     public TradeTransactionPostingService(
-        TransactionProcessingDbContext dbContext,
+        PseudoMarketsDbContext dbContext,
         ITransactionDescriptionService transactionDescriptionService,
+        IMarketCalendarService marketCalendarService,
         ILogger<TradeTransactionPostingService> logger)
         : base(dbContext, transactionDescriptionService, logger)
     {
+        MarketCalendarService = marketCalendarService;
     }
+
+    private IMarketCalendarService MarketCalendarService { get; }
 
     public async Task<TransactionCommandResponse> PostTradeAsync(
         PostTradeTransactionRequest request,
@@ -47,6 +51,8 @@ public class TradeTransactionPostingService : TransactionProcessingServiceBase, 
         }
 
         var now = DateTime.UtcNow;
+        var tradeDate = MarketCalendarService.GetTradeDate(normalizedExecutedAtUtc);
+        var settlementDate = await MarketCalendarService.GetSettlementDateAsync(tradeDate, cancellationToken);
 
         await using var databaseTransaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
 
@@ -109,6 +115,8 @@ public class TradeTransactionPostingService : TransactionProcessingServiceBase, 
                     Fees = normalizedFees,
                     NetAmount = normalizedNetAmount,
                     ExecutedAtUtc = normalizedExecutedAtUtc,
+                    TradeDate = tradeDate,
+                    SettlementDate = settlementDate,
                     CreatedAtUtc = now
                 },
                 cancellationToken);

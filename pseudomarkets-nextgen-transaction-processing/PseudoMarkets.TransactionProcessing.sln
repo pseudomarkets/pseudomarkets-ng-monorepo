@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.TransactionPr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.Shared.Authorization", "..\pseudomarkets-nextgen-shared-auth\src\PseudoMarkets.Shared.Authorization\PseudoMarkets.Shared.Authorization.csproj", "{D86F39AA-41B7-41D9-AC76-4AF81041A36E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.Shared.Entities", "..\pseudomarkets-nextgen-shared-entities\src\PseudoMarkets.Shared.Entities\PseudoMarkets.Shared.Entities.csproj", "{02425CA8-56EB-484A-930D-1E99F1B73AF1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -101,6 +103,18 @@ Global
 		{D86F39AA-41B7-41D9-AC76-4AF81041A36E}.Release|x64.Build.0 = Release|Any CPU
 		{D86F39AA-41B7-41D9-AC76-4AF81041A36E}.Release|x86.ActiveCfg = Release|Any CPU
 		{D86F39AA-41B7-41D9-AC76-4AF81041A36E}.Release|x86.Build.0 = Release|Any CPU
+		{02425CA8-56EB-484A-930D-1E99F1B73AF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02425CA8-56EB-484A-930D-1E99F1B73AF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02425CA8-56EB-484A-930D-1E99F1B73AF1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{02425CA8-56EB-484A-930D-1E99F1B73AF1}.Debug|x64.Build.0 = Debug|Any CPU
+		{02425CA8-56EB-484A-930D-1E99F1B73AF1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{02425CA8-56EB-484A-930D-1E99F1B73AF1}.Debug|x86.Build.0 = Debug|Any CPU
+		{02425CA8-56EB-484A-930D-1E99F1B73AF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02425CA8-56EB-484A-930D-1E99F1B73AF1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02425CA8-56EB-484A-930D-1E99F1B73AF1}.Release|x64.ActiveCfg = Release|Any CPU
+		{02425CA8-56EB-484A-930D-1E99F1B73AF1}.Release|x64.Build.0 = Release|Any CPU
+		{02425CA8-56EB-484A-930D-1E99F1B73AF1}.Release|x86.ActiveCfg = Release|Any CPU
+		{02425CA8-56EB-484A-930D-1E99F1B73AF1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -112,5 +126,6 @@ Global
 		{717AA3FE-32EE-4A20-AE63-41EDFCA014B4} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{90C37538-F3A2-43DE-9005-D9590D80B7C0} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{D86F39AA-41B7-41D9-AC76-4AF81041A36E} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{02425CA8-56EB-484A-930D-1E99F1B73AF1} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 EndGlobal

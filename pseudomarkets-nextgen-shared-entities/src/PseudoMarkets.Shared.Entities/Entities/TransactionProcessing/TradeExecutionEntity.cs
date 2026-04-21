@@ -1,4 +1,4 @@
-namespace PseudoMarkets.TransactionProcessing.Persistence.Entities;
+namespace PseudoMarkets.Shared.Entities.Entities.TransactionProcessing;
 
 public class TradeExecutionEntity
 {
@@ -14,5 +14,7 @@ public class TradeExecutionEntity
     public decimal Fees { get; set; }
     public decimal NetAmount { get; set; }
     public DateTime ExecutedAtUtc { get; set; }
+    public DateOnly TradeDate { get; set; }
+    public DateOnly SettlementDate { get; set; }
     public DateTime CreatedAtUtc { get; set; }
 }

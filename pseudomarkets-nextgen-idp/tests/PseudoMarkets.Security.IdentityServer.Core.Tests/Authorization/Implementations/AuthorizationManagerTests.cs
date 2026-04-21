@@ -88,6 +88,7 @@ public class AuthorizationManagerTests
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, "user"),
+            new Claim("id", "1000000000"),
             new Claim(claimType, claimValue)
         };
 
