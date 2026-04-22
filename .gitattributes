@@ -1,0 +1,6 @@
+# Keep generated trading-instrument seed data from dominating GitHub language stats.
+infrastructure/postgres/trading-instruments/*.sql linguist-generated=true
+
+# Make the monorepo's primary implementation language explicit.
+*.cs linguist-language=C#
+*.csproj linguist-language=C#
