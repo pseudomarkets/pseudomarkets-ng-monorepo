@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
+    <PackageReference Include="Microsoft.OpenApi" Version="2.4.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PseudoMarkets.ReferenceData.TradingInstruments.Contracts\PseudoMarkets.ReferenceData.TradingInstruments.Contracts.csproj" />
+    <ProjectReference Include="..\PseudoMarkets.ReferenceData.TradingInstruments.Core\PseudoMarkets.ReferenceData.TradingInstruments.Core.csproj" />
+    <ProjectReference Include="..\PseudoMarkets.ReferenceData.TradingInstruments.Persistence\PseudoMarkets.ReferenceData.TradingInstruments.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\pseudomarkets-nextgen-shared-auth\src\PseudoMarkets.Shared.Authorization\PseudoMarkets.Shared.Authorization.csproj" />
+  </ItemGroup>
+
+</Project>

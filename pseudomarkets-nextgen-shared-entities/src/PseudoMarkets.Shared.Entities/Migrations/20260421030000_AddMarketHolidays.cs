@@ -28,22 +28,22 @@ namespace PseudoMarkets.Shared.Entities.Migrations
                     table.PrimaryKey("PK_market_holidays", x => x.holiday_date);
                 });
 
-            migrationBuilder.InsertData(
-                table: "market_holidays",
-                columns: new[] { "holiday_date", "holiday_name" },
-                values: new object[,]
-                {
-                    { new DateOnly(2026, 1, 1), "New Year's Day" },
-                    { new DateOnly(2026, 1, 19), "Martin Luther King, Jr. Day" },
-                    { new DateOnly(2026, 2, 16), "Washington's Birthday" },
-                    { new DateOnly(2026, 4, 3), "Good Friday" },
-                    { new DateOnly(2026, 5, 25), "Memorial Day" },
-                    { new DateOnly(2026, 6, 19), "Juneteenth National Independence Day" },
-                    { new DateOnly(2026, 7, 3), "Independence Day observed" },
-                    { new DateOnly(2026, 9, 7), "Labor Day" },
-                    { new DateOnly(2026, 11, 26), "Thanksgiving Day" },
-                    { new DateOnly(2026, 12, 25), "Christmas Day" }
-                });
+            migrationBuilder.Sql(
+                """
+                INSERT INTO market_holidays (holiday_date, holiday_name)
+                VALUES
+                    (DATE '2026-01-01', 'New Year''s Day'),
+                    (DATE '2026-01-19', 'Martin Luther King, Jr. Day'),
+                    (DATE '2026-02-16', 'Washington''s Birthday'),
+                    (DATE '2026-04-03', 'Good Friday'),
+                    (DATE '2026-05-25', 'Memorial Day'),
+                    (DATE '2026-06-19', 'Juneteenth National Independence Day'),
+                    (DATE '2026-07-03', 'Independence Day observed'),
+                    (DATE '2026-09-07', 'Labor Day'),
+                    (DATE '2026-11-26', 'Thanksgiving Day'),
+                    (DATE '2026-12-25', 'Christmas Day')
+                ON CONFLICT (holiday_date) DO NOTHING;
+                """);
         }
 
         /// <inheritdoc />

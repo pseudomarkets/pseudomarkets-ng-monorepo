@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PseudoMarkets.Shared.Entities.Entities.Platform;
+using PseudoMarkets.Shared.Entities.Entities.ReferenceData;
 using PseudoMarkets.Shared.Entities.Entities.TransactionProcessing;
 
 namespace PseudoMarkets.Shared.Entities.Database;
@@ -20,10 +21,12 @@ public class PseudoMarketsDbContext : DbContext
     public DbSet<PositionLotEntity> PositionLots => Set<PositionLotEntity>();
     public DbSet<PositionLotClosureEntity> PositionLotClosures => Set<PositionLotClosureEntity>();
     public DbSet<MarketHolidayEntity> MarketHolidays => Set<MarketHolidayEntity>();
+    public DbSet<TradingInstrumentEntity> TradingInstruments => Set<TradingInstrumentEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigurePlatformModel(modelBuilder);
+        ConfigureReferenceDataModel(modelBuilder);
         ConfigureTransactionProcessingModel(modelBuilder);
     }
 
@@ -46,6 +49,25 @@ public class PseudoMarketsDbContext : DbContext
                 new MarketHolidayEntity { HolidayDate = new DateOnly(2026, 9, 7), HolidayName = "Labor Day" },
                 new MarketHolidayEntity { HolidayDate = new DateOnly(2026, 11, 26), HolidayName = "Thanksgiving Day" },
                 new MarketHolidayEntity { HolidayDate = new DateOnly(2026, 12, 25), HolidayName = "Christmas Day" });
+        });
+    }
+
+    private static void ConfigureReferenceDataModel(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<TradingInstrumentEntity>(entity =>
+        {
+            entity.ToTable("trading_instruments");
+            entity.HasKey(x => x.Symbol);
+            entity.Property(x => x.Symbol).HasColumnName("symbol").HasMaxLength(32).ValueGeneratedNever();
+            entity.Property(x => x.Description).HasColumnName("description").HasMaxLength(512).IsRequired();
+            entity.Property(x => x.TradingStatus).HasColumnName("trading_status").HasDefaultValue(true).IsRequired();
+            entity.Property(x => x.PrimaryInstrumentType).HasColumnName("primary_instrument_type").HasMaxLength(50).IsRequired();
+            entity.Property(x => x.SecondaryInstrumentType).HasColumnName("secondary_instrument_type").HasMaxLength(50).IsRequired();
+            entity.Property(x => x.ClosingPrice).HasColumnName("closing_price").IsRequired();
+            entity.Property(x => x.ClosingPriceDate).HasColumnName("closing_price_date").IsRequired();
+            entity.Property(x => x.Source).HasColumnName("source").HasMaxLength(100).IsRequired();
+            entity.HasIndex(x => x.TradingStatus);
+            entity.HasIndex(x => x.SecondaryInstrumentType);
         });
     }
 

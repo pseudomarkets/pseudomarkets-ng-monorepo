@@ -9,6 +9,7 @@ public static class RoleConstants
     public const string ViewTransactions = "VIEW_TRANSACTIONS";
     public const string UpdateTransactions = "UPDATE_TRANSACTIONS";
     public const string ViewMarketData = "VIEW_MARKET_DATA";
+    public const string UpdateInstruments = "UPDATE_INSTRUMENTS";
     public const string ExecuteTrades = "EXECUTE_TRADES";
     public const string ViewCostBasis = "VIEW_COST_BASIS";
     public const string UpdateCostBasis = "UPDATE_COST_BASIS";
@@ -22,6 +23,7 @@ public static class RoleConstants
         ViewTransactions,
         UpdateTransactions,
         ViewMarketData,
+        UpdateInstruments,
         ExecuteTrades,
         ViewCostBasis,
         UpdateCostBasis

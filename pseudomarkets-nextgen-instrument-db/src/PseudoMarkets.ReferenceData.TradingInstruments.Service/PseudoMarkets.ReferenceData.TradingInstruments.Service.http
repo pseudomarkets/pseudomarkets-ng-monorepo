@@ -1,0 +1,31 @@
+@PseudoMarkets.ReferenceData.TradingInstruments.Service_HostAddress = http://localhost:8083
+@BearerToken = paste-token-here
+
+GET {{PseudoMarkets.ReferenceData.TradingInstruments.Service_HostAddress}}/api/trading-instruments/AAPL
+Authorization: Bearer {{BearerToken}}
+Accept: application/json
+
+###
+
+POST {{PseudoMarkets.ReferenceData.TradingInstruments.Service_HostAddress}}/api/trading-instruments
+Authorization: Bearer {{BearerToken}}
+Content-Type: application/json
+
+{
+  "symbol": "PMKT",
+  "description": "Pseudo Markets Test Instrument",
+  "primaryInstrumentType": "Equity",
+  "secondaryInstrumentType": "Common Stock",
+  "closingPrice": 0,
+  "source": "Manual"
+}
+
+###
+
+PATCH {{PseudoMarkets.ReferenceData.TradingInstruments.Service_HostAddress}}/api/trading-instruments/PMKT/closing-price
+Authorization: Bearer {{BearerToken}}
+Content-Type: application/json
+
+{
+  "closingPrice": 12.34
+}

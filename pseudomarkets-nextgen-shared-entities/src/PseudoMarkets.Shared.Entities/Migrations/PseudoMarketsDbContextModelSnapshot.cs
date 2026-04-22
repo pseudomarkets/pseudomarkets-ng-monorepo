@@ -91,6 +91,60 @@ namespace PseudoMarkets.Shared.Entities.Migrations
                         });
                 });
 
+            modelBuilder.Entity("PseudoMarkets.Shared.Entities.Entities.ReferenceData.TradingInstrumentEntity", b =>
+                {
+                    b.Property<string>("Symbol")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("symbol");
+
+                    b.Property<double>("ClosingPrice")
+                        .HasColumnType("double precision")
+                        .HasColumnName("closing_price");
+
+                    b.Property<DateOnly>("ClosingPriceDate")
+                        .HasColumnType("date")
+                        .HasColumnName("closing_price_date");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("PrimaryInstrumentType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("primary_instrument_type");
+
+                    b.Property<string>("SecondaryInstrumentType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("secondary_instrument_type");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("source");
+
+                    b.Property<bool>("TradingStatus")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("trading_status");
+
+                    b.HasKey("Symbol");
+
+                    b.HasIndex("SecondaryInstrumentType");
+
+                    b.HasIndex("TradingStatus");
+
+                    b.ToTable("trading_instruments", (string)null);
+                });
+
             modelBuilder.Entity("PseudoMarkets.Shared.Entities.Entities.TransactionProcessing.AccountBalanceEntity", b =>
                 {
                     b.Property<long>("UserId")
