@@ -85,6 +85,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{99FA9AA8
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.ReferenceData.TradingInstruments.Tests", "pseudomarkets-nextgen-instrument-db\tests\PseudoMarkets.ReferenceData.TradingInstruments.Tests\PseudoMarkets.ReferenceData.TradingInstruments.Tests.csproj", "{3A6CDD4C-F8B8-4FDF-851E-AD0C308E536E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7FAB9061-AFA6-4063-A4AD-97FA18F768FD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prd", "prd", "{78ED7CB2-4F71-421C-BE9F-E5BC7CB8027D}"
+	ProjectSection(SolutionItems) = preProject
+		docs\prd\Order_Execution_System_Core_PRD_Draft.md = docs\prd\Order_Execution_System_Core_PRD_Draft.md
+		docs\prd\PRD_TEMPLATE.md = docs\prd\PRD_TEMPLATE.md
+		docs\prd\Settled_Unsettled_Balances_Positions_PRD.md = docs\prd\Settled_Unsettled_Balances_Positions_PRD.md
+		docs\prd\Trading_Instrument_Database_PRD.md = docs\prd\Trading_Instrument_Database_PRD.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "skills", "skills", "{E4F8DB9F-D96C-4AF3-8C57-3F54A52AC95A}"
+	ProjectSection(SolutionItems) = preProject
+		docs\skills\Trading_Instrument_Business_Rules.md = docs\skills\Trading_Instrument_Business_Rules.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -410,5 +425,7 @@ Global
 		{70A97B0B-6F9C-41FC-B348-890E7A2F1A69} = {42EAE0C4-A564-16E0-83B8-5681CC61C0AB}
 		{99FA9AA8-F9B3-D335-7171-F6B4E5183560} = {36F19584-9A82-07FC-9748-BBD163E9779F}
 		{3A6CDD4C-F8B8-4FDF-851E-AD0C308E536E} = {99FA9AA8-F9B3-D335-7171-F6B4E5183560}
+		{78ED7CB2-4F71-421C-BE9F-E5BC7CB8027D} = {7FAB9061-AFA6-4063-A4AD-97FA18F768FD}
+		{E4F8DB9F-D96C-4AF3-8C57-3F54A52AC95A} = {7FAB9061-AFA6-4063-A4AD-97FA18F768FD}
 	EndGlobalSection
 EndGlobal

@@ -1,5 +1,3 @@
-using System;
-using System.IO;
 using Microsoft.Extensions.Options;
 using PseudoMarkets.Security.IdentityServer.Core.Accounts.Implementations;
 using PseudoMarkets.Security.IdentityServer.Core.Accounts.Interfaces;

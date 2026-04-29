@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using PseudoMarkets.Shared.Authorization.DependencyInjection;

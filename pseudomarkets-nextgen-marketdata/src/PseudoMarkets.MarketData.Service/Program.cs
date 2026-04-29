@@ -1,5 +1,3 @@
-using System;
-using System.IO;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using PseudoMarkets.MarketData.Cache.DependencyInjection;
