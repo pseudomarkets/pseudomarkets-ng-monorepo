@@ -22,7 +22,7 @@ The platform is split into focused services and shared libraries:
 - `pseudomarkets-nextgen-marketdata`
   Market data API for quotes, detailed quotes, and indices. It uses Twelve Data for provider data and Aerospike for caching.
 - `pseudomarkets-nextgen-transaction-processing`
-  Write-side transaction processor for cash movements, trade postings, voids, balances, positions, lots, and settlement-date calculation.
+  Write-side transaction processor for cash movements, trade postings, voids, settled/unsettled balances, settled/unsettled positions, lots, and settlement-date calculation.
 - `pseudomarkets-nextgen-instrument-db`
   Trading instrument reference-data API for creating tradable instruments, retrieving instruments by symbol, and updating closing prices.
 - `pseudomarkets-nextgen-shared-auth`
@@ -151,4 +151,4 @@ The shared EF Core model and migrations live in:
 pseudomarkets-nextgen-shared-entities/src/PseudoMarkets.Shared.Entities
 ```
 
-`PseudoMarketsDbContext` is applied at transaction-processing and trading-instruments startup. Current relational tables include transaction posting tables, balance and position projection tables, trade lots, market holidays, trading instruments, and EF migration history.
+`PseudoMarketsDbContext` is applied at transaction-processing and trading-instruments startup. Current relational tables include transaction posting tables, settled/unsettled balance and position projection tables, trade lots, market holidays, trading instruments, and EF migration history.

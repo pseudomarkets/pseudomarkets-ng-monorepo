@@ -165,6 +165,8 @@ public abstract class TransactionProcessingServiceBase
         {
             UserId = userId,
             CashBalance = 0m,
+            SettledCashBalance = 0m,
+            UnsettledCashBalance = 0m,
             UpdatedAtUtc = timestampUtc
         };
 

@@ -46,6 +46,8 @@ For positions:
 
 The system should only mark trade-related balance and position effects as unsettled during trade execution. A future batch process will promote eligible unsettled cash and position quantities into settled state when settlement dates are reached.
 
+The data written by this feature must support that future batch workflow. The future batch process is expected to run daily at the start of day, before market hours, find transactions where the processing date equals the transaction settlement date, and settle each impacted account's balances and positions. This feature must therefore persist unsettled trade effects in a way that can be traced back to the originating trade execution, account, symbol, amount, quantity, cost basis, and `settlement_date`.
+
 ## How
 High level implementation should follow the existing transaction-processing and shared-entities architecture:
 
@@ -61,11 +63,13 @@ High level implementation should follow the existing transaction-processing and 
    - `settled_cost_basis_total` `numeric(18, 4)` not null
    - `unsettled_cost_basis_total` `numeric(18, 4)` not null
    - keep `quantity` and `cost_basis_total` as physically stored aggregate values
-5. Backfill existing rows so current aggregate values are treated as settled by default. Existing `cash_balance`, `quantity`, and `cost_basis_total` values should remain unchanged during the backfill.
-6. Update trade posting so trade-related effects are assigned to unsettled cash and unsettled position fields while preserving the existing `trade_date` and `settlement_date` values for the future settlement batch process.
-7. Update non-trade cash movement posting so deposits, withdrawals, and adjustments affect settled cash immediately.
-8. Update transaction-processing unit tests for deposits, withdrawals, adjustments, buys, sells, and voids.
-9. Update service and root README files if commands, behavior, schema ownership notes, or service responsibilities change during implementation.
+5. Extend `position_lots` as needed so buy-created lot inventory can distinguish settled quantity from unsettled quantity and can be traced to its opening trade execution through the existing transaction relationship.
+6. Preserve enough trade execution and ledger linkage for sell proceeds and buy-created positions to be discoverable by a future settlement batch using `settlement_date`.
+7. Backfill existing rows so current aggregate values are treated as settled by default. Existing `cash_balance`, `quantity`, and `cost_basis_total` values should remain unchanged during the backfill.
+8. Update trade posting so trade-related effects are assigned to unsettled cash and unsettled position fields while preserving the existing `trade_date` and `settlement_date` values for the future settlement batch process.
+9. Update non-trade cash movement posting so deposits, withdrawals, and adjustments affect settled cash immediately.
+10. Update transaction-processing unit tests for deposits, withdrawals, adjustments, buys, sells, and voids.
+11. Update service and root README files if commands, behavior, schema ownership notes, or service responsibilities change during implementation.
 
 ## Acceptance Criteria
 
@@ -75,6 +79,7 @@ High level implementation should follow the existing transaction-processing and 
 - [ ] Trade buy posting debits settled cash immediately and records newly purchased quantity and related cost basis as unsettled.
 - [ ] Trade sell posting records sale proceeds as unsettled cash.
 - [ ] Trade sell posting validates settled share availability at the lot level and blocks the transaction when settled lots do not contain enough quantity for the sell.
+- [ ] Unsettled trade effects remain traceable to the originating trade execution, account, symbol, amount, quantity, cost basis, and `settlement_date` so a future start-of-day batch can settle transactions where the processing date equals `settlement_date`.
 - [ ] Non-trade cash movements, including deposits, withdrawals, and adjustments, update settled cash immediately.
 - [ ] Withdrawal validation uses settled cash and does not allow unsettled cash to be withdrawn.
 - [ ] Void logic correctly reverses the original transaction effects for trade-created unsettled balances and positions, and for instantly settled cash movements.
@@ -92,7 +97,9 @@ High level implementation should follow the existing transaction-processing and 
 - Replacing the transaction ledger model.
 
 ## Notes
-The current transaction-processing service already calculates trade dates and settlement dates for trade executions. This PRD only covers marking trade-related effects as unsettled at execution time. Settlement promotion will be handled by a future batch process.
+The current transaction-processing service already calculates trade dates and settlement dates for trade executions. This PRD only covers marking trade-related effects as unsettled at execution time and preserving the data needed by a future settlement batch. Settlement promotion will be handled by a future batch process.
+
+Future settlement batch expectation: run once per trading day at start of day before market hours, find trade executions where the processing date equals `settlement_date`, and update each impacted account's settled and unsettled balances, positions, and lot state.
 
 Open questions to resolve during implementation planning:
 

@@ -10,6 +10,8 @@ public class PositionLotEntity
     public string LotEntryType { get; set; } = string.Empty;
     public decimal QuantityOpened { get; set; }
     public decimal QuantityRemaining { get; set; }
+    public decimal SettledQuantityRemaining { get; set; }
+    public decimal UnsettledQuantityRemaining { get; set; }
     public decimal Price { get; set; }
     public DateTime OpenedAtUtc { get; set; }
     public DateTime UpdatedAtUtc { get; set; }

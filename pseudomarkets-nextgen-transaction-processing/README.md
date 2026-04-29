@@ -21,7 +21,8 @@ The service currently includes:
 - PostgreSQL-backed posting logic using the shared `PseudoMarketsDbContext`
 - shared authorization wiring using `UPDATE_TRANSACTIONS`
 - Dockerfile and service-local Compose file
-- idempotent posting, balance mutation, position updates, FIFO lot handling, and compensating void transactions
+- idempotent posting, settled/unsettled balance mutation, settled/unsettled position updates, settled-only FIFO lot handling for sells, and compensating void transactions
+- trade settlement-date persistence for a future start-of-day settlement batch process
 
 ## Project Layout
 
@@ -133,6 +134,8 @@ Use the IDP Swagger UI to authenticate first, then paste the returned JWT into t
 All write endpoints are protected using the shared authorization library and require the `UPDATE_TRANSACTIONS` action from the IDP.
 
 Balance and position reads are intentionally out of scope for this service and will live in a future read-oriented service.
+
+Cash deposits, withdrawals, and adjustments settle immediately. Buy trades debit settled cash immediately and create unsettled position and lot inventory. Sell trades require settled position quantity and settled lot inventory, then credit sale proceeds as unsettled cash until a future settlement batch promotes them.
 
 ## API Surface
 

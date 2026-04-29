@@ -140,6 +140,7 @@ public class PseudoMarketsDbContext : DbContext
             entity.HasIndex(x => x.Symbol);
             entity.HasIndex(x => x.TradeDate);
             entity.HasIndex(x => x.SettlementDate);
+            entity.HasIndex(x => new { x.SettlementDate, x.TradeSide });
         });
 
         modelBuilder.Entity<CashMovementEntity>(entity =>
@@ -164,6 +165,8 @@ public class PseudoMarketsDbContext : DbContext
             entity.HasKey(x => x.UserId);
             entity.Property(x => x.UserId).HasColumnName("user_id").ValueGeneratedNever();
             entity.Property(x => x.CashBalance).HasColumnName("cash_balance").HasPrecision(18, 4).IsRequired();
+            entity.Property(x => x.SettledCashBalance).HasColumnName("settled_cash_balance").HasPrecision(18, 4).IsRequired();
+            entity.Property(x => x.UnsettledCashBalance).HasColumnName("unsettled_cash_balance").HasPrecision(18, 4).IsRequired();
             entity.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc");
         });
 
@@ -176,7 +179,11 @@ public class PseudoMarketsDbContext : DbContext
             entity.Property(x => x.Symbol).HasColumnName("symbol").HasMaxLength(32).IsRequired();
             entity.Property(x => x.PositionSide).HasColumnName("position_side").HasMaxLength(20).IsRequired();
             entity.Property(x => x.Quantity).HasColumnName("quantity").HasPrecision(18, 6).IsRequired();
+            entity.Property(x => x.SettledQuantity).HasColumnName("settled_quantity").HasPrecision(18, 6).IsRequired();
+            entity.Property(x => x.UnsettledQuantity).HasColumnName("unsettled_quantity").HasPrecision(18, 6).IsRequired();
             entity.Property(x => x.CostBasisTotal).HasColumnName("cost_basis_total").HasPrecision(18, 4).IsRequired();
+            entity.Property(x => x.SettledCostBasisTotal).HasColumnName("settled_cost_basis_total").HasPrecision(18, 4).IsRequired();
+            entity.Property(x => x.UnsettledCostBasisTotal).HasColumnName("unsettled_cost_basis_total").HasPrecision(18, 4).IsRequired();
             entity.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc");
             entity.HasIndex(x => new { x.UserId, x.Symbol }).IsUnique();
         });
@@ -193,6 +200,8 @@ public class PseudoMarketsDbContext : DbContext
             entity.Property(x => x.LotEntryType).HasColumnName("lot_entry_type").HasMaxLength(20).IsRequired();
             entity.Property(x => x.QuantityOpened).HasColumnName("quantity_opened").HasPrecision(18, 6).IsRequired();
             entity.Property(x => x.QuantityRemaining).HasColumnName("quantity_remaining").HasPrecision(18, 6).IsRequired();
+            entity.Property(x => x.SettledQuantityRemaining).HasColumnName("settled_quantity_remaining").HasPrecision(18, 6).IsRequired();
+            entity.Property(x => x.UnsettledQuantityRemaining).HasColumnName("unsettled_quantity_remaining").HasPrecision(18, 6).IsRequired();
             entity.Property(x => x.Price).HasColumnName("price").HasPrecision(18, 6).IsRequired();
             entity.Property(x => x.OpenedAtUtc).HasColumnName("opened_at_utc");
             entity.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc");

@@ -29,6 +29,8 @@ public class CashMovementPostingServiceTests : TransactionProcessingTestBase
         var balance = await DbContext.AccountBalances.SingleAsync();
         balance.UserId.ShouldBe(1000000001);
         balance.CashBalance.ShouldBe(100m);
+        balance.SettledCashBalance.ShouldBe(100m);
+        balance.UnsettledCashBalance.ShouldBe(0m);
 
         (await DbContext.PostingBatches.CountAsync()).ShouldBe(1);
         (await DbContext.LedgerTransactions.CountAsync()).ShouldBe(1);
@@ -56,7 +58,10 @@ public class CashMovementPostingServiceTests : TransactionProcessingTestBase
         second.Message.ShouldContain("idempotency");
         (await DbContext.LedgerTransactions.CountAsync()).ShouldBe(1);
         (await DbContext.CashMovements.CountAsync()).ShouldBe(1);
-        (await DbContext.AccountBalances.SingleAsync()).CashBalance.ShouldBe(25m);
+        var balance = await DbContext.AccountBalances.SingleAsync();
+        balance.CashBalance.ShouldBe(25m);
+        balance.SettledCashBalance.ShouldBe(25m);
+        balance.UnsettledCashBalance.ShouldBe(0m);
     }
 
     [Test]
@@ -89,6 +94,9 @@ public class CashMovementPostingServiceTests : TransactionProcessingTestBase
         });
 
         response.TransactionDescription.ShouldBe("CASH ADJUSTMENT DEBIT $15.00");
-        (await DbContext.AccountBalances.SingleAsync()).CashBalance.ShouldBe(-15m);
+        var balance = await DbContext.AccountBalances.SingleAsync();
+        balance.CashBalance.ShouldBe(-15m);
+        balance.SettledCashBalance.ShouldBe(-15m);
+        balance.UnsettledCashBalance.ShouldBe(0m);
     }
 }

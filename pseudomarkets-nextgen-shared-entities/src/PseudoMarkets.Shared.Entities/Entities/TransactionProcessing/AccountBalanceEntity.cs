@@ -4,5 +4,7 @@ public class AccountBalanceEntity
 {
     public long UserId { get; set; }
     public decimal CashBalance { get; set; }
+    public decimal SettledCashBalance { get; set; }
+    public decimal UnsettledCashBalance { get; set; }
     public DateTime UpdatedAtUtc { get; set; }
 }

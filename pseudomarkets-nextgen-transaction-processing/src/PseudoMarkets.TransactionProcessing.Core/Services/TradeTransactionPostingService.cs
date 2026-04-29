@@ -156,12 +156,13 @@ public class TradeTransactionPostingService : TransactionProcessingServiceBase, 
         decimal netAmount,
         DateTime now)
     {
-        if (balance.CashBalance < netAmount)
+        if (balance.SettledCashBalance < netAmount)
         {
-            throw new TransactionProcessingConflictException("The user does not have enough cash available to post the buy trade.");
+            throw new TransactionProcessingConflictException("The user does not have enough settled cash available to post the buy trade.");
         }
 
         balance.CashBalance = NormalizeCurrency(balance.CashBalance - netAmount);
+        balance.SettledCashBalance = NormalizeCurrency(balance.SettledCashBalance - netAmount);
         balance.UpdatedAtUtc = now;
 
         var position = DbContext.Positions.FirstOrDefault(x => x.UserId == ledgerTransaction.UserId && x.Symbol == symbol);
@@ -173,7 +174,11 @@ public class TradeTransactionPostingService : TransactionProcessingServiceBase, 
                 Symbol = symbol,
                 PositionSide = PositionSide.Long.ToString(),
                 Quantity = 0m,
+                SettledQuantity = 0m,
+                UnsettledQuantity = 0m,
                 CostBasisTotal = 0m,
+                SettledCostBasisTotal = 0m,
+                UnsettledCostBasisTotal = 0m,
                 UpdatedAtUtc = now
             };
 
@@ -181,7 +186,9 @@ public class TradeTransactionPostingService : TransactionProcessingServiceBase, 
         }
 
         position.Quantity = NormalizeQuantity(position.Quantity + quantity);
+        position.UnsettledQuantity = NormalizeQuantity(position.UnsettledQuantity + quantity);
         position.CostBasisTotal = NormalizeCurrency(position.CostBasisTotal + netAmount);
+        position.UnsettledCostBasisTotal = NormalizeCurrency(position.UnsettledCostBasisTotal + netAmount);
         position.UpdatedAtUtc = now;
 
         DbContext.PositionLots.Add(
@@ -194,6 +201,8 @@ public class TradeTransactionPostingService : TransactionProcessingServiceBase, 
                 LotEntryType = LotEntryType.Open.ToString(),
                 QuantityOpened = quantity,
                 QuantityRemaining = quantity,
+                SettledQuantityRemaining = 0m,
+                UnsettledQuantityRemaining = quantity,
                 Price = NormalizeUnitPrice(netAmount / quantity),
                 OpenedAtUtc = ledgerTransaction.OccurredAtUtc,
                 UpdatedAtUtc = now
@@ -213,24 +222,25 @@ public class TradeTransactionPostingService : TransactionProcessingServiceBase, 
         var position = await DbContext.Positions
             .FirstOrDefaultAsync(x => x.UserId == userId && x.Symbol == symbol, cancellationToken);
 
-        if (position is null || position.Quantity < quantity)
+        if (position is null || position.SettledQuantity < quantity)
         {
-            throw new TransactionProcessingConflictException("The user does not have enough position quantity available to post the sell trade.");
+            throw new TransactionProcessingConflictException("The user does not have enough settled position quantity available to post the sell trade.");
         }
 
         var lots = await DbContext.PositionLots
-            .Where(x => x.UserId == userId && x.Symbol == symbol && x.QuantityRemaining > 0m)
+            .Where(x => x.UserId == userId && x.Symbol == symbol && x.SettledQuantityRemaining > 0m)
             .OrderBy(x => x.OpenedAtUtc)
             .ThenBy(x => x.Id)
             .ToListAsync(cancellationToken);
 
-        var totalAvailableQuantity = NormalizeQuantity(lots.Sum(x => x.QuantityRemaining));
+        var totalAvailableQuantity = NormalizeQuantity(lots.Sum(x => x.SettledQuantityRemaining));
         if (totalAvailableQuantity < quantity)
         {
-            throw new TransactionProcessingConflictException("The user does not have enough lot inventory available to post the sell trade.");
+            throw new TransactionProcessingConflictException("The user does not have enough settled lot inventory available to post the sell trade.");
         }
 
         balance.CashBalance = NormalizeCurrency(balance.CashBalance + netAmount);
+        balance.UnsettledCashBalance = NormalizeCurrency(balance.UnsettledCashBalance + netAmount);
         balance.UpdatedAtUtc = now;
 
         var remainingQuantity = quantity;
@@ -243,7 +253,7 @@ public class TradeTransactionPostingService : TransactionProcessingServiceBase, 
                 break;
             }
 
-            var quantityToClose = Math.Min(lot.QuantityRemaining, remainingQuantity);
+            var quantityToClose = Math.Min(lot.SettledQuantityRemaining, remainingQuantity);
             var costBasisAmount = NormalizeCurrency(lot.Price * quantityToClose);
 
             DbContext.PositionLotClosures.Add(
@@ -261,6 +271,7 @@ public class TradeTransactionPostingService : TransactionProcessingServiceBase, 
                 });
 
             lot.QuantityRemaining = NormalizeQuantity(lot.QuantityRemaining - quantityToClose);
+            lot.SettledQuantityRemaining = NormalizeQuantity(lot.SettledQuantityRemaining - quantityToClose);
             lot.UpdatedAtUtc = now;
 
             if (lot.QuantityRemaining == 0m)
@@ -278,7 +289,9 @@ public class TradeTransactionPostingService : TransactionProcessingServiceBase, 
         }
 
         position.Quantity = NormalizeQuantity(position.Quantity - quantity);
+        position.SettledQuantity = NormalizeQuantity(position.SettledQuantity - quantity);
         position.CostBasisTotal = NormalizeCurrency(position.CostBasisTotal - totalCostBasisReduced);
+        position.SettledCostBasisTotal = NormalizeCurrency(position.SettledCostBasisTotal - totalCostBasisReduced);
         position.UpdatedAtUtc = now;
 
         if (position.Quantity == 0m)
@@ -288,6 +301,11 @@ public class TradeTransactionPostingService : TransactionProcessingServiceBase, 
         else if (position.CostBasisTotal < 0m)
         {
             position.CostBasisTotal = 0m;
+        }
+
+        if (position.SettledCostBasisTotal < 0m)
+        {
+            position.SettledCostBasisTotal = 0m;
         }
     }
 

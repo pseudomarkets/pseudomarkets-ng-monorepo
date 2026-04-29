@@ -38,7 +38,10 @@ public class VoidTransactionServiceTests : TransactionProcessingTestBase
 
         var voidTransaction = await DbContext.LedgerTransactions.SingleAsync(x => x.TransactionId == response.TransactionId);
         voidTransaction.VoidsTransactionId.ShouldBe(deposit.TransactionId);
-        (await DbContext.AccountBalances.SingleAsync()).CashBalance.ShouldBe(0m);
+        var balance = await DbContext.AccountBalances.SingleAsync();
+        balance.CashBalance.ShouldBe(0m);
+        balance.SettledCashBalance.ShouldBe(0m);
+        balance.UnsettledCashBalance.ShouldBe(0m);
     }
 
     [Test]
@@ -68,6 +71,8 @@ public class VoidTransactionServiceTests : TransactionProcessingTestBase
             ExternalExecutionId = "exec-buy-void-sell"
         });
 
+        await MarkAllPositionsAndLotsSettledAsync();
+
         var sell = await TradeTransactionPostingService.PostTradeAsync(new PostTradeTransactionRequest
         {
             IdempotencyKey = "sell-void-sell",
@@ -91,14 +96,23 @@ public class VoidTransactionServiceTests : TransactionProcessingTestBase
         });
 
         response.TransactionDescription.ShouldBe("VOID TRADE SELL AAPL $110.00");
-        (await DbContext.AccountBalances.SingleAsync()).CashBalance.ShouldBe(300m);
+        var balance = await DbContext.AccountBalances.SingleAsync();
+        balance.CashBalance.ShouldBe(300m);
+        balance.SettledCashBalance.ShouldBe(300m);
+        balance.UnsettledCashBalance.ShouldBe(0m);
 
         var position = await DbContext.Positions.SingleAsync();
         position.Quantity.ShouldBe(2m);
+        position.SettledQuantity.ShouldBe(2m);
+        position.UnsettledQuantity.ShouldBe(0m);
         position.CostBasisTotal.ShouldBe(200m);
+        position.SettledCostBasisTotal.ShouldBe(200m);
+        position.UnsettledCostBasisTotal.ShouldBe(0m);
 
         var lot = await DbContext.PositionLots.SingleAsync();
         lot.QuantityRemaining.ShouldBe(2m);
+        lot.SettledQuantityRemaining.ShouldBe(2m);
+        lot.UnsettledQuantityRemaining.ShouldBe(0m);
     }
 
     [Test]
@@ -152,5 +166,26 @@ public class VoidTransactionServiceTests : TransactionProcessingTestBase
             }));
 
         exception.Message.ShouldContain("later active trade activity");
+    }
+
+    private async Task MarkAllPositionsAndLotsSettledAsync()
+    {
+        var positions = await DbContext.Positions.ToListAsync();
+        foreach (var position in positions)
+        {
+            position.SettledQuantity = position.Quantity;
+            position.UnsettledQuantity = 0m;
+            position.SettledCostBasisTotal = position.CostBasisTotal;
+            position.UnsettledCostBasisTotal = 0m;
+        }
+
+        var lots = await DbContext.PositionLots.ToListAsync();
+        foreach (var lot in lots)
+        {
+            lot.SettledQuantityRemaining = lot.QuantityRemaining;
+            lot.UnsettledQuantityRemaining = 0m;
+        }
+
+        await DbContext.SaveChangesAsync();
     }
 }

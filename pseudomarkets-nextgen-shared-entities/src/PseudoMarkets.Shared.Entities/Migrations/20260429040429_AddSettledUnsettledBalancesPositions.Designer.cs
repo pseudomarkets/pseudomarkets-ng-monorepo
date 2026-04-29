@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PseudoMarkets.Shared.Entities.Database;
@@ -11,9 +12,11 @@ using PseudoMarkets.Shared.Entities.Database;
 namespace PseudoMarkets.Shared.Entities.Migrations
 {
     [DbContext(typeof(PseudoMarketsDbContext))]
-    partial class PseudoMarketsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260429040429_AddSettledUnsettledBalancesPositions")]
+    partial class AddSettledUnsettledBalancesPositions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

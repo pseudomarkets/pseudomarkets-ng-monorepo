@@ -183,9 +183,17 @@ public class CashMovementPostingService : TransactionProcessingServiceBase, ICas
         {
             LedgerDirection.Credit => NormalizeCurrency(balance.CashBalance + amount),
             LedgerDirection.Debit when transactionKind == TransactionKind.CashAdjustment => NormalizeCurrency(balance.CashBalance - amount),
-            LedgerDirection.Debit when balance.CashBalance >= amount => NormalizeCurrency(balance.CashBalance - amount),
+            LedgerDirection.Debit when balance.SettledCashBalance >= amount => NormalizeCurrency(balance.CashBalance - amount),
             _ => throw new TransactionProcessingConflictException(
                 $"The user does not have enough cash available to post the {transactionKind} transaction.")
+        };
+
+        balance.SettledCashBalance = direction switch
+        {
+            LedgerDirection.Credit => NormalizeCurrency(balance.SettledCashBalance + amount),
+            LedgerDirection.Debit when transactionKind == TransactionKind.CashAdjustment => NormalizeCurrency(balance.SettledCashBalance - amount),
+            LedgerDirection.Debit when balance.SettledCashBalance >= amount => NormalizeCurrency(balance.SettledCashBalance - amount),
+            _ => balance.SettledCashBalance
         };
 
         balance.UpdatedAtUtc = DateTime.UtcNow;

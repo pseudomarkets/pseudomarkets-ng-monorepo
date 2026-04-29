@@ -172,6 +172,7 @@ public class VoidTransactionService : TransactionProcessingServiceBase, IVoidTra
         EnsureSufficientBalance(balance, originalTransaction.Amount, "The user does not have enough cash available to void the original deposit.");
 
         balance.CashBalance = NormalizeCurrency(balance.CashBalance - originalTransaction.Amount);
+        balance.SettledCashBalance = NormalizeCurrency(balance.SettledCashBalance - originalTransaction.Amount);
         balance.UpdatedAtUtc = now;
 
         var voidTransaction = CreateLedgerTransaction(
@@ -216,6 +217,7 @@ public class VoidTransactionService : TransactionProcessingServiceBase, IVoidTra
         var originalCashMovement = await GetRequiredCashMovementAsync(originalTransaction.TransactionId, cancellationToken);
 
         balance.CashBalance = NormalizeCurrency(balance.CashBalance + originalTransaction.Amount);
+        balance.SettledCashBalance = NormalizeCurrency(balance.SettledCashBalance + originalTransaction.Amount);
         balance.UpdatedAtUtc = now;
 
         var voidTransaction = CreateLedgerTransaction(
@@ -264,10 +266,12 @@ public class VoidTransactionService : TransactionProcessingServiceBase, IVoidTra
         {
             EnsureSufficientBalance(balance, originalTransaction.Amount, "The user does not have enough cash available to void the original credit adjustment.");
             balance.CashBalance = NormalizeCurrency(balance.CashBalance - originalTransaction.Amount);
+            balance.SettledCashBalance = NormalizeCurrency(balance.SettledCashBalance - originalTransaction.Amount);
         }
         else
         {
             balance.CashBalance = NormalizeCurrency(balance.CashBalance + originalTransaction.Amount);
+            balance.SettledCashBalance = NormalizeCurrency(balance.SettledCashBalance + originalTransaction.Amount);
         }
 
         balance.UpdatedAtUtc = now;
@@ -327,7 +331,7 @@ public class VoidTransactionService : TransactionProcessingServiceBase, IVoidTra
             throw new TransactionProcessingConflictException("The original buy transaction has no remaining lot inventory to reverse.");
         }
 
-        if (affectedLots.Any(x => x.QuantityRemaining != x.QuantityOpened))
+        if (affectedLots.Any(x => x.QuantityRemaining != x.QuantityOpened || x.UnsettledQuantityRemaining != x.QuantityOpened))
         {
             throw new TransactionProcessingConflictException("The original buy transaction cannot be voided because its lot inventory has already been consumed.");
         }
@@ -335,12 +339,13 @@ public class VoidTransactionService : TransactionProcessingServiceBase, IVoidTra
         var position = await DbContext.Positions
             .FirstOrDefaultAsync(x => x.UserId == originalTransaction.UserId && x.Symbol == originalTrade.Symbol, cancellationToken);
 
-        if (position is null || position.Quantity < originalTrade.Quantity)
+        if (position is null || position.Quantity < originalTrade.Quantity || position.UnsettledQuantity < originalTrade.Quantity)
         {
             throw new TransactionProcessingConflictException("The original buy transaction cannot be voided because the current position state no longer matches the purchase.");
         }
 
         balance.CashBalance = NormalizeCurrency(balance.CashBalance + originalTransaction.Amount);
+        balance.SettledCashBalance = NormalizeCurrency(balance.SettledCashBalance + originalTransaction.Amount);
         balance.UpdatedAtUtc = now;
 
         foreach (var lot in affectedLots)
@@ -349,7 +354,9 @@ public class VoidTransactionService : TransactionProcessingServiceBase, IVoidTra
         }
 
         position.Quantity = NormalizeQuantity(position.Quantity - originalTrade.Quantity);
+        position.UnsettledQuantity = NormalizeQuantity(position.UnsettledQuantity - originalTrade.Quantity);
         position.CostBasisTotal = NormalizeCurrency(position.CostBasisTotal - originalTransaction.Amount);
+        position.UnsettledCostBasisTotal = NormalizeCurrency(position.UnsettledCostBasisTotal - originalTransaction.Amount);
         position.UpdatedAtUtc = now;
 
         if (position.Quantity == 0m)
@@ -359,6 +366,11 @@ public class VoidTransactionService : TransactionProcessingServiceBase, IVoidTra
         else if (position.CostBasisTotal < 0m)
         {
             position.CostBasisTotal = 0m;
+        }
+
+        if (position.UnsettledCostBasisTotal < 0m)
+        {
+            position.UnsettledCostBasisTotal = 0m;
         }
 
         var voidTransaction = CreateLedgerTransaction(
@@ -389,7 +401,7 @@ public class VoidTransactionService : TransactionProcessingServiceBase, IVoidTra
         var originalTrade = await GetRequiredTradeExecutionAsync(originalTransaction.TransactionId, cancellationToken);
         await EnsureTradeCanBeStrictlyVoidedAsync(originalTransaction, originalTrade, cancellationToken);
 
-        EnsureSufficientBalance(balance, originalTransaction.Amount, "The user does not have enough cash available to void the original sell trade.");
+        EnsureSufficientUnsettledCash(balance, originalTransaction.Amount, "The user does not have enough unsettled cash available to void the original sell trade.");
 
         var lotClosures = await DbContext.PositionLotClosures
             .Include(x => x.PositionLot)
@@ -403,6 +415,7 @@ public class VoidTransactionService : TransactionProcessingServiceBase, IVoidTra
         }
 
         balance.CashBalance = NormalizeCurrency(balance.CashBalance - originalTransaction.Amount);
+        balance.UnsettledCashBalance = NormalizeCurrency(balance.UnsettledCashBalance - originalTransaction.Amount);
         balance.UpdatedAtUtc = now;
 
         var restoredQuantity = 0m;
@@ -412,9 +425,10 @@ public class VoidTransactionService : TransactionProcessingServiceBase, IVoidTra
         {
             var lot = lotClosure.PositionLot;
             lot.QuantityRemaining = NormalizeQuantity(lot.QuantityRemaining + lotClosure.QuantityClosed);
+            lot.SettledQuantityRemaining = NormalizeQuantity(lot.SettledQuantityRemaining + lotClosure.QuantityClosed);
             lot.UpdatedAtUtc = now;
 
-            if (lot.QuantityRemaining > lot.QuantityOpened)
+            if (lot.QuantityRemaining > lot.QuantityOpened || lot.SettledQuantityRemaining > lot.QuantityOpened)
             {
                 throw new TransactionProcessingServiceException("A sell void attempted to restore more quantity than the original lot opened.");
             }
@@ -444,7 +458,11 @@ public class VoidTransactionService : TransactionProcessingServiceBase, IVoidTra
                 Symbol = originalTrade.Symbol,
                 PositionSide = PositionSide.Long.ToString(),
                 Quantity = 0m,
+                SettledQuantity = 0m,
+                UnsettledQuantity = 0m,
                 CostBasisTotal = 0m,
+                SettledCostBasisTotal = 0m,
+                UnsettledCostBasisTotal = 0m,
                 UpdatedAtUtc = now
             };
 
@@ -452,7 +470,9 @@ public class VoidTransactionService : TransactionProcessingServiceBase, IVoidTra
         }
 
         position.Quantity = NormalizeQuantity(position.Quantity + restoredQuantity);
+        position.SettledQuantity = NormalizeQuantity(position.SettledQuantity + restoredQuantity);
         position.CostBasisTotal = NormalizeCurrency(position.CostBasisTotal + restoredCostBasis);
+        position.SettledCostBasisTotal = NormalizeCurrency(position.SettledCostBasisTotal + restoredCostBasis);
         position.UpdatedAtUtc = now;
 
         var voidTransaction = CreateLedgerTransaction(
@@ -490,7 +510,15 @@ public class VoidTransactionService : TransactionProcessingServiceBase, IVoidTra
 
     private static void EnsureSufficientBalance(AccountBalanceEntity balance, decimal amount, string message)
     {
-        if (balance.CashBalance < amount)
+        if (balance.SettledCashBalance < amount)
+        {
+            throw new TransactionProcessingConflictException(message);
+        }
+    }
+
+    private static void EnsureSufficientUnsettledCash(AccountBalanceEntity balance, decimal amount, string message)
+    {
+        if (balance.UnsettledCashBalance < amount)
         {
             throw new TransactionProcessingConflictException(message);
         }
