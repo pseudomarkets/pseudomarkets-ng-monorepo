@@ -89,7 +89,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7FAB9061-A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prd", "prd", "{78ED7CB2-4F71-421C-BE9F-E5BC7CB8027D}"
 	ProjectSection(SolutionItems) = preProject
-		docs\prd\Order_Execution_System_Core_PRD_Draft.md = docs\prd\Order_Execution_System_Core_PRD_Draft.md
+		docs\prd\IDP_Token_Refresh_And_Token_Type_PRD.md = docs\prd\IDP_Token_Refresh_And_Token_Type_PRD.md
+		docs\prd\Order_Execution_System_Core_PRD.md = docs\prd\Order_Execution_System_Core_PRD.md
 		docs\prd\PRD_TEMPLATE.md = docs\prd\PRD_TEMPLATE.md
 		docs\prd\Settled_Unsettled_Balances_Positions_PRD.md = docs\prd\Settled_Unsettled_Balances_Positions_PRD.md
 		docs\prd\Trading_Instrument_Database_PRD.md = docs\prd\Trading_Instrument_Database_PRD.md

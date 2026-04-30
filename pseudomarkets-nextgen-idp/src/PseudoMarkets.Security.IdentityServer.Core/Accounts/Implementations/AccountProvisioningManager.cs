@@ -105,7 +105,7 @@ public class AccountProvisioningManager : IAccountProvisioningManager
     {
         return accountType == AccountTypeConstants.SystemType
             ? [.. RoleConstants.AllRoles]
-            : [];
+            : [.. RoleConstants.NonSystemUserRoles];
     }
 
     private long ReserveUniqueUserId(string loginId)

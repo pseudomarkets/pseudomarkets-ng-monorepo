@@ -28,4 +28,14 @@ public static class RoleConstants
         ViewCostBasis,
         UpdateCostBasis
     ];
+
+    public static IReadOnlyList<string> NonSystemUserRoles =>
+    [
+        ViewBalances,
+        ViewPositions,
+        ViewTransactions,
+        ViewMarketData,
+        ExecuteTrades,
+        ViewCostBasis
+    ];
 }
