@@ -54,7 +54,7 @@ public class IdentityAuthorizationClient : IIdentityAuthorizationClient
             {
                 var payload = await ReadAuthorizationResponseAsync(response, cancellationToken);
                 return payload?.Success == true
-                    ? AuthorizationDecision.Authorized()
+                    ? AuthorizationDecision.Authorized(payload.UserId)
                     : AuthorizationDecision.Forbidden(payload?.Message ?? $"The token is not authorized for action '{action}'.");
             }
 

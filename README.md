@@ -25,6 +25,8 @@ The platform is split into focused services and shared libraries:
   Write-side transaction processor for cash movements, trade postings, voids, settled/unsettled balances, settled/unsettled positions, lots, and settlement-date calculation.
 - `pseudomarkets-nextgen-instrument-db`
   Trading instrument reference-data API for creating tradable instruments, retrieving instruments by symbol, and updating closing prices.
+- `pseudomarkets-nextgen-order-execution`
+  Order entry and immediate simulated market-order execution service. It validates tradable symbols, settled buying power, settled sellable quantity, posts fills to Transaction Processing, and persists order execution records.
 - `pseudomarkets-nextgen-shared-auth`
   Shared authorization client and filters used by services that delegate authorization to the IDP.
 - `pseudomarkets-nextgen-shared-entities`
@@ -40,6 +42,7 @@ The platform is split into focused services and shared libraries:
 - Market Data Swagger: [http://localhost:8081/swagger/index.html](http://localhost:8081/swagger/index.html)
 - Transaction Processing Swagger: [http://localhost:8082/swagger/index.html](http://localhost:8082/swagger/index.html)
 - Trading Instruments Swagger: [http://localhost:8083/swagger/index.html](http://localhost:8083/swagger/index.html)
+- Order Execution Swagger: [http://localhost:8084/swagger/index.html](http://localhost:8084/swagger/index.html)
 - Aerospike: `localhost:3000`
 - PostgreSQL: `localhost:5432`
 
@@ -62,6 +65,8 @@ Set these values in `.env`:
 - `JwtConfiguration__Key`
 - `TwelveData__ApiKey`
 - `Postgres__Password`
+- `OrderExecution__SystemAccountLoginId`
+- `OrderExecution__SystemAccountPassword`
 
 The Docker stack loads this shared `.env` file into all services. PostgreSQL uses the database name `pseudomarkets_db`.
 
@@ -95,7 +100,7 @@ If PostgreSQL was initialized before the database was renamed to `pseudomarkets_
 5. Use the Swagger `Authorize` button and paste the JWT.
 6. Call protected endpoints.
 
-Market Data and trading-instrument lookup require `VIEW_MARKET_DATA`. Transaction posting and void operations require `UPDATE_TRANSACTIONS`. Trading-instrument create and closing-price update operations require `UPDATE_INSTRUMENTS`.
+Market Data and trading-instrument lookup require `VIEW_MARKET_DATA`. Transaction posting and void operations require `UPDATE_TRANSACTIONS`. Trading-instrument create and closing-price update operations require `UPDATE_INSTRUMENTS`. Order submission requires `EXECUTE_TRADES`.
 
 ## Run Without Docker
 
@@ -111,6 +116,7 @@ dotnet run --project pseudomarkets-nextgen-idp/src/PseudoMarkets.Security.Identi
 dotnet run --project pseudomarkets-nextgen-marketdata/src/PseudoMarkets.MarketData.Service/PseudoMarkets.MarketData.Service.csproj
 dotnet run --project pseudomarkets-nextgen-transaction-processing/src/PseudoMarkets.TransactionProcessing.Service/PseudoMarkets.TransactionProcessing.Service.csproj
 dotnet run --project pseudomarkets-nextgen-instrument-db/src/PseudoMarkets.ReferenceData.TradingInstruments.Service/PseudoMarkets.ReferenceData.TradingInstruments.Service.csproj
+dotnet run --project pseudomarkets-nextgen-order-execution/src/PseudoMarkets.OrderExecution.Service/PseudoMarkets.OrderExecution.Service.csproj
 ```
 
 The services load the root `.env` file for local development secrets.
@@ -151,4 +157,4 @@ The shared EF Core model and migrations live in:
 pseudomarkets-nextgen-shared-entities/src/PseudoMarkets.Shared.Entities
 ```
 
-`PseudoMarketsDbContext` is applied at transaction-processing and trading-instruments startup. Current relational tables include transaction posting tables, settled/unsettled balance and position projection tables, trade lots, market holidays, trading instruments, and EF migration history.
+`PseudoMarketsDbContext` is applied at transaction-processing, trading-instruments, and order-execution startup. Current relational tables include transaction posting tables, settled/unsettled balance and position projection tables, trade lots, market holidays, trading instruments, order executions, and EF migration history.

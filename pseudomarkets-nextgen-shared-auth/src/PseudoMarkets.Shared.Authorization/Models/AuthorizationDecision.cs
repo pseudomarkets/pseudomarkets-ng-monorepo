@@ -2,11 +2,16 @@ using Microsoft.AspNetCore.Http;
 
 namespace PseudoMarkets.Shared.Authorization.Models;
 
-public sealed record AuthorizationDecision(bool IsAuthorized, int StatusCode, string Title, string Detail)
+public sealed record AuthorizationDecision(bool IsAuthorized, int StatusCode, string Title, string Detail, long? UserId = null)
 {
     public static AuthorizationDecision Authorized()
     {
         return new AuthorizationDecision(true, StatusCodes.Status200OK, string.Empty, string.Empty);
+    }
+
+    public static AuthorizationDecision Authorized(long userId)
+    {
+        return new AuthorizationDecision(true, StatusCodes.Status200OK, string.Empty, string.Empty, userId);
     }
 
     public static AuthorizationDecision Unauthorized(string detail)

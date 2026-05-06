@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
 using PseudoMarkets.Shared.Authorization.Interfaces;
+using PseudoMarkets.Shared.Authorization.Models;
 
 namespace PseudoMarkets.Shared.Authorization.Filters;
 
@@ -45,6 +46,8 @@ public class RequireIdentityActionFilter : IAsyncAuthorizationFilter
 
         if (decision.IsAuthorized)
         {
+            context.HttpContext.Items[AuthorizedIdentityContext.UserIdItemKey] = decision.UserId;
+            context.HttpContext.Items[AuthorizedIdentityContext.AuthorizationActionItemKey] = _requiredAction;
             return;
         }
 

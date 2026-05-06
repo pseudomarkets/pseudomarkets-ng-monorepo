@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using PseudoMarkets.Shared.Entities.Entities.OrderExecution;
 using PseudoMarkets.Shared.Entities.Entities.Platform;
 using PseudoMarkets.Shared.Entities.Entities.ReferenceData;
 using PseudoMarkets.Shared.Entities.Entities.TransactionProcessing;
@@ -22,12 +23,14 @@ public class PseudoMarketsDbContext : DbContext
     public DbSet<PositionLotClosureEntity> PositionLotClosures => Set<PositionLotClosureEntity>();
     public DbSet<MarketHolidayEntity> MarketHolidays => Set<MarketHolidayEntity>();
     public DbSet<TradingInstrumentEntity> TradingInstruments => Set<TradingInstrumentEntity>();
+    public DbSet<OrderExecutionEntity> OrderExecutions => Set<OrderExecutionEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         ConfigurePlatformModel(modelBuilder);
         ConfigureReferenceDataModel(modelBuilder);
         ConfigureTransactionProcessingModel(modelBuilder);
+        ConfigureOrderExecutionModel(modelBuilder);
     }
 
     private static void ConfigurePlatformModel(ModelBuilder modelBuilder)
@@ -231,6 +234,40 @@ public class PseudoMarketsDbContext : DbContext
                 .WithMany(x => x.Closures)
                 .HasForeignKey(x => x.PositionLotId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+    }
+
+    private static void ConfigureOrderExecutionModel(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<OrderExecutionEntity>(entity =>
+        {
+            entity.ToTable("order_executions");
+            entity.HasKey(x => x.OrderId);
+            entity.Property(x => x.OrderId).HasColumnName("order_id").ValueGeneratedNever();
+            entity.Property(x => x.ExecutionId).HasColumnName("execution_id").IsRequired();
+            entity.Property(x => x.UserId).HasColumnName("user_id").IsRequired();
+            entity.Property(x => x.Symbol).HasColumnName("symbol").HasMaxLength(32).IsRequired();
+            entity.Property(x => x.OrderSide).HasColumnName("order_side").HasMaxLength(20).IsRequired();
+            entity.Property(x => x.OrderType).HasColumnName("order_type").HasMaxLength(20).IsRequired();
+            entity.Property(x => x.Quantity).HasColumnName("quantity").HasPrecision(18, 6).IsRequired();
+            entity.Property(x => x.FillPrice).HasColumnName("fill_price").HasPrecision(18, 6).IsRequired();
+            entity.Property(x => x.GrossAmount).HasColumnName("gross_amount").HasPrecision(18, 4).IsRequired();
+            entity.Property(x => x.Fees).HasColumnName("fees").HasPrecision(18, 4).IsRequired();
+            entity.Property(x => x.NetAmount).HasColumnName("net_amount").HasPrecision(18, 4).IsRequired();
+            entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(40).IsRequired();
+            entity.Property(x => x.TransactionId).HasColumnName("transaction_id");
+            entity.Property(x => x.PostingBatchId).HasColumnName("posting_batch_id");
+            entity.Property(x => x.FailureCode).HasColumnName("failure_code").HasMaxLength(80);
+            entity.Property(x => x.FailureMessage).HasColumnName("failure_message").HasMaxLength(512);
+            entity.Property(x => x.SubmittedAtUtc).HasColumnName("submitted_at_utc").IsRequired();
+            entity.Property(x => x.ExecutedAtUtc).HasColumnName("executed_at_utc");
+            entity.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").IsRequired();
+            entity.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc").IsRequired();
+            entity.HasIndex(x => x.ExecutionId).IsUnique();
+            entity.HasIndex(x => x.UserId);
+            entity.HasIndex(x => x.Symbol);
+            entity.HasIndex(x => x.TransactionId);
+            entity.HasIndex(x => x.Status);
         });
     }
 }

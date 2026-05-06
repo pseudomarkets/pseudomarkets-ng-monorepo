@@ -164,3 +164,41 @@ services:
       - ./infrastructure/postgres/trading-instruments:/seed/trading-instruments:ro
     command: ["sh", "/seed/seed-trading-instruments.sh"]
     restart: "no"
+
+  pseudomarkets.orderexecution.service:
+    image: pseudomarkets.orderexecution.service
+    build:
+      context: .
+      dockerfile: pseudomarkets-nextgen-order-execution/src/PseudoMarkets.OrderExecution.Service/Dockerfile
+    container_name: pseudomarkets-nextgen-order-execution-service
+    env_file:
+      - ./.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      pseudomarkets.security.identityserver.web:
+        condition: service_healthy
+      pseudomarkets.marketdata.service:
+        condition: service_started
+      pseudomarkets.transactionprocessing.service:
+        condition: service_healthy
+      pseudomarkets.tradinginstruments.service:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8084
+      ConnectionStrings__PseudoMarketsDb: Host=postgres;Port=5432;Database=pseudomarkets_db;Username=postgres;Password=${Postgres__Password:-postgres}
+      IdentityAuthorization__IdentityServerBaseUrl: http://pseudomarkets-nextgen-idp-web:8080
+      OrderExecution__IdentityServerBaseUrl: http://pseudomarkets-nextgen-idp-web:8080
+      OrderExecution__TradingInstrumentsBaseUrl: http://pseudomarkets-nextgen-trading-instruments-service:8083
+      OrderExecution__MarketDataBaseUrl: http://pseudomarkets-nextgen-marketdata-service:8081
+      OrderExecution__TransactionProcessingBaseUrl: http://pseudomarkets-nextgen-transaction-processing-service:8082
+    ports:
+      - "8084:8084"
+    healthcheck:
+      test: ["CMD-SHELL", "grep -q ':1F94' /proc/net/tcp /proc/net/tcp6"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped

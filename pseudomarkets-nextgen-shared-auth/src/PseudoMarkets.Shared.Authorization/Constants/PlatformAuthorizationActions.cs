@@ -6,4 +6,5 @@ public static class PlatformAuthorizationActions
     public const string UpdateTransactions = "UPDATE_TRANSACTIONS";
     public const string ViewTransactions = "VIEW_TRANSACTIONS";
     public const string UpdateInstruments = "UPDATE_INSTRUMENTS";
+    public const string ExecuteTrades = "EXECUTE_TRADES";
 }
