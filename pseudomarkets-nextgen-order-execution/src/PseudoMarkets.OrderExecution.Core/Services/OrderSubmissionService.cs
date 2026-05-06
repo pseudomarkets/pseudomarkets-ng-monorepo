@@ -12,8 +12,6 @@ namespace PseudoMarkets.OrderExecution.Core.Services;
 
 public sealed class OrderSubmissionService : IOrderSubmissionService
 {
-    private const string SupportedPrimaryInstrumentType = "Equity";
-
     private readonly ITradingInstrumentsClient _tradingInstrumentsClient;
     private readonly IMarketDataClient _marketDataClient;
     private readonly ITransactionProcessingClient _transactionProcessingClient;
@@ -67,7 +65,7 @@ public sealed class OrderSubmissionService : IOrderSubmissionService
 
         var symbol = NormalizeAndValidateSymbol(request.Symbol);
         var instrument = await _tradingInstrumentsClient.GetBySymbolAsync(symbol, cancellationToken);
-        ValidateTradableInstrument(symbol, instrument.Symbol, instrument.TradingStatus, instrument.PrimaryInstrumentType);
+        ValidateTradableInstrument(symbol, instrument.Symbol, instrument.TradingStatus);
 
         var quote = await _marketDataClient.GetQuoteAsync(symbol, cancellationToken);
         if (quote.Price <= 0)
@@ -206,8 +204,7 @@ public sealed class OrderSubmissionService : IOrderSubmissionService
     private static void ValidateTradableInstrument(
         string requestedSymbol,
         string returnedSymbol,
-        bool tradingStatus,
-        string primaryInstrumentType)
+        bool tradingStatus)
     {
         if (!string.Equals(requestedSymbol, returnedSymbol, StringComparison.OrdinalIgnoreCase))
         {
@@ -221,13 +218,6 @@ public sealed class OrderSubmissionService : IOrderSubmissionService
             throw new OrderExecutionValidationException(
                 OrderExecutionErrorCodes.SymbolNotTradable,
                 $"Trading instrument '{requestedSymbol}' is not enabled for trading.");
-        }
-
-        if (!string.Equals(primaryInstrumentType, SupportedPrimaryInstrumentType, StringComparison.OrdinalIgnoreCase))
-        {
-            throw new OrderExecutionValidationException(
-                OrderExecutionErrorCodes.UnsupportedInstrumentType,
-                $"Trading instrument '{requestedSymbol}' is outside the supported instrument scope.");
         }
     }
 
