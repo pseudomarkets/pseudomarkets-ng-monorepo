@@ -14,7 +14,9 @@ public sealed class SystemTokenProvider : ISystemTokenProvider
     private readonly IClock _clock;
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
     private string? _cachedToken;
-    private DateTime _expiresAtUtc;
+    private DateTime _accessTokenExpiresAtUtc;
+    private string? _cachedRefreshToken;
+    private DateTime _refreshTokenExpiresAtUtc;
 
     public SystemTokenProvider(
         HttpClient httpClient,
@@ -41,14 +43,31 @@ public sealed class SystemTokenProvider : ISystemTokenProvider
                 return _cachedToken!;
             }
 
-            if (string.IsNullOrWhiteSpace(_configuration.SystemAccountLoginId) ||
-                string.IsNullOrWhiteSpace(_configuration.SystemAccountPassword))
+            if (HasUsableRefreshToken() && await TryRefreshAsync(cancellationToken))
             {
-                throw new OrderExecutionDependencyException(
-                    OrderExecutionErrorCodes.SystemTokenUnavailable,
-                    "Order Execution system account credentials are not configured.");
+                return _cachedToken!;
             }
 
+            return await AuthenticateAsync(cancellationToken);
+        }
+        finally
+        {
+            _refreshLock.Release();
+        }
+    }
+
+    private async Task<string> AuthenticateAsync(CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(_configuration.SystemAccountLoginId) ||
+            string.IsNullOrWhiteSpace(_configuration.SystemAccountPassword))
+        {
+            throw new OrderExecutionDependencyException(
+                OrderExecutionErrorCodes.SystemTokenUnavailable,
+                "Order Execution system account credentials are not configured.");
+        }
+
+        try
+        {
             using var response = await _httpClient.PostAsJsonAsync(
                 "/api/identity/authenticate",
                 new AuthenticateRequest(_configuration.SystemAccountLoginId, _configuration.SystemAccountPassword),
@@ -69,9 +88,8 @@ public sealed class SystemTokenProvider : ISystemTokenProvider
                     "Order Execution received an invalid system account token response.");
             }
 
-            _cachedToken = payload.Token;
-            _expiresAtUtc = DateTime.SpecifyKind(payload.Expires, DateTimeKind.Utc);
-            return _cachedToken;
+            CacheTokens(payload);
+            return _cachedToken!;
         }
         catch (OrderExecutionException)
         {
@@ -84,9 +102,41 @@ public sealed class SystemTokenProvider : ISystemTokenProvider
                 "Order Execution could not reach the identity provider for system account authentication.",
                 ex);
         }
-        finally
+    }
+
+    private async Task<bool> TryRefreshAsync(CancellationToken cancellationToken)
+    {
+        try
         {
-            _refreshLock.Release();
+            using var response = await _httpClient.PostAsJsonAsync(
+                "/api/identity/refresh",
+                new RefreshTokenRequest(_cachedRefreshToken!),
+                cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                ClearCachedRefreshToken();
+                return false;
+            }
+
+            var payload = await response.Content.ReadFromJsonAsync<AuthenticateResponse>(cancellationToken);
+            if (payload is null || !payload.Success || string.IsNullOrWhiteSpace(payload.Token) ||
+                string.IsNullOrWhiteSpace(payload.RefreshToken))
+            {
+                ClearCachedRefreshToken();
+                return false;
+            }
+
+            CacheTokens(payload);
+            return true;
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return false;
+        }
+        catch (HttpRequestException)
+        {
+            return false;
         }
     }
 
@@ -97,10 +147,36 @@ public sealed class SystemTokenProvider : ISystemTokenProvider
             : 60);
 
         return !string.IsNullOrWhiteSpace(_cachedToken) &&
-               _clock.UtcNow < _expiresAtUtc.Subtract(refreshBuffer);
+               _clock.UtcNow < _accessTokenExpiresAtUtc.Subtract(refreshBuffer);
+    }
+
+    private bool HasUsableRefreshToken()
+    {
+        return !string.IsNullOrWhiteSpace(_cachedRefreshToken) &&
+               _clock.UtcNow < _refreshTokenExpiresAtUtc;
+    }
+
+    private void CacheTokens(AuthenticateResponse payload)
+    {
+        _cachedToken = payload.Token;
+        _accessTokenExpiresAtUtc = DateTime.SpecifyKind(payload.Expires, DateTimeKind.Utc);
+        _cachedRefreshToken = payload.RefreshToken;
+        _refreshTokenExpiresAtUtc = DateTime.SpecifyKind(payload.RefreshTokenExpires, DateTimeKind.Utc);
+    }
+
+    private void ClearCachedRefreshToken()
+    {
+        _cachedRefreshToken = null;
+        _refreshTokenExpiresAtUtc = DateTime.MinValue;
     }
 
     private sealed record AuthenticateRequest(string LoginId, string Password);
+    private sealed record RefreshTokenRequest(string RefreshToken);
 
-    private sealed record AuthenticateResponse(bool Success, string Token, DateTime Expires);
+    private sealed record AuthenticateResponse(
+        bool Success,
+        string Token,
+        DateTime Expires,
+        string RefreshToken,
+        DateTime RefreshTokenExpires);
 }

@@ -61,7 +61,7 @@ public class IdentityAuthorizationClientTests
                 capturedRequest = request;
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                 {
-                    Content = CreateJsonContent("""{"success":true,"message":"Authorization successful"}""")
+                    Content = CreateJsonContent("""{"success":true,"message":"Authorization successful","userId":1000000001,"tokenType":"SYSTEM"}""")
                 });
             },
             new Uri("http://localhost:8080"));
@@ -70,6 +70,8 @@ public class IdentityAuthorizationClientTests
 
         result.IsAuthorized.ShouldBeTrue();
         result.StatusCode.ShouldBe(HttpStatusCode.OK.GetHashCode());
+        result.UserId.ShouldBe(1_000_000_001L);
+        result.TokenType.ShouldBe("SYSTEM");
         capturedRequest.ShouldNotBeNull();
         capturedRequest.Method.ShouldBe(HttpMethod.Post);
         capturedRequest.RequestUri.ShouldBe(new Uri("http://localhost:8080/api/identity/authorize"));
@@ -95,6 +97,23 @@ public class IdentityAuthorizationClientTests
         result.IsAuthorized.ShouldBeFalse();
         result.StatusCode.ShouldBe(HttpStatusCode.Forbidden.GetHashCode());
         result.Detail.ShouldContain("Unauthorized");
+    }
+
+    [Test]
+    public async Task AuthorizeAsync_ShouldReturnDependencyFailure_WhenIdentityProviderOmitsAuthorizationMetadata()
+    {
+        var sut = CreateSut(
+            _ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = CreateJsonContent("""{"success":true,"message":"Authorization successful"}""")
+            }),
+            new Uri("http://localhost:8080"));
+
+        var result = await sut.AuthorizeAsync("token", "VIEW_MARKET_DATA");
+
+        result.IsAuthorized.ShouldBeFalse();
+        result.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable.GetHashCode());
+        result.Detail.ShouldContain("incomplete metadata");
     }
 
     [Test]

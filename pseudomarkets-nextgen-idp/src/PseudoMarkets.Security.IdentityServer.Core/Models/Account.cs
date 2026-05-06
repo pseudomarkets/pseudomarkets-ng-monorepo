@@ -8,4 +8,6 @@ public class Account
     public string AccountType { get; set; } = string.Empty;
     public List<string> Roles { get; set; } = [];
     public bool IsActive { get; set; }
+    public int FailedLoginAttempts { get; set; }
+    public DateTime? LockoutUntilUtc { get; set; }
 }

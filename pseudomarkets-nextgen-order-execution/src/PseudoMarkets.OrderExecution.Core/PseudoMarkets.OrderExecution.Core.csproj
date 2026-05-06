@@ -5,6 +5,7 @@
     <ProjectReference Include="..\..\..\pseudomarkets-nextgen-instrument-db\src\PseudoMarkets.ReferenceData.TradingInstruments.Contracts\PseudoMarkets.ReferenceData.TradingInstruments.Contracts.csproj" />
     <ProjectReference Include="..\..\..\pseudomarkets-nextgen-marketdata\src\PseudoMarkets.MarketData.Contracts\PseudoMarkets.MarketData.Contracts.csproj" />
     <ProjectReference Include="..\..\..\pseudomarkets-nextgen-transaction-processing\src\PseudoMarkets.TransactionProcessing.Contracts\PseudoMarkets.TransactionProcessing.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\pseudomarkets-nextgen-shared-auth\src\PseudoMarkets.Shared.Authorization\PseudoMarkets.Shared.Authorization.csproj" />
     <ProjectReference Include="..\..\..\pseudomarkets-nextgen-shared-entities\src\PseudoMarkets.Shared.Entities\PseudoMarkets.Shared.Entities.csproj" />
   </ItemGroup>
 

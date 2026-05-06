@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
@@ -25,7 +26,7 @@ public class IdentityControllerTests
     private Mock<IAuthorizationManager> _authorizationManager = null!;
     private Mock<IWebHostEnvironment> _environment = null!;
     private Mock<ILogger<IdentityController>> _logger = null!;
-    private JwtConfiguration _jwtConfiguration = null!;
+    private IdentitySecurityConfiguration _identitySecurityConfiguration = null!;
 
     [SetUp]
     public void SetUp()
@@ -35,7 +36,7 @@ public class IdentityControllerTests
         _authorizationManager = new Mock<IAuthorizationManager>();
         _environment = new Mock<IWebHostEnvironment>();
         _logger = new Mock<ILogger<IdentityController>>();
-        _jwtConfiguration = new JwtConfiguration { Key = "test-bypass-key" };
+        _identitySecurityConfiguration = new IdentitySecurityConfiguration { SystemAccountBypassKey = "test-bypass-key" };
         _environment.Setup(x => x.EnvironmentName).Returns("Production");
     }
 
@@ -89,7 +90,7 @@ public class IdentityControllerTests
             .Returns(new AccountCreationResult(true, "SYSTEM account created successfully.", "system-user", AccountTypeConstants.SystemType));
 
         var sut = CreateSut();
-        sut.ControllerContext.HttpContext.Request.Headers[HeaderConstants.SystemAccountBypassKeyHeader] = _jwtConfiguration.Key;
+        sut.ControllerContext.HttpContext.Request.Headers[HeaderConstants.SystemAccountBypassKeyHeader] = _identitySecurityConfiguration.SystemAccountBypassKey;
 
         var result = sut.Create(new CreateAccountRequest { Username = "system-user", Password = "password", AccountType = AccountTypeConstants.SystemType });
 
@@ -129,7 +130,7 @@ public class IdentityControllerTests
     {
         _authenticationManager
             .Setup(x => x.Authenticate("user", "password"))
-            .Returns(new AuthenticationResult(true, "token", DateTime.UtcNow.AddMinutes(1)));
+            .Returns(new AuthenticationResult(true, "token", DateTime.UtcNow.AddMinutes(1), "refresh", DateTime.UtcNow.AddMinutes(1)));
 
         var sut = CreateSut();
 
@@ -153,11 +154,39 @@ public class IdentityControllerTests
     }
 
     [Test]
+    public void Refresh_ShouldReturnOk_WhenRefreshSucceeds()
+    {
+        _authenticationManager
+            .Setup(x => x.Refresh("refresh"))
+            .Returns(new AuthenticationResult(true, "token", DateTime.UtcNow.AddMinutes(1), "refresh-2", DateTime.UtcNow.AddMinutes(1)));
+
+        var sut = CreateSut();
+
+        var result = sut.Refresh(new RefreshTokenRequest { RefreshToken = "refresh" });
+
+        result.Result.ShouldBeOfType<OkObjectResult>();
+    }
+
+    [Test]
+    public void Refresh_ShouldReturnUnauthorized_WhenRefreshFails()
+    {
+        _authenticationManager
+            .Setup(x => x.Refresh("refresh"))
+            .Returns(new AuthenticationResult(false, string.Empty, DateTime.MinValue));
+
+        var sut = CreateSut();
+
+        var result = sut.Refresh(new RefreshTokenRequest { RefreshToken = "refresh" });
+
+        result.Result.ShouldBeOfType<UnauthorizedObjectResult>();
+    }
+
+    [Test]
     public void Authorize_ShouldReturnOk_WhenAuthorizationSucceeds()
     {
         _authorizationManager
             .Setup(x => x.Authorize(It.IsAny<AuthorizationRequest>()))
-            .Returns(new AuthorizationResult(true, "Authorization Successful", 1));
+            .Returns(new AuthorizationResult(true, "Authorization Successful", 1, AccountTypeConstants.SystemType));
 
         var sut = CreateSut();
 
@@ -171,7 +200,7 @@ public class IdentityControllerTests
     {
         _authorizationManager
             .Setup(x => x.Authorize(It.IsAny<AuthorizationRequest>()))
-            .Returns(new AuthorizationResult(false, "Unauthorized", 0));
+            .Returns(new AuthorizationResult(false, "Unauthorized", 0, AccountTypeConstants.UserType));
 
         var sut = CreateSut();
 
@@ -181,13 +210,24 @@ public class IdentityControllerTests
         objectResult.StatusCode.ShouldBe(StatusCodes.Status403Forbidden);
     }
 
+    [Test]
+    public void Controller_ShouldApplySensitiveRateLimitingPolicy()
+    {
+        var attribute = typeof(IdentityController)
+            .GetCustomAttributes(typeof(EnableRateLimitingAttribute), inherit: true)
+            .Cast<EnableRateLimitingAttribute>()
+            .Single();
+
+        attribute.PolicyName.ShouldBe("identity-sensitive");
+    }
+
     private IdentityController CreateSut()
     {
         var sut = new IdentityController(
             _accountProvisioningManager.Object,
             _authenticationManager.Object,
             _authorizationManager.Object,
-            _jwtConfiguration,
+            _identitySecurityConfiguration,
             _environment.Object,
             _logger.Object);
 

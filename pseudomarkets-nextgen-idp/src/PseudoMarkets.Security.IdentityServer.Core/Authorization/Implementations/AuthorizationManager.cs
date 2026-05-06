@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using PseudoMarkets.Security.IdentityServer.Core.Authorization.Interfaces;
 using PseudoMarkets.Security.IdentityServer.Core.Configuration;
+using PseudoMarkets.Security.IdentityServer.Core.Database.Interfaces;
 using PseudoMarkets.Security.IdentityServer.Core.Exceptions;
 using PseudoMarkets.Security.IdentityServer.Core.Models;
 
@@ -12,11 +13,16 @@ namespace PseudoMarkets.Security.IdentityServer.Core.Authorization.Implementatio
 public class AuthorizationManager : IAuthorizationManager
 {
     private readonly JwtConfiguration _jwtConfiguration;
+    private readonly IAccountRepository _accountRepository;
     private readonly ILogger<AuthorizationManager> _logger;
 
-    public AuthorizationManager(JwtConfiguration jwtConfiguration, ILogger<AuthorizationManager> logger)
+    public AuthorizationManager(
+        JwtConfiguration jwtConfiguration,
+        IAccountRepository accountRepository,
+        ILogger<AuthorizationManager> logger)
     {
         _jwtConfiguration = jwtConfiguration;
+        _accountRepository = accountRepository;
         _logger = logger;
     }
     
@@ -50,18 +56,33 @@ public class AuthorizationManager : IAuthorizationManager
 
             if (claimsPrincipal != null && securityToken != null)
             {
+                var loginId = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Sub)?.Value;
                 var roles = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == "roles");
                 var userId = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == "id")?.Value;
-                if (roles != null && userId != null)
+                var tokenType = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == "account_type")?.Value;
+                if (!string.IsNullOrWhiteSpace(loginId) && roles != null && userId != null && !string.IsNullOrWhiteSpace(tokenType))
                 {
                     var id = Convert.ToInt64(userId);
-                    var rolesAsList = roles.Value.Split(',').ToList();
-                    if (rolesAsList.Contains(request.Action))
+                    var rolesAsList = roles.Value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    var account = _accountRepository.GetAccount(loginId);
+                    if (account is null || !account.IsActive)
                     {
-                        return new AuthorizationResult(true, $"Authorization Successful", id);
+                        return new AuthorizationResult(false, "Authorization Failed", 0);
+                    }
+
+                    if (account.UserId != id ||
+                        !string.Equals(account.AccountType, tokenType, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return new AuthorizationResult(false, "Authorization Failed", 0);
+                    }
+
+                    if (rolesAsList.Contains(request.Action, StringComparer.Ordinal) &&
+                        account.Roles.Contains(request.Action, StringComparer.Ordinal))
+                    {
+                        return new AuthorizationResult(true, "Authorization Successful", id, tokenType);
                     }
                     
-                    return new AuthorizationResult(false, "Unauthorized", 0);
+                    return new AuthorizationResult(false, "Unauthorized", 0, tokenType);
                 }
             }
         }

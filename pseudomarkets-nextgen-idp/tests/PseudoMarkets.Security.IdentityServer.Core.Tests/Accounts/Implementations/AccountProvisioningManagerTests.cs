@@ -60,7 +60,7 @@ public class AccountProvisioningManagerTests
     }
 
     [Test]
-    public void CreateAccount_ShouldCreateUserAccount_WithHashedPasswordAndNoRoles()
+    public void CreateAccount_ShouldCreateUserAccount_WithHashedPasswordAndDefaultUserRoles()
     {
         Account? createdAccount = null;
         _accountRepository.Setup(x => x.GetAccount("public-user")).Returns((Account?)null);
@@ -75,7 +75,7 @@ public class AccountProvisioningManagerTests
         createdAccount!.HashedPassword.ShouldBe("salt:password-hash");
         createdAccount.HashedPassword.ShouldNotBe("password");
         createdAccount.AccountType.ShouldBe(AccountTypeConstants.UserType);
-        createdAccount.Roles.ShouldBeEmpty();
+        createdAccount.Roles.ShouldBe(RoleConstants.NonSystemUserRoles, ignoreOrder: true);
         createdAccount.UserId.ShouldBeGreaterThanOrEqualTo(1_000_000_000);
         createdAccount.UserId.ShouldBeLessThanOrEqualTo(9_999_999_999);
     }

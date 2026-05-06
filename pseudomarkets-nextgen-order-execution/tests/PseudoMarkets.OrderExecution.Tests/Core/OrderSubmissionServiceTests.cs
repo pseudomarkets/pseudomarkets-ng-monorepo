@@ -7,6 +7,7 @@ using PseudoMarkets.OrderExecution.Core.Exceptions;
 using PseudoMarkets.OrderExecution.Core.Interfaces;
 using PseudoMarkets.OrderExecution.Core.Models;
 using PseudoMarkets.OrderExecution.Core.Services;
+using PseudoMarkets.Shared.Authorization.Constants;
 using PseudoMarkets.OrderExecution.Tests.Support;
 using PseudoMarkets.ReferenceData.TradingInstruments.Contracts.Instruments;
 using PseudoMarkets.Shared.Entities.Entities.TransactionProcessing;
@@ -47,7 +48,7 @@ public sealed class OrderSubmissionServiceTests
         var exception = await Should.ThrowAsync<OrderExecutionAuthorizationException>(() =>
             _sut.SubmitAsync(
                 CreateRequest(userId: 1000000002),
-                new OrderCallerContext(1000000001, JwtTestTokenFactory.Create("EXECUTE_TRADES")),
+                new OrderCallerContext(1000000001, PlatformTokenTypes.User),
                 CancellationToken.None));
 
         exception.Code.ShouldBe(OrderExecutionErrorCodes.UserOwnershipViolation);
@@ -59,7 +60,7 @@ public sealed class OrderSubmissionServiceTests
         var exception = await Should.ThrowAsync<OrderExecutionValidationException>(() =>
             _sut.SubmitAsync(
                 CreateRequest(symbol: "BRK.B"),
-                new OrderCallerContext(1000000001, JwtTestTokenFactory.Create("EXECUTE_TRADES")),
+                new OrderCallerContext(1000000001, PlatformTokenTypes.User),
                 CancellationToken.None));
 
         exception.Code.ShouldBe(OrderExecutionErrorCodes.InvalidSymbolFormat);
@@ -91,7 +92,7 @@ public sealed class OrderSubmissionServiceTests
 
         var response = await _sut.SubmitAsync(
             CreateRequest(quantity: 2m),
-            new OrderCallerContext(1000000001, JwtTestTokenFactory.Create("EXECUTE_TRADES")),
+            new OrderCallerContext(1000000001, PlatformTokenTypes.User),
             CancellationToken.None);
 
         response.Symbol.ShouldBe("AAPL");
@@ -124,7 +125,7 @@ public sealed class OrderSubmissionServiceTests
         var exception = await Should.ThrowAsync<OrderExecutionValidationException>(() =>
             _sut.SubmitAsync(
                 CreateRequest(quantity: 2m),
-                new OrderCallerContext(1000000001, JwtTestTokenFactory.Create("EXECUTE_TRADES")),
+                new OrderCallerContext(1000000001, PlatformTokenTypes.User),
                 CancellationToken.None));
 
         exception.Code.ShouldBe(OrderExecutionErrorCodes.InsufficientSettledCash);
@@ -148,7 +149,7 @@ public sealed class OrderSubmissionServiceTests
         var exception = await Should.ThrowAsync<OrderExecutionValidationException>(() =>
             _sut.SubmitAsync(
                 CreateRequest(side: OrderSide.Sell, quantity: 2m),
-                new OrderCallerContext(1000000001, JwtTestTokenFactory.Create("EXECUTE_TRADES")),
+                new OrderCallerContext(1000000001, PlatformTokenTypes.User),
                 CancellationToken.None));
 
         exception.Code.ShouldBe(OrderExecutionErrorCodes.InsufficientSettledPosition);
@@ -178,11 +179,23 @@ public sealed class OrderSubmissionServiceTests
 
         var response = await _sut.SubmitAsync(
             CreateRequest(userId: 1000000002, quantity: 1m),
-            new OrderCallerContext(1000000001, JwtTestTokenFactory.Create("UPDATE_TRANSACTIONS")),
+            new OrderCallerContext(1000000001, PlatformTokenTypes.System),
             CancellationToken.None);
 
         response.UserId.ShouldBe(1000000002);
         response.Status.ShouldBe(OrderStatus.Filled);
+    }
+
+    [Test]
+    public async Task SubmitAsync_ShouldRejectWhenTokenTypeMetadataIsMissing()
+    {
+        var exception = await Should.ThrowAsync<OrderExecutionAuthorizationException>(() =>
+            _sut.SubmitAsync(
+                CreateRequest(),
+                new OrderCallerContext(1000000001, string.Empty),
+                CancellationToken.None));
+
+        exception.Code.ShouldBe(OrderExecutionErrorCodes.InvalidUser);
     }
 
     private void SetupTradableInstrument()

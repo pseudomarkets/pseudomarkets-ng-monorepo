@@ -47,6 +47,7 @@ public class RequireIdentityActionFilter : IAsyncAuthorizationFilter
         if (decision.IsAuthorized)
         {
             context.HttpContext.Items[AuthorizedIdentityContext.UserIdItemKey] = decision.UserId;
+            context.HttpContext.Items[AuthorizedIdentityContext.TokenTypeItemKey] = decision.TokenType;
             context.HttpContext.Items[AuthorizedIdentityContext.AuthorizationActionItemKey] = _requiredAction;
             return;
         }

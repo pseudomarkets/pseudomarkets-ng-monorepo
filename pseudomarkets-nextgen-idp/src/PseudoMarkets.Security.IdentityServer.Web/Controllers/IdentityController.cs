@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
 using PseudoMarkets.Security.IdentityServer.Core.Accounts.Interfaces;
 using PseudoMarkets.Security.IdentityServer.Core.Authentication.Interfaces;
@@ -14,12 +15,13 @@ namespace PseudoMarkets.Security.IdentityServer.Web.Controllers;
 
 [ApiController]
 [Route("api/identity")]
+[EnableRateLimiting("identity-sensitive")]
 public class IdentityController : ControllerBase
 {
     private readonly IAccountProvisioningManager _accountProvisioningManager;
     private readonly IAuthenticationManager _authenticationManager;
     private readonly IAuthorizationManager _authorizationManager;
-    private readonly JwtConfiguration _jwtConfiguration;
+    private readonly IdentitySecurityConfiguration _identitySecurityConfiguration;
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<IdentityController> _logger;
 
@@ -27,14 +29,14 @@ public class IdentityController : ControllerBase
         IAccountProvisioningManager accountProvisioningManager,
         IAuthenticationManager authenticationManager,
         IAuthorizationManager authorizationManager,
-        JwtConfiguration jwtConfiguration,
+        IdentitySecurityConfiguration identitySecurityConfiguration,
         IWebHostEnvironment environment,
         ILogger<IdentityController> logger)
     {
         _accountProvisioningManager = accountProvisioningManager;
         _authenticationManager = authenticationManager;
         _authorizationManager = authorizationManager;
-        _jwtConfiguration = jwtConfiguration;
+        _identitySecurityConfiguration = identitySecurityConfiguration;
         _environment = environment;
         _logger = logger;
     }
@@ -50,7 +52,7 @@ public class IdentityController : ControllerBase
                 StatusCodes.Status403Forbidden,
                 new AccountCreationResult(
                     false,
-                    $"SYSTEM account creation is only allowed in development unless the {HeaderConstants.SystemAccountBypassKeyHeader} header matches the configured JWT key.",
+                    $"SYSTEM account creation is only allowed in development unless the {HeaderConstants.SystemAccountBypassKeyHeader} header matches the configured system account bypass key.",
                     request.Username,
                     requestedAccountType));
         }
@@ -84,6 +86,14 @@ public class IdentityController : ControllerBase
         return result.Success ? Ok(result) : Unauthorized(result);
     }
 
+    [HttpPost("refresh")]
+    public ActionResult<AuthenticationResult> Refresh([FromBody] RefreshTokenRequest request)
+    {
+        _logger.LogDebug("Processing refresh token request.");
+        var result = _authenticationManager.Refresh(request.RefreshToken);
+        return result.Success ? Ok(result) : Unauthorized(result);
+    }
+
     [HttpPost("authorize")]
     public ActionResult<AuthorizationResult> Authorize([FromBody] AuthorizeRequest request)
     {
@@ -110,12 +120,12 @@ public class IdentityController : ControllerBase
         }
 
         var providedKey = providedHeaderValues.ToString();
-        if (string.IsNullOrWhiteSpace(providedKey) || string.IsNullOrWhiteSpace(_jwtConfiguration.Key))
+        if (string.IsNullOrWhiteSpace(providedKey) || string.IsNullOrWhiteSpace(_identitySecurityConfiguration.SystemAccountBypassKey))
         {
             return false;
         }
 
-        var configuredKeyBytes = Encoding.UTF8.GetBytes(_jwtConfiguration.Key);
+        var configuredKeyBytes = Encoding.UTF8.GetBytes(_identitySecurityConfiguration.SystemAccountBypassKey);
         var providedKeyBytes = Encoding.UTF8.GetBytes(providedKey);
 
         return CryptographicOperations.FixedTimeEquals(providedKeyBytes, configuredKeyBytes);

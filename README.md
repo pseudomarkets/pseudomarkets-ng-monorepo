@@ -28,7 +28,7 @@ The platform is split into focused services and shared libraries:
 - `pseudomarkets-nextgen-order-execution`
   Order entry and immediate simulated market-order execution service. It validates tradable symbols, settled buying power, settled sellable quantity, posts fills to Transaction Processing, and persists order execution records.
 - `pseudomarkets-nextgen-shared-auth`
-  Shared authorization client and filters used by services that delegate authorization to the IDP.
+  Shared authorization client and filters used by services that delegate authorization to the IDP, including propagation of authorized user ID and token type metadata.
 - `pseudomarkets-nextgen-shared-entities`
   Shared EF Core entity model, `PseudoMarketsDbContext`, migrations, and platform reference data for `pseudomarkets_db`.
 - `infrastructure/aerospike`
@@ -63,6 +63,7 @@ Copy-Item .env.example .env
 Set these values in `.env`:
 
 - `JwtConfiguration__Key`
+- `IdentitySecurity__SystemAccountBypassKey`
 - `TwelveData__ApiKey`
 - `Postgres__Password`
 - `OrderExecution__SystemAccountLoginId`
@@ -95,7 +96,7 @@ If PostgreSQL was initialized before the database was renamed to `pseudomarkets_
 
 1. Open the IDP Swagger UI.
 2. Create or authenticate an account.
-3. Copy the returned JWT.
+3. Copy the returned JWT. The IDP also returns a refresh token that frontend or service clients can use to renew access tokens before the one-hour access-token lifetime expires.
 4. Open Market Data or Transaction Processing Swagger.
 5. Use the Swagger `Authorize` button and paste the JWT.
 6. Call protected endpoints.

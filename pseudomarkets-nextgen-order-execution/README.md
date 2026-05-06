@@ -34,9 +34,11 @@ The service rejects unmapped order fields such as `limitPrice`, `stopPrice`, and
 
 ## Runtime Behavior
 
-Order submission is authorized before business validation. User tokens may submit orders only for the token's authorized user id. System tokens with system-only roles such as `UPDATE_TRANSACTIONS`, `UPDATE_BALANCES`, or `UPDATE_INSTRUMENTS` may submit orders for any payload user id.
+Order submission is authorized before business validation. The service reads the authorized `userId` and `tokenType` from the shared authorization context populated by the IDP authorization endpoint. `USER` tokens may submit orders only for the token's authorized user id. `SYSTEM` tokens may submit orders for any payload user id.
 
 The service trims and uppercases symbols, rejects non-alphanumeric symbols before downstream calls, validates tradability through Trading Instruments, reads quotes from Market Data, validates buy orders against `SettledCashBalance`, validates sell orders against symbol-level `SettledQuantity`, and posts completed trade executions to Transaction Processing. It does not directly mutate `account_balances` or `positions`.
+
+For downstream service-to-service calls, Order Execution authenticates with a configured system account, caches the access token and refresh token returned by the IDP, and automatically refreshes the system token before expiration when calling Trading Instruments, Market Data, or Transaction Processing.
 
 ## Configuration
 

@@ -53,8 +53,13 @@ public class IdentityAuthorizationClient : IIdentityAuthorizationClient
             if (response.IsSuccessStatusCode)
             {
                 var payload = await ReadAuthorizationResponseAsync(response, cancellationToken);
+                if (payload?.Success == true && payload.UserId > 0 && !string.IsNullOrWhiteSpace(payload.TokenType))
+                {
+                    return AuthorizationDecision.Authorized(payload.UserId, payload.TokenType);
+                }
+
                 return payload?.Success == true
-                    ? AuthorizationDecision.Authorized(payload.UserId)
+                    ? AuthorizationDecision.DependencyFailure("Identity provider authorization returned incomplete metadata.")
                     : AuthorizationDecision.Forbidden(payload?.Message ?? $"The token is not authorized for action '{action}'.");
             }
 

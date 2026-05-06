@@ -28,9 +28,10 @@ At runtime, the flow looks like this:
 1. Requests enter the ASP.NET Core web app.
 2. Controllers call core managers for account provisioning, authentication, or authorization.
 3. Core managers use the Aerospike-backed repository for persistence and lookup.
-4. Authentication returns signed JWTs.
-5. Authorization validates JWTs and checks the `roles` claim.
-6. Downstream services can call `POST /api/identity/authorize` through the shared authorization library to centralize access checks.
+4. Authentication returns signed JWTs plus opaque refresh tokens.
+5. Refresh requests rotate opaque refresh tokens stored in Aerospike with hashed token material at rest.
+6. Authorization validates JWTs, rechecks the current account in Aerospike, and returns the authorized `userId` plus token type from the JWT `account_type` claim.
+7. Downstream services can call `POST /api/identity/authorize` through the shared authorization library to centralize access checks.
 
 Aerospike uses the namespace `nsPseudoMarkets` and persists data to disk via the local bind-mounted data directory when running in Docker.
 
@@ -92,6 +93,7 @@ cp .env.example .env
 Then set at least:
 
 - `JwtConfiguration__Key`
+- `IdentitySecurity__SystemAccountBypassKey`
 
 The identity server now loads the shared root `.env` file automatically for local non-Docker runs.
 
@@ -179,6 +181,7 @@ When running in Docker Compose, the web container overrides configuration with e
 - `JwtConfiguration__Issuer`
 - `JwtConfiguration__Audience`
 - `JwtConfiguration__Key`
+- `IdentitySecurity__SystemAccountBypassKey`
 
 The Compose files load `JwtConfiguration__Key` from the shared repo-root `.env` file.
 
@@ -187,11 +190,20 @@ The Compose files load `JwtConfiguration__Key` from the shared repo-root `.env` 
 Current primary endpoints include:
 
 - `POST /api/identity/create`
-  Creates a `USER` account by default. `SYSTEM` account creation is allowed in Development, or outside Development when `X-PseudoMarkets-System-Key` matches the configured JWT key.
+  Creates a `USER` account by default. `SYSTEM` account creation is allowed in Development, or outside Development when `X-PseudoMarkets-System-Key` matches the configured dedicated system-account bypass key.
 - `POST /api/identity/authenticate`
-  Validates credentials and returns a JWT.
+  Validates credentials and returns an access token, access-token expiration, refresh token, and refresh-token expiration.
+- `POST /api/identity/refresh`
+  Accepts a refresh token, validates and rotates it, and returns a new access token plus a replacement refresh token.
 - `POST /api/identity/authorize`
-  Validates a JWT and checks whether the requested action is present in the `roles` claim. This is the endpoint consumed by the shared authorization library and the market data service.
+  Validates a JWT, rechecks current account status and roles, and returns the authorized `userId` and `tokenType`. This is the endpoint consumed by the shared authorization library and downstream platform services.
+
+## Security Notes
+
+- Authentication and refresh endpoints are rate limited.
+- Repeated failed login attempts trigger a temporary account lockout.
+- Refresh-token consumption is atomic so one refresh token cannot be rotated successfully more than once.
+- The system-account bypass secret is separate from the JWT signing key.
 
 Use Swagger UI to inspect request and response schemas interactively.
 

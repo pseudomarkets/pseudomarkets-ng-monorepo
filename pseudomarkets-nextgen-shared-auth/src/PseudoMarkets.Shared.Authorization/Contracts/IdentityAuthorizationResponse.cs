@@ -5,4 +5,5 @@ public sealed class IdentityAuthorizationResponse
     public bool Success { get; set; }
     public string Message { get; set; } = string.Empty;
     public long UserId { get; set; }
+    public string TokenType { get; set; } = string.Empty;
 }

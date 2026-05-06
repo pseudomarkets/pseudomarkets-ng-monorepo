@@ -42,6 +42,8 @@ public class AccountRepositoryTests
             [DatabaseConstants.HashedPasswordBin] = "hashed",
             [DatabaseConstants.AccountTypeBin] = AccountTypeConstants.SystemType,
             [DatabaseConstants.ActiveBin] = true,
+            [DatabaseConstants.FailedLoginAttemptsBin] = 2L,
+            [DatabaseConstants.LockoutUntilBin] = new DateTime(2026, 5, 5, 13, 0, 0, DateTimeKind.Utc).Ticks,
             [DatabaseConstants.RolesBin] = new List<object> { "VIEW_BALANCES", "UPDATE_BALANCES" }
         }, 0, 0);
 
@@ -55,6 +57,8 @@ public class AccountRepositoryTests
         result.HashedPassword.ShouldBe("hashed");
         result.AccountType.ShouldBe(AccountTypeConstants.SystemType);
         result.IsActive.ShouldBeTrue();
+        result.FailedLoginAttempts.ShouldBe(2);
+        result.LockoutUntilUtc.ShouldBe(new DateTime(2026, 5, 5, 13, 0, 0, DateTimeKind.Utc));
         result.Roles.ShouldBe(["VIEW_BALANCES", "UPDATE_BALANCES"], ignoreOrder: true);
     }
 
@@ -116,6 +120,98 @@ public class AccountRepositoryTests
         }));
 
         ex.InnerException.ShouldBeOfType<AerospikeException>();
+    }
+
+    [Test]
+    public void GetRefreshToken_ShouldMapRecordToRefreshToken()
+    {
+        var record = new Record(new Dictionary<string, object>
+        {
+            [DatabaseConstants.TokenHashBin] = "hash",
+            [DatabaseConstants.LoginIdBin] = "user",
+            [DatabaseConstants.UserIdBin] = 1_234_567_890L,
+            [DatabaseConstants.AccountTypeBin] = AccountTypeConstants.SystemType,
+            [DatabaseConstants.IssuedAtBin] = new DateTime(2026, 5, 5, 12, 0, 0, DateTimeKind.Utc).Ticks,
+            [DatabaseConstants.ExpirationBin] = new DateTime(2026, 5, 5, 13, 0, 0, DateTimeKind.Utc).Ticks,
+            [DatabaseConstants.ConsumedBin] = true,
+            [DatabaseConstants.RevokedBin] = false
+        }, 0, 0);
+
+        _aerospikeClient.Setup(x => x.Get(It.IsAny<Policy>(), It.IsAny<Key>())).Returns(record);
+
+        var result = _sut.GetRefreshToken("token-id");
+
+        result.ShouldNotBeNull();
+        result!.TokenId.ShouldBe("token-id");
+        result.SecretHash.ShouldBe("hash");
+        result.LoginId.ShouldBe("user");
+        result.UserId.ShouldBe(1_234_567_890L);
+        result.AccountType.ShouldBe(AccountTypeConstants.SystemType);
+        result.IsConsumed.ShouldBeTrue();
+        result.IsRevoked.ShouldBeFalse();
+        result.Generation.ShouldBe(0);
+    }
+
+    [Test]
+    public void CreateRefreshToken_ShouldCallPut()
+    {
+        _sut.CreateRefreshToken(new RefreshTokenRecord
+        {
+            TokenId = "token-id",
+            SecretHash = "hash",
+            LoginId = "user",
+            UserId = 1_234_567_890L,
+            AccountType = AccountTypeConstants.UserType,
+            IssuedAtUtc = DateTime.UtcNow,
+            ExpiresAtUtc = DateTime.UtcNow.AddMinutes(60)
+        });
+
+        _aerospikeClient.Verify(x => x.Put(It.IsAny<WritePolicy>(), It.IsAny<Key>(), It.IsAny<Bin[]>()), Times.Once);
+    }
+
+    [Test]
+    public void UpdateRefreshToken_ShouldCallPut()
+    {
+        _sut.UpdateRefreshToken(new RefreshTokenRecord
+        {
+            TokenId = "token-id",
+            SecretHash = "hash",
+            LoginId = "user",
+            UserId = 1_234_567_890L,
+            AccountType = AccountTypeConstants.UserType,
+            IssuedAtUtc = DateTime.UtcNow,
+            ExpiresAtUtc = DateTime.UtcNow.AddMinutes(60),
+            IsConsumed = true
+        });
+
+        _aerospikeClient.Verify(x => x.Put(It.IsAny<WritePolicy>(), It.IsAny<Key>(), It.IsAny<Bin[]>()), Times.Once);
+    }
+
+    [Test]
+    public void TryConsumeRefreshToken_ShouldReturnTrue_WhenGenerationMatches()
+    {
+        var result = _sut.TryConsumeRefreshToken("token-id", 7);
+
+        result.ShouldBeTrue();
+        _aerospikeClient.Verify(x => x.Put(
+            It.Is<WritePolicy>(policy =>
+                policy.generationPolicy == GenerationPolicy.EXPECT_GEN_EQUAL &&
+                policy.generation == 7),
+            It.IsAny<Key>(),
+            It.Is<Bin[]>(bins => bins.Length == 1 && bins[0].name == DatabaseConstants.ConsumedBin)),
+            Times.Once);
+    }
+
+    [Test]
+    public void TryConsumeRefreshToken_ShouldReturnFalse_WhenGenerationDoesNotMatch()
+    {
+        _aerospikeClient
+            .Setup(x => x.Put(It.IsAny<WritePolicy>(), It.IsAny<Key>(), It.IsAny<Bin[]>()))
+            .Throws(CreateAerospikeException(ResultCode.GENERATION_ERROR));
+
+        var result = _sut.TryConsumeRefreshToken("token-id", 7);
+
+        result.ShouldBeFalse();
     }
 
     private static AerospikeException CreateAerospikeException(int resultCode)

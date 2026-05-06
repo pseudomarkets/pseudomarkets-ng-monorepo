@@ -70,13 +70,15 @@ public class RequireIdentityActionFilterTests
     {
         _identityAuthorizationClient
             .Setup(x => x.AuthorizeAsync("token", "VIEW_MARKET_DATA", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(AuthorizationDecision.Authorized());
+            .ReturnsAsync(AuthorizationDecision.Authorized(1_000_000_001L, "SYSTEM"));
 
         var context = CreateContext("Bearer token");
 
         await _sut.OnAuthorizationAsync(context);
 
         context.Result.ShouldBeNull();
+        context.HttpContext.Items[AuthorizedIdentityContext.UserIdItemKey].ShouldBe(1_000_000_001L);
+        context.HttpContext.Items[AuthorizedIdentityContext.TokenTypeItemKey].ShouldBe("SYSTEM");
         _identityAuthorizationClient.Verify(
             x => x.AuthorizeAsync("token", "VIEW_MARKET_DATA", It.IsAny<CancellationToken>()),
             Times.Once);

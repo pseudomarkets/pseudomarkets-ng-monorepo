@@ -1,3 +1,4 @@
+using System.Threading.RateLimiting;
 using Microsoft.Extensions.Options;
 using PseudoMarkets.Security.IdentityServer.Core.Accounts.Implementations;
 using PseudoMarkets.Security.IdentityServer.Core.Accounts.Interfaces;
@@ -28,8 +29,37 @@ public class Program
         builder.Services.AddSwaggerGen();
         builder.Services.Configure<AerospikeConfiguration>(builder.Configuration.GetRequiredSection("Aerospike"));
         builder.Services.Configure<JwtConfiguration>(builder.Configuration.GetRequiredSection("JwtConfiguration"));
+        builder.Services.Configure<IdentitySecurityConfiguration>(
+            builder.Configuration.GetSection(IdentitySecurityConfiguration.SectionName));
         builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<AerospikeConfiguration>>().Value);
         builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<JwtConfiguration>>().Value);
+        builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<IdentitySecurityConfiguration>>().Value);
+        builder.Services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            options.AddPolicy("identity-sensitive", context =>
+            {
+                var securityConfiguration = context.RequestServices.GetRequiredService<IdentitySecurityConfiguration>();
+                var permitLimit = securityConfiguration.SensitiveEndpointPermitLimit > 0
+                    ? securityConfiguration.SensitiveEndpointPermitLimit
+                    : 10;
+                var window = TimeSpan.FromMinutes(
+                    securityConfiguration.SensitiveEndpointWindowMinutes > 0
+                        ? securityConfiguration.SensitiveEndpointWindowMinutes
+                        : 1);
+                var partitionKey = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey,
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = permitLimit,
+                        Window = window,
+                        QueueLimit = 0,
+                        AutoReplenishment = true
+                    });
+            });
+        });
         builder.Services.AddSingleton<IAccountRepository, AccountRepository>();
         builder.Services.AddSingleton<IAccountProvisioningManager, AccountProvisioningManager>();
         builder.Services.AddSingleton<IAuthenticationManager, AuthenticationManager>();
@@ -53,6 +83,7 @@ public class Program
             app.UseHttpsRedirection();
         }
 
+        app.UseRateLimiter();
         app.UseAuthorization();
         app.MapControllers();
 

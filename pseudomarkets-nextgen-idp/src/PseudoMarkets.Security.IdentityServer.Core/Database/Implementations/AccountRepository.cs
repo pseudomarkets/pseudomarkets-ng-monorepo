@@ -144,6 +144,86 @@ public class AccountRepository : IAccountRepository
         }
     }
 
+    public RefreshTokenRecord? GetRefreshToken(string tokenId)
+    {
+        try
+        {
+            var record = _aerospikeClient.Get(_readPolicy, new Key(DatabaseConstants.Namespace, DatabaseConstants.TokensSet, tokenId));
+            if (record == null)
+            {
+                return null;
+            }
+
+            return MapRefreshTokenFromRecord(tokenId, record);
+        }
+        catch (AerospikeException ex)
+        {
+            _logger.LogError(ex, "Failed to read refresh token {TokenId} from Aerospike.", tokenId);
+            throw new IdentityDependencyException("Unable to access refresh token data.", ex);
+        }
+    }
+
+    public void CreateRefreshToken(RefreshTokenRecord refreshToken)
+    {
+        try
+        {
+            _aerospikeClient.Put(
+                _writePolicyCreate,
+                new Key(DatabaseConstants.Namespace, DatabaseConstants.TokensSet, refreshToken.TokenId),
+                MapToBins(refreshToken).ToArray());
+        }
+        catch (AerospikeException ex)
+        {
+            _logger.LogError(ex, "Failed to create refresh token {TokenId} in Aerospike.", refreshToken.TokenId);
+            throw new IdentityDependencyException("Unable to create refresh token data.", ex);
+        }
+    }
+
+    public void UpdateRefreshToken(RefreshTokenRecord refreshToken)
+    {
+        try
+        {
+            _aerospikeClient.Put(
+                _writePolicyUpdate,
+                new Key(DatabaseConstants.Namespace, DatabaseConstants.TokensSet, refreshToken.TokenId),
+                MapToBins(refreshToken).ToArray());
+        }
+        catch (AerospikeException ex)
+        {
+            _logger.LogError(ex, "Failed to update refresh token {TokenId} in Aerospike.", refreshToken.TokenId);
+            throw new IdentityDependencyException("Unable to update refresh token data.", ex);
+        }
+    }
+
+    public bool TryConsumeRefreshToken(string tokenId, int expectedGeneration)
+    {
+        try
+        {
+            var policy = new WritePolicy(_writePolicyUpdate)
+            {
+                generationPolicy = GenerationPolicy.EXPECT_GEN_EQUAL,
+                generation = expectedGeneration
+            };
+
+            _aerospikeClient.Put(
+                policy,
+                new Key(DatabaseConstants.Namespace, DatabaseConstants.TokensSet, tokenId),
+                new Bin(DatabaseConstants.ConsumedBin, true));
+
+            return true;
+        }
+        catch (AerospikeException ex) when (ex.Result == ResultCode.GENERATION_ERROR)
+        {
+            _logger.LogInformation("Refresh token {TokenId} was already consumed or updated.", tokenId);
+            return false;
+        }
+        catch (AerospikeException ex)
+        {
+            _logger.LogError(ex, "Failed to consume refresh token {TokenId} in Aerospike.", tokenId);
+            throw new IdentityDependencyException("Unable to consume refresh token data.", ex);
+        }
+    }
+
     private List<Bin> MapToBins(Account account)
     {
         var userId = new Bin(DatabaseConstants.UserIdBin, account.UserId);
@@ -151,13 +231,32 @@ public class AccountRepository : IAccountRepository
         var roles = new Bin(DatabaseConstants.RolesBin, account.Roles);
         var accountType = new Bin(DatabaseConstants.AccountTypeBin, account.AccountType);
         var activeBin = new Bin(DatabaseConstants.ActiveBin, account.IsActive);
+        var failedLoginAttemptsBin = new Bin(DatabaseConstants.FailedLoginAttemptsBin, account.FailedLoginAttempts);
+        var lockoutUntilBin = new Bin(
+            DatabaseConstants.LockoutUntilBin,
+            account.LockoutUntilUtc?.Ticks ?? 0L);
         
         var bins = new List<Bin>()
         {
-            userId, activeBin, roles, accountType, hashedPassword
+            userId, activeBin, roles, accountType, hashedPassword, failedLoginAttemptsBin, lockoutUntilBin
         };
         
         return bins;
+    }
+
+    private List<Bin> MapToBins(RefreshTokenRecord refreshToken)
+    {
+        return
+        [
+            new Bin(DatabaseConstants.TokenHashBin, refreshToken.SecretHash),
+            new Bin(DatabaseConstants.LoginIdBin, refreshToken.LoginId),
+            new Bin(DatabaseConstants.UserIdBin, refreshToken.UserId),
+            new Bin(DatabaseConstants.AccountTypeBin, refreshToken.AccountType),
+            new Bin(DatabaseConstants.IssuedAtBin, refreshToken.IssuedAtUtc.Ticks),
+            new Bin(DatabaseConstants.ExpirationBin, refreshToken.ExpiresAtUtc.Ticks),
+            new Bin(DatabaseConstants.ConsumedBin, refreshToken.IsConsumed),
+            new Bin(DatabaseConstants.RevokedBin, refreshToken.IsRevoked)
+        ];
     }
 
     private Account MapFromRecord(string loginId, Record record)
@@ -166,6 +265,8 @@ public class AccountRepository : IAccountRepository
         var hashedPassword = record.GetString(DatabaseConstants.HashedPasswordBin) ?? string.Empty;
         var accountType = record.GetString(DatabaseConstants.AccountTypeBin) ?? string.Empty;
         var isActive = record.GetBool(DatabaseConstants.ActiveBin);
+        var failedLoginAttempts = (int)record.GetLong(DatabaseConstants.FailedLoginAttemptsBin);
+        var lockoutUntilTicks = record.GetLong(DatabaseConstants.LockoutUntilBin);
         var rawRoles = record.GetList(DatabaseConstants.RolesBin)?.Cast<object?>() ?? Array.Empty<object?>();
 
         var roles = new List<string>();
@@ -185,7 +286,26 @@ public class AccountRepository : IAccountRepository
             HashedPassword = hashedPassword,
             AccountType = accountType,
             IsActive = isActive,
-            Roles = roles
+            Roles = roles,
+            FailedLoginAttempts = failedLoginAttempts,
+            LockoutUntilUtc = lockoutUntilTicks > 0 ? new DateTime(lockoutUntilTicks, DateTimeKind.Utc) : null
+        };
+    }
+
+    private static RefreshTokenRecord MapRefreshTokenFromRecord(string tokenId, Record record)
+    {
+        return new RefreshTokenRecord
+        {
+            TokenId = tokenId,
+            SecretHash = record.GetString(DatabaseConstants.TokenHashBin) ?? string.Empty,
+            LoginId = record.GetString(DatabaseConstants.LoginIdBin) ?? string.Empty,
+            UserId = record.GetLong(DatabaseConstants.UserIdBin),
+            AccountType = record.GetString(DatabaseConstants.AccountTypeBin) ?? string.Empty,
+            IssuedAtUtc = new DateTime(record.GetLong(DatabaseConstants.IssuedAtBin), DateTimeKind.Utc),
+            ExpiresAtUtc = new DateTime(record.GetLong(DatabaseConstants.ExpirationBin), DateTimeKind.Utc),
+            IsConsumed = record.GetBool(DatabaseConstants.ConsumedBin),
+            IsRevoked = record.GetBool(DatabaseConstants.RevokedBin),
+            Generation = record.generation
         };
     }
 }

@@ -13,7 +13,6 @@ namespace PseudoMarkets.OrderExecution.Service.Controllers;
 [AuthorizeWithIdentityServer(PlatformAuthorizationActions.ExecuteTrades)]
 public sealed class OrdersController : ControllerBase
 {
-    private const string BearerPrefix = "Bearer ";
     private readonly IOrderSubmissionService _orderSubmissionService;
 
     public OrdersController(IOrderSubmissionService orderSubmissionService)
@@ -26,7 +25,7 @@ public sealed class OrdersController : ControllerBase
         [FromBody] SubmitOrderRequest request,
         CancellationToken cancellationToken)
     {
-        var callerContext = new OrderCallerContext(GetAuthorizedUserId(), GetBearerToken());
+        var callerContext = new OrderCallerContext(GetAuthorizedUserId(), GetAuthorizedTokenType());
         return Ok(await _orderSubmissionService.SubmitAsync(request, callerContext, cancellationToken));
     }
 
@@ -41,12 +40,12 @@ public sealed class OrdersController : ControllerBase
         return 0;
     }
 
-    private string GetBearerToken()
+    private string GetAuthorizedTokenType()
     {
-        var authorizationHeader = Request.Headers.Authorization.ToString();
-        if (authorizationHeader.StartsWith(BearerPrefix, StringComparison.OrdinalIgnoreCase))
+        if (HttpContext.Items.TryGetValue(AuthorizedIdentityContext.TokenTypeItemKey, out var value) &&
+            value is string tokenType)
         {
-            return authorizationHeader[BearerPrefix.Length..].Trim();
+            return tokenType;
         }
 
         return string.Empty;

@@ -1,9 +1,9 @@
-using System.Text.Json;
 using PseudoMarkets.OrderExecution.Contracts.Enums;
 using PseudoMarkets.OrderExecution.Contracts.Orders;
 using PseudoMarkets.OrderExecution.Core.Exceptions;
 using PseudoMarkets.OrderExecution.Core.Interfaces;
 using PseudoMarkets.OrderExecution.Core.Models;
+using PseudoMarkets.Shared.Authorization.Constants;
 using PseudoMarkets.Shared.Entities.Entities.OrderExecution;
 using PseudoMarkets.TransactionProcessing.Contracts.Enums;
 using PseudoMarkets.TransactionProcessing.Contracts.Transactions;
@@ -13,12 +13,6 @@ namespace PseudoMarkets.OrderExecution.Core.Services;
 public sealed class OrderSubmissionService : IOrderSubmissionService
 {
     private const string SupportedPrimaryInstrumentType = "Equity";
-    private static readonly HashSet<string> SystemOnlyRoles =
-    [
-        "UPDATE_TRANSACTIONS",
-        "UPDATE_BALANCES",
-        "UPDATE_INSTRUMENTS"
-    ];
 
     private readonly ITradingInstrumentsClient _tradingInstrumentsClient;
     private readonly IMarketDataClient _marketDataClient;
@@ -168,7 +162,14 @@ public sealed class OrderSubmissionService : IOrderSubmissionService
                 "The authorized token did not resolve to a valid user.");
         }
 
-        if (IsSystemToken(callerContext.BearerToken))
+        if (string.IsNullOrWhiteSpace(callerContext.TokenType))
+        {
+            throw new OrderExecutionAuthorizationException(
+                OrderExecutionErrorCodes.InvalidUser,
+                "The authorized token did not include token type metadata.");
+        }
+
+        if (string.Equals(callerContext.TokenType, PlatformTokenTypes.System, StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
@@ -179,68 +180,6 @@ public sealed class OrderSubmissionService : IOrderSubmissionService
                 OrderExecutionErrorCodes.UserOwnershipViolation,
                 "User tokens may only submit orders for the authenticated user.");
         }
-    }
-
-    private static bool IsSystemToken(string bearerToken)
-    {
-        foreach (var role in ReadRoles(bearerToken))
-        {
-            if (SystemOnlyRoles.Contains(role))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static IEnumerable<string> ReadRoles(string bearerToken)
-    {
-        var parts = bearerToken.Split('.');
-        if (parts.Length < 2)
-        {
-            return [];
-        }
-
-        try
-        {
-            var payloadJson = Base64UrlDecode(parts[1]);
-            using var document = JsonDocument.Parse(payloadJson);
-            if (!document.RootElement.TryGetProperty("roles", out var rolesElement))
-            {
-                return [];
-            }
-
-            return rolesElement.ValueKind switch
-            {
-                JsonValueKind.String => rolesElement.GetString()?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [],
-                JsonValueKind.Array => rolesElement.EnumerateArray()
-                    .Where(x => x.ValueKind == JsonValueKind.String)
-                    .Select(x => x.GetString()!)
-                    .ToArray(),
-                _ => []
-            };
-        }
-        catch
-        {
-            return [];
-        }
-    }
-
-    private static string Base64UrlDecode(string value)
-    {
-        var padded = value.Replace('-', '+').Replace('_', '/');
-        switch (padded.Length % 4)
-        {
-            case 2:
-                padded += "==";
-                break;
-            case 3:
-                padded += "=";
-                break;
-        }
-
-        return System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(padded));
     }
 
     private static string NormalizeAndValidateSymbol(string symbol)
