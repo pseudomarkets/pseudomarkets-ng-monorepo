@@ -1,0 +1,126 @@
+# CI for pseudomarkets monorepo: build, unit tests, integration tests
+# Builds the solution, caches NuGet, runs unit tests, runs integration tests
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+env:
+  SOLUTION_PATH: './PseudoMarkets.NextGen.Platform.sln' # detected solution file in repo root
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: [7.0]
+        os: [ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.nuget/packages
+            ~/.local/share/NuGet/v3-cache
+            ~/.dotnet/tools
+          key: nuget-${{ matrix.dotnet-version }}-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/*.sln') }}
+          restore-keys: |
+            nuget-${{ matrix.dotnet-version }}-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore $SOLUTION_PATH
+
+      - name: Build
+        run: dotnet build $SOLUTION_PATH --no-restore -c Release
+
+      - name: Run unit tests
+        # Adjust filter if you use a different trait for integration tests
+        run: |
+          dotnet test $SOLUTION_PATH --no-build --verbosity:minimal --logger "trx;LogFileName=unittests.trx" --filter "Category!=Integration"
+      - name: Upload unit test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-results
+          path: '**/unittests.trx'
+
+  integration-tests:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: pseudomarkets_integration
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d pseudomarkets_integration -h localhost"
+          --health-interval=5s --health-timeout=2s --health-retries=20
+      aerospike:
+        image: aerospike/aerospike-server
+        ports:
+          - 3000:3000
+        options: >-
+          --health-cmd="bash -c 'nc -z localhost 3000'"
+          --health-interval=5s --health-timeout=2s --health-retries=20
+
+    env:
+      POSTGRES__CONNECTIONSTRING: "Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=pseudomarkets_integration"
+      AEROSPIKE__HOST: "localhost"
+      AEROSPIKE__PORT: "3000"
+      SOLUTION_PATH: './PseudoMarkets.NextGen.Platform.sln'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7.0
+
+      - name: Wait for Postgres and Aerospike to be ready
+        run: |
+          # Wait for Postgres
+          for i in {1..30}; do
+            pg_isready -h localhost -p 5432 -U postgres && break
+            echo "Waiting for Postgres..."
+            sleep 2
+          done
+          # Wait for Aerospike (port 3000)
+          for i in {1..30}; do
+            if nc -z localhost 3000; then break; fi
+            echo "Waiting for Aerospike..."
+            sleep 2
+          done
+
+      - name: Restore
+        run: dotnet restore $SOLUTION_PATH
+
+      - name: Build
+        run: dotnet build $SOLUTION_PATH --no-restore -c Release
+
+      - name: Run integration tests
+        run: |
+          dotnet test $SOLUTION_PATH --no-build --verbosity:minimal --logger "trx;LogFileName=integrationtests.trx" --filter "Category=Integration"
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: '**/integrationtests.trx'
