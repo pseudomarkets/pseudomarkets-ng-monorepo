@@ -50,7 +50,7 @@ jobs:
       - name: Run unit tests
         # Adjust filter if you use a different trait for integration tests
         run: |
-          dotnet test $SOLUTION_PATH --no-build --verbosity:minimal --logger "trx;LogFileName=unittests.trx" --filter "Category!=Integration"
+          dotnet test $SOLUTION_PATH --verbosity:minimal --logger "trx;LogFileName=unittests.trx" --filter "Category!=Integration"
       - name: Upload unit test results
         uses: actions/upload-artifact@v4
         with:
