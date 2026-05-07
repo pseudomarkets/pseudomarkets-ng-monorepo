@@ -11,4 +11,4 @@ Versions will be updated as releases are published
 
 ## Reporting a Vulnerability
 
-Please raise a GitHub Issue to report a vulnerability in this codebase. I will try to review it and come up with next steps as soon as I can. 
+Please report vulnerabilities privately using GitHub's Private Vulnerability Reporting feature (create a security advisory) rather than opening a public GitHub Issue. I will review reports and follow up with next steps as soon as possible.
