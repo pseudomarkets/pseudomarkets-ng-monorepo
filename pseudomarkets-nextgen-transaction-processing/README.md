@@ -95,7 +95,12 @@ From the service folder:
 dotnet run --project src/PseudoMarkets.TransactionProcessing.Service/PseudoMarkets.TransactionProcessing.Service.csproj
 ```
 
-Swagger UI will be available from the local launch profile once the app is running. Use the Swagger `Authorize` button with a JWT issued by the IDP before calling the write endpoints.
+By default, the launch settings use:
+
+- `https://localhost:7282`
+- `http://localhost:8082`
+
+Swagger UI will be available at [https://localhost:7282/swagger/index.html](https://localhost:7282/swagger/index.html). Use the Swagger `Authorize` button with a JWT issued by the IDP before calling the write endpoints.
 
 ## Running With Docker Compose
 

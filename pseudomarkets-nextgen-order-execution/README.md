@@ -46,7 +46,6 @@ Secrets are centralized in the repository-root `.env` file or deployment secrets
 
 - `ConnectionStrings__PseudoMarketsDb`
 - `IdentityAuthorization__IdentityServerBaseUrl`
-- `OrderExecution__IdentityServerBaseUrl`
 - `OrderExecution__SystemAccountLoginId`
 - `OrderExecution__SystemAccountPassword`
 - `OrderExecution__TradingInstrumentsBaseUrl`
@@ -80,6 +79,13 @@ dotnet run --project src/PseudoMarkets.OrderExecution.Service/PseudoMarkets.Orde
 ```
 
 The service loads the root `.env` file for local development secrets.
+
+By default, the launch settings use:
+
+- `https://localhost:7284`
+- `http://localhost:8084`
+
+Swagger UI is available at [https://localhost:7284/swagger/index.html](https://localhost:7284/swagger/index.html) for non-Docker local runs, or [http://localhost:8084/swagger/index.html](http://localhost:8084/swagger/index.html) through Docker Compose.
 
 ## Build And Test
 

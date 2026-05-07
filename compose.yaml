@@ -189,7 +189,6 @@ services:
       ASPNETCORE_URLS: http://+:8084
       ConnectionStrings__PseudoMarketsDb: Host=postgres;Port=5432;Database=pseudomarkets_db;Username=postgres;Password=${Postgres__Password:-postgres}
       IdentityAuthorization__IdentityServerBaseUrl: http://pseudomarkets-nextgen-idp-web:8080
-      OrderExecution__IdentityServerBaseUrl: http://pseudomarkets-nextgen-idp-web:8080
       OrderExecution__TradingInstrumentsBaseUrl: http://pseudomarkets-nextgen-trading-instruments-service:8083
       OrderExecution__MarketDataBaseUrl: http://pseudomarkets-nextgen-marketdata-service:8081
       OrderExecution__TransactionProcessingBaseUrl: http://pseudomarkets-nextgen-transaction-processing-service:8082

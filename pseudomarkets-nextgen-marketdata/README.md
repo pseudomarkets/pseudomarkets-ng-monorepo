@@ -136,7 +136,7 @@ dotnet run --project src/PseudoMarkets.MarketData.Service/PseudoMarkets.MarketDa
 By default, the launch settings use:
 
 - `https://localhost:7228`
-- `http://localhost:5286`
+- `http://localhost:8081`
 
 Swagger UI is available at:
 

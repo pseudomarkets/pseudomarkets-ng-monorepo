@@ -38,6 +38,8 @@ The platform is split into focused services and shared libraries:
 
 ## Service Ports
 
+These are the default HTTP ports exposed by Docker Compose. For local non-Docker runs, the same HTTP ports are used for every service except the IDP, which keeps its local HTTP endpoint on `http://localhost:5051` so dependent services can use the default development configuration without overrides.
+
 - IDP Swagger: [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
 - Market Data Swagger: [http://localhost:8081/swagger/index.html](http://localhost:8081/swagger/index.html)
 - Transaction Processing Swagger: [http://localhost:8082/swagger/index.html](http://localhost:8082/swagger/index.html)
@@ -121,6 +123,14 @@ dotnet run --project pseudomarkets-nextgen-order-execution/src/PseudoMarkets.Ord
 ```
 
 The services load the root `.env` file for local development secrets.
+
+Default local non-Docker URLs:
+
+- IDP: `http://localhost:5051` or `https://localhost:7092`
+- Market Data: `http://localhost:8081` or `https://localhost:7228`
+- Transaction Processing: `http://localhost:8082` or `https://localhost:7282`
+- Trading Instruments: `http://localhost:8083` or `https://localhost:7183`
+- Order Execution: `http://localhost:8084` or `https://localhost:7284`
 
 To seed trading instruments without Docker, apply shared EF migrations by starting the Trading Instruments service, then run the SQL scripts in this order:
 

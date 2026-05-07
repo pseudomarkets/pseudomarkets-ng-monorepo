@@ -5,6 +5,7 @@ using PseudoMarkets.OrderExecution.Core.Clients;
 using PseudoMarkets.OrderExecution.Core.Configuration;
 using PseudoMarkets.OrderExecution.Core.Interfaces;
 using PseudoMarkets.OrderExecution.Core.Services;
+using PseudoMarkets.Shared.Authorization.Configuration;
 
 namespace PseudoMarkets.OrderExecution.Core.DependencyInjection;
 
@@ -18,8 +19,13 @@ public static class ServiceCollectionExtensions
 
         services.AddHttpClient("OrderExecution.Identity", (serviceProvider, client) =>
         {
-            var options = serviceProvider.GetRequiredService<IOptions<OrderExecutionConfiguration>>().Value;
-            ConfigureClient(client, options.IdentityServerBaseUrl, options.TimeoutSeconds);
+            var orderExecutionOptions = serviceProvider.GetRequiredService<IOptions<OrderExecutionConfiguration>>().Value;
+            var identityAuthorizationOptions =
+                serviceProvider.GetRequiredService<IOptions<IdentityAuthorizationConfiguration>>().Value;
+            ConfigureClient(
+                client,
+                identityAuthorizationOptions.IdentityServerBaseUrl,
+                orderExecutionOptions.TimeoutSeconds);
         });
 
         services.AddSingleton<ISystemTokenProvider>(serviceProvider =>

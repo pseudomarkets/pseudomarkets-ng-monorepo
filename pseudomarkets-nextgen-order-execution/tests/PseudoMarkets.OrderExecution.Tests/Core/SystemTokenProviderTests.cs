@@ -69,7 +69,6 @@ public sealed class SystemTokenProviderTests
 
         var options = Options.Create(new OrderExecutionConfiguration
         {
-            IdentityServerBaseUrl = "http://localhost:8080",
             SystemAccountLoginId = "system-user",
             SystemAccountPassword = "system-password",
             TokenRefreshBufferSeconds = 60
