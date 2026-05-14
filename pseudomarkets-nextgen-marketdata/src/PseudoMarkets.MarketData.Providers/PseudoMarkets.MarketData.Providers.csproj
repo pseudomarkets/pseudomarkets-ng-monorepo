@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="TwelveDataSharp" Version="1.1.0" />
+    <PackageReference Include="FinnHubSharp" Version="1.0.4" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -1,10 +1,15 @@
 using System;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
+using PseudoMarkets.Shared.Entities.Database;
 
 #nullable disable
 
 namespace PseudoMarkets.Shared.Entities.Migrations
 {
+    [DbContext(typeof(PseudoMarketsDbContext))]
+    [Migration("20260506000000_AddOrderExecutions")]
     public partial class AddOrderExecutions : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)

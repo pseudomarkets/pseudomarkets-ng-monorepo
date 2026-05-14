@@ -6,6 +6,7 @@ namespace PseudoMarkets.MarketData.Core.Services;
 
 public class QuoteService : IQuoteService
 {
+    private const string CachedSourceSuffix = " Cached";
     private readonly IMarketDataCache _marketDataCache;
     private readonly IMarketDataProvider _marketDataProvider;
 
@@ -27,7 +28,7 @@ public class QuoteService : IQuoteService
         var cachedQuote = await _marketDataCache.GetLatestQuoteAsync(normalizedSymbol, cancellationToken);
         if (cachedQuote is not null)
         {
-            return cachedQuote;
+            return CreateCachedQuoteResponse(cachedQuote);
         }
 
         var providerQuote = await _marketDataProvider.GetLatestQuoteAsync(normalizedSymbol, cancellationToken);
@@ -39,7 +40,7 @@ public class QuoteService : IQuoteService
         return providerQuote;
     }
 
-    public async Task<DetailedQuoteResponse?> GetDetailedQuoteAsync(string symbol, string interval = "1min", CancellationToken cancellationToken = default)
+    public async Task<DetailedQuoteResponse?> GetDetailedQuoteAsync(string symbol, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(symbol))
         {
@@ -47,18 +48,17 @@ public class QuoteService : IQuoteService
         }
 
         var normalizedSymbol = symbol.Trim().ToUpperInvariant();
-        var normalizedInterval = NormalizeInterval(interval);
 
-        var cachedQuote = await _marketDataCache.GetDetailedQuoteAsync(normalizedSymbol, normalizedInterval, cancellationToken);
+        var cachedQuote = await _marketDataCache.GetDetailedQuoteAsync(normalizedSymbol, cancellationToken);
         if (cachedQuote is not null)
         {
-            return cachedQuote;
+            return CreateCachedDetailedQuoteResponse(cachedQuote);
         }
 
-        var providerQuote = await _marketDataProvider.GetDetailedQuoteAsync(normalizedSymbol, normalizedInterval, cancellationToken);
+        var providerQuote = await _marketDataProvider.GetDetailedQuoteAsync(normalizedSymbol, cancellationToken);
         if (providerQuote is not null)
         {
-            await _marketDataCache.SetDetailedQuoteAsync(providerQuote, normalizedInterval, cancellationToken);
+            await _marketDataCache.SetDetailedQuoteAsync(providerQuote, cancellationToken);
         }
 
         return providerQuote;
@@ -81,8 +81,43 @@ public class QuoteService : IQuoteService
         return providerIndices;
     }
 
-    private static string NormalizeInterval(string? interval)
+    private static QuoteResponse CreateCachedQuoteResponse(QuoteResponse quote)
     {
-        return string.IsNullOrWhiteSpace(interval) ? "1min" : interval.Trim();
+        return new QuoteResponse
+        {
+            Symbol = quote.Symbol,
+            Price = quote.Price,
+            Source = AppendCachedSuffix(quote.Source),
+            TimestampUtc = quote.TimestampUtc
+        };
+    }
+
+    private static DetailedQuoteResponse CreateCachedDetailedQuoteResponse(DetailedQuoteResponse quote)
+    {
+        return new DetailedQuoteResponse
+        {
+            Symbol = quote.Symbol,
+            Name = quote.Name,
+            Open = quote.Open,
+            High = quote.High,
+            Low = quote.Low,
+            Close = quote.Close,
+            PreviousClose = quote.PreviousClose,
+            Change = quote.Change,
+            ChangePercentage = quote.ChangePercentage,
+            Source = AppendCachedSuffix(quote.Source),
+            TimestampUtc = quote.TimestampUtc
+        };
+    }
+
+    private static string AppendCachedSuffix(string source)
+    {
+        if (string.IsNullOrWhiteSpace(source) ||
+            source.EndsWith(CachedSourceSuffix, StringComparison.OrdinalIgnoreCase))
+        {
+            return source;
+        }
+
+        return $"{source}{CachedSourceSuffix}";
     }
 }

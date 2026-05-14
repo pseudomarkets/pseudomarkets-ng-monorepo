@@ -38,7 +38,7 @@ public class QuoteServiceTests
         {
             Symbol = "AAPL",
             Price = 123.45m,
-            Source = "Aerospike",
+            Source = "Finnhub",
             TimestampUtc = DateTimeOffset.UtcNow
         };
 
@@ -46,8 +46,42 @@ public class QuoteServiceTests
 
         var result = await _sut.GetLatestQuoteAsync("aapl");
 
-        result.ShouldBe(cachedQuote);
+        result.ShouldNotBeNull();
+        result.ShouldNotBeSameAs(cachedQuote);
+        result.Symbol.ShouldBe("AAPL");
+        result.Price.ShouldBe(123.45m);
+        result.Source.ShouldBe("Finnhub Cached");
         _marketDataProvider.Verify(x => x.GetLatestQuoteAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Test]
+    public async Task GetDetailedQuoteAsync_ShouldReturnCachedQuote_WithCachedSourceSuffix()
+    {
+        var cachedQuote = new DetailedQuoteResponse
+        {
+            Symbol = "AAPL",
+            Name = "Apple Inc.",
+            Open = 100m,
+            High = 101m,
+            Low = 99m,
+            Close = 100.5m,
+            PreviousClose = 99.5m,
+            Change = 1m,
+            ChangePercentage = 1.01m,
+            Source = "Finnhub",
+            TimestampUtc = DateTimeOffset.UtcNow
+        };
+
+        _marketDataCache.Setup(x => x.GetDetailedQuoteAsync("AAPL", It.IsAny<CancellationToken>())).ReturnsAsync(cachedQuote);
+
+        var result = await _sut.GetDetailedQuoteAsync("aapl");
+
+        result.ShouldNotBeNull();
+        result.ShouldNotBeSameAs(cachedQuote);
+        result.Symbol.ShouldBe("AAPL");
+        result.Name.ShouldBe("Apple Inc.");
+        result.Source.ShouldBe("Finnhub Cached");
+        _marketDataProvider.Verify(x => x.GetDetailedQuoteAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Test]
@@ -57,7 +91,7 @@ public class QuoteServiceTests
         {
             Symbol = "MSFT",
             Price = 456.78m,
-            Source = "Twelve Data",
+            Source = "Finnhub",
             TimestampUtc = DateTimeOffset.UtcNow
         };
 
@@ -81,21 +115,20 @@ public class QuoteServiceTests
             High = 101m,
             Low = 99m,
             Close = 100.5m,
-            Volume = 1_000,
             PreviousClose = 99.5m,
             Change = 1m,
             ChangePercentage = 1.01m,
-            Source = "Twelve Data",
+            Source = "Finnhub",
             TimestampUtc = DateTimeOffset.UtcNow
         };
 
-        _marketDataCache.Setup(x => x.GetDetailedQuoteAsync("AAPL", "1min", It.IsAny<CancellationToken>())).ReturnsAsync((DetailedQuoteResponse?)null);
-        _marketDataProvider.Setup(x => x.GetDetailedQuoteAsync("AAPL", "1min", It.IsAny<CancellationToken>())).ReturnsAsync(detailedQuote);
+        _marketDataCache.Setup(x => x.GetDetailedQuoteAsync("AAPL", It.IsAny<CancellationToken>())).ReturnsAsync((DetailedQuoteResponse?)null);
+        _marketDataProvider.Setup(x => x.GetDetailedQuoteAsync("AAPL", It.IsAny<CancellationToken>())).ReturnsAsync(detailedQuote);
 
-        var result = await _sut.GetDetailedQuoteAsync("aapl", "1min");
+        var result = await _sut.GetDetailedQuoteAsync("aapl");
 
         result.ShouldBe(detailedQuote);
-        _marketDataCache.Verify(x => x.SetDetailedQuoteAsync(detailedQuote, "1min", It.IsAny<CancellationToken>()), Times.Once);
+        _marketDataCache.Verify(x => x.SetDetailedQuoteAsync(detailedQuote, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Test]
@@ -105,11 +138,11 @@ public class QuoteServiceTests
         {
             Indices =
             [
-                new IndexSnapshotResponse { Name = "DOW", Points = 100m },
+                new IndexSnapshotResponse { Name = "Dow Jones Industrial Average", Points = 100m },
                 new IndexSnapshotResponse { Name = "S&P 500", Points = 200m },
                 new IndexSnapshotResponse { Name = "NASDAQ Composite", Points = 300m }
             ],
-            Source = "Twelve Data Time Series",
+            Source = "Yahoo Finance",
             TimestampUtc = DateTimeOffset.UtcNow
         };
 

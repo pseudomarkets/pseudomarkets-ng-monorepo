@@ -44,10 +44,10 @@ public class Program
             });
         });
         builder.Services.Configure<AerospikeConfiguration>(builder.Configuration.GetRequiredSection("Aerospike"));
-        builder.Services.Configure<TwelveDataConfiguration>(builder.Configuration.GetRequiredSection("TwelveData"));
+        builder.Services.Configure<FinnHubConfiguration>(builder.Configuration.GetRequiredSection("FinnHub"));
         builder.Services.Configure<MarketDataCacheConfiguration>(builder.Configuration.GetRequiredSection("MarketDataCache"));
         builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<AerospikeConfiguration>>().Value);
-        builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<TwelveDataConfiguration>>().Value);
+        builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<FinnHubConfiguration>>().Value);
         builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<MarketDataCacheConfiguration>>().Value);
         builder.Services.AddMarketDataCore();
         builder.Services.AddMarketDataProviders();

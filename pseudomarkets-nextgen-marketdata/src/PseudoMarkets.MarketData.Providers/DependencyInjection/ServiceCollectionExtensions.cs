@@ -8,7 +8,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddMarketDataProviders(this IServiceCollection services)
     {
-        services.AddHttpClient<IMarketDataProvider, TwelveDataMarketDataProvider>(client =>
+        services.AddHttpClient<IMarketDataProvider, FinnHubMarketDataProvider>(client =>
         {
             client.Timeout = TimeSpan.FromSeconds(10);
         });

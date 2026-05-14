@@ -77,11 +77,11 @@ public class MarketDataController : ControllerBase
 
     [AuthorizeWithIdentityServer(PlatformAuthorizationActions.ViewMarketData)]
     [HttpGet("quote/{symbol}/detailed")]
-    public async Task<ActionResult<DetailedQuoteResponse>> GetDetailedQuote(string symbol, [FromQuery] string interval = "1min", CancellationToken cancellationToken = default)
+    public async Task<ActionResult<DetailedQuoteResponse>> GetDetailedQuote(string symbol, CancellationToken cancellationToken = default)
     {
         try
         {
-            var quote = await _quoteService.GetDetailedQuoteAsync(symbol, interval, cancellationToken);
+            var quote = await _quoteService.GetDetailedQuoteAsync(symbol, cancellationToken);
             if (quote is null)
             {
                 return NotFound(CreateProblem(StatusCodes.Status404NotFound, "Detailed quote not found", $"No detailed quote was found for symbol '{symbol}'."));

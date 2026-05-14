@@ -28,7 +28,9 @@ public class AerospikeMarketDataCacheTests
         };
         _cacheConfiguration = new MarketDataCacheConfiguration
         {
-            QuoteTtlSeconds = 15
+            QuoteTtlSeconds = 900,
+            DetailedQuoteTtlSeconds = 900,
+            IndicesTtlSeconds = 900
         };
         _logger = Mock.Of<ILogger<AerospikeMarketDataCache>>();
     }
@@ -77,7 +79,7 @@ public class AerospikeMarketDataCacheTests
         {
             Symbol = "MSFT",
             Price = 456.78m,
-            Source = "Twelve Data",
+            Source = "Finnhub",
             TimestampUtc = DateTimeOffset.UtcNow
         });
 
@@ -96,7 +98,6 @@ public class AerospikeMarketDataCacheTests
             ["high"] = "101",
             ["low"] = "99",
             ["close"] = "100.5",
-            ["volume"] = 1000L,
             ["previousClose"] = "99.5",
             ["change"] = "1",
             ["changePercentage"] = "1.01",
@@ -107,7 +108,7 @@ public class AerospikeMarketDataCacheTests
         _aerospikeClient.Setup(x => x.Get(It.IsAny<Policy>(), It.IsAny<Key>())).Returns(record);
         var sut = CreateSut();
 
-        var result = await sut.GetDetailedQuoteAsync("AAPL", "1min");
+        var result = await sut.GetDetailedQuoteAsync("AAPL");
 
         result.ShouldNotBeNull();
         result.Name.ShouldBe("Apple Inc.");
@@ -122,11 +123,11 @@ public class AerospikeMarketDataCacheTests
         {
             Indices =
             [
-                new IndexSnapshotResponse { Name = "DOW", Points = 100m },
+                new IndexSnapshotResponse { Name = "Dow Jones Industrial Average", Points = 100m },
                 new IndexSnapshotResponse { Name = "S&P 500", Points = 200m },
                 new IndexSnapshotResponse { Name = "NASDAQ Composite", Points = 300m }
             ],
-            Source = "Twelve Data Time Series",
+            Source = "Yahoo Finance",
             TimestampUtc = DateTimeOffset.UtcNow
         };
 
@@ -142,7 +143,7 @@ public class AerospikeMarketDataCacheTests
 
         result.ShouldNotBeNull();
         result.Indices.Count.ShouldBe(3);
-        result.Source.ShouldBe("Twelve Data Time Series");
+        result.Source.ShouldBe("Yahoo Finance");
     }
 
     private AerospikeMarketDataCache CreateSut()

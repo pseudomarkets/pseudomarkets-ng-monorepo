@@ -29,7 +29,7 @@ public class MarketDataControllerTests
         {
             Symbol = "AAPL",
             Price = 123.45m,
-            Source = "Twelve Data",
+            Source = "Finnhub",
             TimestampUtc = DateTimeOffset.UtcNow
         };
 
@@ -76,17 +76,16 @@ public class MarketDataControllerTests
             High = 101m,
             Low = 99m,
             Close = 100.5m,
-            Volume = 1000,
             PreviousClose = 99.5m,
             Change = 1m,
             ChangePercentage = 1.01m,
-            Source = "Twelve Data",
+            Source = "Finnhub",
             TimestampUtc = DateTimeOffset.UtcNow
         };
 
-        _quoteService.Setup(x => x.GetDetailedQuoteAsync("AAPL", "1min", It.IsAny<CancellationToken>())).ReturnsAsync(quote);
+        _quoteService.Setup(x => x.GetDetailedQuoteAsync("AAPL", It.IsAny<CancellationToken>())).ReturnsAsync(quote);
 
-        var result = await _sut.GetDetailedQuote("AAPL", "1min", CancellationToken.None);
+        var result = await _sut.GetDetailedQuote("AAPL", CancellationToken.None);
 
         var okResult = result.Result.ShouldBeOfType<OkObjectResult>();
         okResult.Value.ShouldBe(quote);
@@ -99,9 +98,9 @@ public class MarketDataControllerTests
         {
             Indices =
             [
-                new IndexSnapshotResponse { Name = "DOW", Points = 100m }
+                new IndexSnapshotResponse { Name = "Dow Jones Industrial Average", Points = 100m }
             ],
-            Source = "Twelve Data Time Series",
+            Source = "Yahoo Finance",
             TimestampUtc = DateTimeOffset.UtcNow
         };
 

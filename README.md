@@ -20,7 +20,7 @@ The platform is split into focused services and shared libraries:
 - `pseudomarkets-nextgen-idp`
   Identity provider for account creation, authentication, JWT generation, and centralized authorization checks.
 - `pseudomarkets-nextgen-marketdata`
-  Market data API for quotes, detailed quotes, and indices. It uses Twelve Data for provider data and Aerospike for caching.
+  Market data API for quotes, detailed quotes, and indices. It uses Finnhub for quote data, Yahoo Finance for U.S. indices, and Aerospike for caching.
 - `pseudomarkets-nextgen-transaction-processing`
   Write-side transaction processor for cash movements, trade postings, voids, settled/unsettled balances, settled/unsettled positions, lots, and settlement-date calculation.
 - `pseudomarkets-nextgen-instrument-db`
@@ -66,7 +66,7 @@ Set these values in `.env`:
 
 - `JwtConfiguration__Key`
 - `IdentitySecurity__SystemAccountBypassKey`
-- `TwelveData__ApiKey`
+- `FinnHub__ApiKey`
 - `Postgres__Password`
 - `OrderExecution__SystemAccountLoginId`
 - `OrderExecution__SystemAccountPassword`

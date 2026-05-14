@@ -1,13 +1,14 @@
 # Pseudo Markets NextGen Market Data Service
 
-`pseudomarkets-nextgen-marketdata` is the next-generation market data service for the Pseudo Markets platform. It exposes HTTP endpoints for real-time quote retrieval, detailed quote data, and U.S. market indices, with Aerospike-backed caching and Twelve Data as the upstream provider.
+`pseudomarkets-nextgen-marketdata` is the next-generation market data service for the Pseudo Markets platform. It exposes HTTP endpoints for real-time quote retrieval, detailed quote data, and U.S. market indices, with Aerospike-backed caching, Finnhub as the upstream quote provider, and Yahoo Finance as the upstream indices source.
 
 ## Tech Stack
 
 - .NET 10 ASP.NET Core Web API
 - C# class libraries for contracts, core orchestration, provider integration, and cache access
 - Aerospike Community Edition for low-latency market data caching
-- Twelve Data via the published `TwelveDataSharp` NuGet package
+- Finnhub via the published `FinnHubSharp` NuGet package
+- Yahoo Finance chart API for U.S. indices
 - `PseudoMarkets.Shared.Authorization` for reusable IDP-backed authorization
 - Swagger UI / OpenAPI for local API exploration
 - Docker and Docker Compose for local containerized development
@@ -22,7 +23,7 @@ The project is split into five main service projects, with a shared platform dep
 - `src/PseudoMarkets.MarketData.Core`
   Contains service orchestration, interfaces, configuration models, and typed exceptions.
 - `src/PseudoMarkets.MarketData.Providers`
-  Integrates with Twelve Data and follows the legacy quote and indices flow where appropriate.
+  Integrates with Finnhub for quotes and Yahoo Finance for U.S. indices while preserving the Market Data Service API surface.
 - `src/PseudoMarkets.MarketData.Cache`
   Provides the Aerospike-backed cache implementation.
 - `src/PseudoMarkets.MarketData.Contracts`
@@ -36,7 +37,7 @@ At runtime, the flow looks like this:
 2. The shared authorization filter sends the incoming JWT to the IDP authorization endpoint and requires the `VIEW_MARKET_DATA` action.
 3. Controllers call the quote service in the core layer.
 4. The quote service checks Aerospike cache first.
-5. On a cache miss, the provider layer calls Twelve Data.
+5. On a cache miss, the provider layer calls Finnhub for quote data or Yahoo Finance for U.S. indices.
 6. Successful results are written back to Aerospike and returned to the client.
 
 Aerospike uses the namespace `nsPseudoMarkets` and the market data service uses hardcoded internal sets for quotes, detailed quotes, and indices.
@@ -121,7 +122,7 @@ Copy-Item .env.example .env
 
 Then set at least:
 
-- `TwelveData__ApiKey`
+- `FinnHub__ApiKey`
 
 The market data service now loads the shared root `.env` file automatically for local non-Docker runs.
 
@@ -190,7 +191,7 @@ docker compose -f compose.yaml down
 - Aerospike data is persisted in the shared repo-root directory `../.docker-data/aerospike`.
 - The Compose stack runs the market data service in `Development` mode so Swagger UI is available locally.
 - The service-local Compose file pins Aerospike to `linux/arm64`, which keeps it aligned with Apple Silicon / M-series development machines.
-- The Twelve Data API key is read from the shared repo-root `.env` file through `../.env`.
+- The Finnhub API key is read from the shared repo-root `.env` file through `../.env`.
 
 ## Configuration
 
@@ -199,9 +200,9 @@ docker compose -f compose.yaml down
 `src/PseudoMarkets.MarketData.Service/appsettings.Development.json` contains the default local development values for:
 
 - Aerospike host/port
-- Twelve Data base URL
+- Finnhub base URL
 - local IDP authorization base URL
-- cache TTL values
+- cache TTL values, which default to 15 minutes for quote, detailed quote, and indices cache records
 
 Secrets are centralized in the repository-root `.env` file instead of committed appsettings files.
 
@@ -212,20 +213,20 @@ When running in Docker Compose, the web container overrides configuration with e
 - `Aerospike__Host`
 - `Aerospike__Port`
 - `IdentityAuthorization__IdentityServerBaseUrl`
-- `TwelveData__ApiKey`
+- `FinnHub__ApiKey`
 
-The Compose files load `TwelveData__ApiKey` from the shared repo-root `.env` file.
+The Compose files load `FinnHub__ApiKey` from the shared repo-root `.env` file.
 
 ## API Overview
 
 Current primary endpoints include:
 
 - `GET /api/marketdata/quote/{symbol}`
-  Returns the latest quote for a symbol.
-- `GET /api/marketdata/quote/{symbol}/detailed?interval=1min`
-  Returns a detailed quote snapshot using the requested interval.
+  Returns the latest quote for a symbol. Cache hits are surfaced in the response source, for example `Finnhub Cached`.
+- `GET /api/marketdata/quote/{symbol}/detailed`
+  Returns a detailed quote snapshot. The response includes the security name from Finnhub symbol info, omits unsupported legacy fields such as volume, and marks cache hits in the source, for example `Finnhub Cached`.
 - `GET /api/marketdata/indices`
-  Returns cached or provider-backed U.S. market index snapshots.
+  Returns cached or provider-backed U.S. market index snapshots for the S&P 500, Dow Jones Industrial Average, and NASDAQ Composite using Yahoo Finance `regularMarketPrice`.
 
 All endpoints require a Bearer token issued by the IDP with the `VIEW_MARKET_DATA` role.
 Use Swagger UI to inspect request and response schemas interactively and supply the token through the built-in `Authorize` button.
@@ -263,9 +264,9 @@ dotnet test pseudomarkets-nextgen-marketdata/PseudoMarkets.MarketData.Service.sl
 docker compose -f compose.yaml ps
 ```
 
-### Quote requests fail against Twelve Data
+### Quote requests fail against Finnhub
 
-- Verify `TwelveData__ApiKey` is set in the repo-root `.env` file.
+- Verify `FinnHub__ApiKey` is set in the repo-root `.env` file.
 - If you are running without Docker, make sure the app was started from within the repository so it can locate the shared `.env` file.
 
 ### Authorized requests fail with 401 or 403

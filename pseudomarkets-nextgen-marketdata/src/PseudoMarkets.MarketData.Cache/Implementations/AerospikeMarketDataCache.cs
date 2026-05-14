@@ -23,11 +23,9 @@ public class AerospikeMarketDataCache : IMarketDataCache
     private const string HighBinName = "high";
     private const string LowBinName = "low";
     private const string CloseBinName = "close";
-    private const string VolumeBinName = "volume";
     private const string PreviousCloseBinName = "previousClose";
     private const string ChangeBinName = "change";
-    private const string ChangePercentageBinName = "changePercentage";
-    private const string IntervalBinName = "interval";
+    private const string ChangePercentageBinName = "changePct";
     private const string IndicesPayloadBinName = "indicesPayload";
 
     private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web);
@@ -146,7 +144,7 @@ public class AerospikeMarketDataCache : IMarketDataCache
         return Task.CompletedTask;
     }
 
-    public Task<DetailedQuoteResponse?> GetDetailedQuoteAsync(string symbol, string interval, CancellationToken cancellationToken = default)
+    public Task<DetailedQuoteResponse?> GetDetailedQuoteAsync(string symbol, CancellationToken cancellationToken = default)
     {
         if (_aerospikeClient is null)
         {
@@ -155,7 +153,7 @@ public class AerospikeMarketDataCache : IMarketDataCache
 
         try
         {
-            var record = _aerospikeClient.Get(_readPolicy, CreateDetailedQuoteKey(symbol, interval));
+            var record = _aerospikeClient.Get(_readPolicy, CreateDetailedQuoteKey(symbol));
             if (record is null)
             {
                 return Task.FromResult<DetailedQuoteResponse?>(null);
@@ -175,7 +173,6 @@ public class AerospikeMarketDataCache : IMarketDataCache
                 High = ParseDecimal(record.GetString(HighBinName)),
                 Low = ParseDecimal(record.GetString(LowBinName)),
                 Close = ParseDecimal(record.GetString(CloseBinName)),
-                Volume = record.GetLong(VolumeBinName),
                 PreviousClose = ParseDecimal(record.GetString(PreviousCloseBinName)),
                 Change = ParseDecimal(record.GetString(ChangeBinName)),
                 ChangePercentage = ParseDecimal(record.GetString(ChangePercentageBinName)),
@@ -192,7 +189,7 @@ public class AerospikeMarketDataCache : IMarketDataCache
         }
     }
 
-    public Task SetDetailedQuoteAsync(DetailedQuoteResponse quote, string interval, CancellationToken cancellationToken = default)
+    public Task SetDetailedQuoteAsync(DetailedQuoteResponse quote, CancellationToken cancellationToken = default)
     {
         if (_aerospikeClient is null)
         {
@@ -209,18 +206,16 @@ public class AerospikeMarketDataCache : IMarketDataCache
 
             _aerospikeClient.Put(
                 writePolicy,
-                CreateDetailedQuoteKey(quote.Symbol, interval),
+                CreateDetailedQuoteKey(quote.Symbol),
                 new Bin(SymbolBinName, quote.Symbol),
                 new Bin(NameBinName, quote.Name),
                 new Bin(OpenBinName, quote.Open.ToString(CultureInfo.InvariantCulture)),
                 new Bin(HighBinName, quote.High.ToString(CultureInfo.InvariantCulture)),
                 new Bin(LowBinName, quote.Low.ToString(CultureInfo.InvariantCulture)),
                 new Bin(CloseBinName, quote.Close.ToString(CultureInfo.InvariantCulture)),
-                new Bin(VolumeBinName, quote.Volume),
                 new Bin(PreviousCloseBinName, quote.PreviousClose.ToString(CultureInfo.InvariantCulture)),
                 new Bin(ChangeBinName, quote.Change.ToString(CultureInfo.InvariantCulture)),
                 new Bin(ChangePercentageBinName, quote.ChangePercentage.ToString(CultureInfo.InvariantCulture)),
-                new Bin(IntervalBinName, interval),
                 new Bin(SourceBinName, quote.Source),
                 new Bin(TimestampUtcBinName, quote.TimestampUtc.ToString("O", CultureInfo.InvariantCulture)));
         }
@@ -297,9 +292,9 @@ public class AerospikeMarketDataCache : IMarketDataCache
         return new Key(NamespaceName, QuoteSetName, symbol.ToUpperInvariant());
     }
 
-    private Key CreateDetailedQuoteKey(string symbol, string interval)
+    private Key CreateDetailedQuoteKey(string symbol)
     {
-        return new Key(NamespaceName, DetailedQuoteSetName, $"{symbol.ToUpperInvariant()}:{interval}");
+        return new Key(NamespaceName, DetailedQuoteSetName, symbol.ToUpperInvariant());
     }
 
     private Key CreateIndicesKey()
