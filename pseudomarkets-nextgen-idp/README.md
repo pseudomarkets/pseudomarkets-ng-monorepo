@@ -28,10 +28,12 @@ At runtime, the flow looks like this:
 1. Requests enter the ASP.NET Core web app.
 2. Controllers call core managers for account provisioning, authentication, or authorization.
 3. Core managers use the Aerospike-backed repository for persistence and lookup.
-4. Authentication returns signed JWTs plus opaque refresh tokens.
-5. Refresh requests rotate opaque refresh tokens stored in Aerospike with hashed token material at rest.
-6. Authorization validates JWTs, rechecks the current account in Aerospike, and returns the authorized `userId` plus token type from the JWT `account_type` claim.
-7. Downstream services can call `POST /api/identity/authorize` through the shared authorization library to centralize access checks.
+4. User account creation returns a one-time password reset key while storing only its hashed value in Aerospike.
+5. Authentication returns signed JWTs plus opaque refresh tokens.
+6. Refresh requests rotate opaque refresh tokens stored in Aerospike with hashed token material at rest.
+7. Password reset requests validate a user-provided reset key, rotate it after success, and clear any login lockout state.
+8. Authorization validates JWTs, rechecks the current account in Aerospike, and returns the authorized `userId` plus token type from the JWT `account_type` claim.
+9. Downstream services can call `POST /api/identity/authorize` through the shared authorization library to centralize access checks.
 
 Aerospike uses the namespace `nsPseudoMarkets` and persists data to disk via the local bind-mounted data directory when running in Docker.
 
@@ -190,11 +192,13 @@ The Compose files load `JwtConfiguration__Key` from the shared repo-root `.env` 
 Current primary endpoints include:
 
 - `POST /api/identity/create`
-  Creates a `USER` account by default. `SYSTEM` account creation is allowed in Development, or outside Development when `X-PseudoMarkets-System-Key` matches the configured dedicated system-account bypass key.
+  Creates a `USER` account by default and returns a one-time password reset key for user accounts. `SYSTEM` account creation is allowed in Development, or outside Development when `X-PseudoMarkets-System-Key` matches the configured dedicated system-account bypass key. SYSTEM accounts do not receive a password reset key.
 - `POST /api/identity/authenticate`
   Validates credentials and returns an access token, access-token expiration, refresh token, and refresh-token expiration.
 - `POST /api/identity/refresh`
   Accepts a refresh token, validates and rotates it, and returns a new access token plus a replacement refresh token.
+- `POST /api/identity/reset-password`
+  Accepts a `loginId`, one-time password reset key, and `newPassword`. On success, it updates the password, clears any lockout state, rotates the reset key, and returns the new one-time password reset key.
 - `POST /api/identity/authorize`
   Validates a JWT, rechecks current account status and roles, and returns the authorized `userId` and `tokenType`. This is the endpoint consumed by the shared authorization library and downstream platform services.
 
@@ -202,6 +206,7 @@ Current primary endpoints include:
 
 - Authentication and refresh endpoints are rate limited.
 - Repeated failed login attempts trigger a temporary account lockout.
+- Password reset keys are hashed at rest and rotated after every successful password reset.
 - Refresh-token consumption is atomic so one refresh token cannot be rotated successfully more than once.
 - The system-account bypass secret is separate from the JWT signing key.
 

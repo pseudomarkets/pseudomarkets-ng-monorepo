@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
+using PseudoMarkets.Security.IdentityServer.Core.Accounts;
 using PseudoMarkets.Security.IdentityServer.Core.Accounts.Interfaces;
 using PseudoMarkets.Security.IdentityServer.Core.Authentication.Interfaces;
 using PseudoMarkets.Security.IdentityServer.Core.Constants;
@@ -48,12 +49,16 @@ public class AccountProvisioningManager : IAccountProvisioningManager
             }
 
             var userId = ReserveUniqueUserId(loginId);
+            var generatedPasswordResetKey = GeneratePasswordResetKey(normalizedAccountType);
 
             var account = new Account
             {
                 LoginId = loginId,
                 UserId = userId,
                 HashedPassword = _authenticationManager.HashPassword(password),
+                HashedPasswordResetKey = generatedPasswordResetKey is not null
+                    ? PasswordResetKeyProtector.HashKey(generatedPasswordResetKey)
+                    : string.Empty,
                 AccountType = normalizedAccountType,
                 Roles = GetDefaultRoles(normalizedAccountType),
                 IsActive = true
@@ -73,7 +78,8 @@ public class AccountProvisioningManager : IAccountProvisioningManager
                 true,
                 $"{normalizedAccountType} account created successfully.",
                 account.LoginId,
-                account.AccountType);
+                account.AccountType,
+                generatedPasswordResetKey);
         }
         catch (IdentityDependencyException)
         {
@@ -106,6 +112,13 @@ public class AccountProvisioningManager : IAccountProvisioningManager
         return accountType == AccountTypeConstants.SystemType
             ? [.. RoleConstants.AllRoles]
             : [.. RoleConstants.NonSystemUserRoles];
+    }
+
+    private static string? GeneratePasswordResetKey(string accountType)
+    {
+        return accountType == AccountTypeConstants.UserType
+            ? PasswordResetKeyProtector.GenerateKey()
+            : null;
     }
 
     private long ReserveUniqueUserId(string loginId)

@@ -7,8 +7,8 @@ public interface IAccountRepository
     Account? GetAccount(string loginId);
     bool TryReserveUserId(long userId, string loginId);
     void ReleaseReservedUserId(long userId);
-    void UpdateAccount(Account account);
     void CreateAccount(Account account);
+    void UpdateAccount(Account account);
     RefreshTokenRecord? GetRefreshToken(string tokenId);
     void CreateRefreshToken(RefreshTokenRecord refreshToken);
     void UpdateRefreshToken(RefreshTokenRecord refreshToken);

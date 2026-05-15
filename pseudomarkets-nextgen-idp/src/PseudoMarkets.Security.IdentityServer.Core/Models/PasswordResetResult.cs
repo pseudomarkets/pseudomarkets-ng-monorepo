@@ -1,19 +1,17 @@
 namespace PseudoMarkets.Security.IdentityServer.Core.Models;
 
-public class AccountCreationResult
+public class PasswordResetResult
 {
     public bool Success { get; }
     public string Message { get; }
     public string LoginId { get; }
-    public string AccountType { get; }
     public string? PasswordResetKey { get; }
 
-    public AccountCreationResult(bool success, string message, string loginId, string accountType, string? passwordResetKey = null)
+    public PasswordResetResult(bool success, string message, string loginId, string? passwordResetKey)
     {
         Success = success;
         Message = message;
         LoginId = loginId;
-        AccountType = accountType;
         PasswordResetKey = passwordResetKey;
     }
 }

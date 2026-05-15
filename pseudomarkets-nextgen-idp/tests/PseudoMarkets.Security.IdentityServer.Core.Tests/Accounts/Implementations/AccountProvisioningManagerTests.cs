@@ -71,9 +71,13 @@ public class AccountProvisioningManagerTests
 
         result.Success.ShouldBeTrue();
         result.AccountType.ShouldBe(AccountTypeConstants.UserType);
+        result.PasswordResetKey.ShouldNotBeNullOrWhiteSpace();
+        Guid.TryParse(result.PasswordResetKey, out _).ShouldBeTrue();
         createdAccount.ShouldNotBeNull();
         createdAccount!.HashedPassword.ShouldBe("salt:password-hash");
         createdAccount.HashedPassword.ShouldNotBe("password");
+        createdAccount.HashedPasswordResetKey.ShouldNotBeNullOrWhiteSpace();
+        createdAccount.HashedPasswordResetKey.ShouldNotBe(result.PasswordResetKey);
         createdAccount.AccountType.ShouldBe(AccountTypeConstants.UserType);
         createdAccount.Roles.ShouldBe(RoleConstants.NonSystemUserRoles, ignoreOrder: true);
         createdAccount.UserId.ShouldBeGreaterThanOrEqualTo(1_000_000_000);
@@ -91,7 +95,9 @@ public class AccountProvisioningManagerTests
         var result = _sut.CreateAccount("system-user", "password", AccountTypeConstants.SystemType);
 
         result.Success.ShouldBeTrue();
+        result.PasswordResetKey.ShouldBeNull();
         createdAccount.ShouldNotBeNull();
+        createdAccount!.HashedPasswordResetKey.ShouldBeEmpty();
         createdAccount!.Roles.ShouldBe(RoleConstants.AllRoles, ignoreOrder: true);
     }
 

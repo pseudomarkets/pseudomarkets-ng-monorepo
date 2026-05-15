@@ -228,6 +228,7 @@ public class AccountRepository : IAccountRepository
     {
         var userId = new Bin(DatabaseConstants.UserIdBin, account.UserId);
         var hashedPassword = new Bin(DatabaseConstants.HashedPasswordBin, account.HashedPassword);
+        var hashedPasswordResetKey = new Bin(DatabaseConstants.HashedPasswordResetKeyBin, account.HashedPasswordResetKey);
         var roles = new Bin(DatabaseConstants.RolesBin, account.Roles);
         var accountType = new Bin(DatabaseConstants.AccountTypeBin, account.AccountType);
         var activeBin = new Bin(DatabaseConstants.ActiveBin, account.IsActive);
@@ -238,7 +239,14 @@ public class AccountRepository : IAccountRepository
         
         var bins = new List<Bin>()
         {
-            userId, activeBin, roles, accountType, hashedPassword, failedLoginAttemptsBin, lockoutUntilBin
+            userId,
+            activeBin,
+            roles,
+            accountType,
+            hashedPassword,
+            hashedPasswordResetKey,
+            failedLoginAttemptsBin,
+            lockoutUntilBin
         };
         
         return bins;
@@ -263,6 +271,7 @@ public class AccountRepository : IAccountRepository
     {
         var userId = record.GetLong(DatabaseConstants.UserIdBin);
         var hashedPassword = record.GetString(DatabaseConstants.HashedPasswordBin) ?? string.Empty;
+        var hashedPasswordResetKey = record.GetString(DatabaseConstants.HashedPasswordResetKeyBin) ?? string.Empty;
         var accountType = record.GetString(DatabaseConstants.AccountTypeBin) ?? string.Empty;
         var isActive = record.GetBool(DatabaseConstants.ActiveBin);
         var failedLoginAttempts = (int)record.GetLong(DatabaseConstants.FailedLoginAttemptsBin);
@@ -284,6 +293,7 @@ public class AccountRepository : IAccountRepository
             LoginId = loginId,
             UserId = userId,
             HashedPassword = hashedPassword,
+            HashedPasswordResetKey = hashedPasswordResetKey,
             AccountType = accountType,
             IsActive = isActive,
             Roles = roles,

@@ -24,6 +24,7 @@ public class IdentityControllerTests
     private Mock<IAccountProvisioningManager> _accountProvisioningManager = null!;
     private Mock<IAuthenticationManager> _authenticationManager = null!;
     private Mock<IAuthorizationManager> _authorizationManager = null!;
+    private Mock<IPasswordResetManager> _passwordResetManager = null!;
     private Mock<IWebHostEnvironment> _environment = null!;
     private Mock<ILogger<IdentityController>> _logger = null!;
     private IdentitySecurityConfiguration _identitySecurityConfiguration = null!;
@@ -34,6 +35,7 @@ public class IdentityControllerTests
         _accountProvisioningManager = new Mock<IAccountProvisioningManager>();
         _authenticationManager = new Mock<IAuthenticationManager>();
         _authorizationManager = new Mock<IAuthorizationManager>();
+        _passwordResetManager = new Mock<IPasswordResetManager>();
         _environment = new Mock<IWebHostEnvironment>();
         _logger = new Mock<ILogger<IdentityController>>();
         _identitySecurityConfiguration = new IdentitySecurityConfiguration { SystemAccountBypassKey = "test-bypass-key" };
@@ -45,7 +47,7 @@ public class IdentityControllerTests
     {
         _accountProvisioningManager
             .Setup(x => x.CreateAccount("public-user", "password", AccountTypeConstants.UserType))
-            .Returns(new AccountCreationResult(true, "USER account created successfully.", "public-user", AccountTypeConstants.UserType));
+            .Returns(new AccountCreationResult(true, "USER account created successfully.", "public-user", AccountTypeConstants.UserType, "00000000-0000-0000-0000-000000000001"));
 
         var sut = CreateSut();
 
@@ -54,6 +56,7 @@ public class IdentityControllerTests
         var okResult = result.Result.ShouldBeOfType<OkObjectResult>();
         var payload = okResult.Value.ShouldBeOfType<AccountCreationResult>();
         payload.AccountType.ShouldBe(AccountTypeConstants.UserType);
+        payload.PasswordResetKey.ShouldBe("00000000-0000-0000-0000-000000000001");
     }
 
     [Test]
@@ -182,6 +185,61 @@ public class IdentityControllerTests
     }
 
     [Test]
+    public void ResetPassword_ShouldReturnBadRequest_WhenFieldsAreBlank()
+    {
+        var sut = CreateSut();
+
+        var result = sut.ResetPassword(new ResetPasswordRequest
+        {
+            LoginId = "user",
+            PasswordResetKey = "",
+            NewPassword = "new-password"
+        });
+
+        result.Result.ShouldBeOfType<BadRequestObjectResult>();
+    }
+
+    [Test]
+    public void ResetPassword_ShouldReturnOk_WhenResetSucceeds()
+    {
+        _passwordResetManager
+            .Setup(x => x.ResetPassword("user", "00000000-0000-0000-0000-000000000001", "new-password"))
+            .Returns(new PasswordResetResult(true, "Password reset successfully.", "user", "00000000-0000-0000-0000-000000000002"));
+
+        var sut = CreateSut();
+
+        var result = sut.ResetPassword(new ResetPasswordRequest
+        {
+            LoginId = "user",
+            PasswordResetKey = "00000000-0000-0000-0000-000000000001",
+            NewPassword = "new-password"
+        });
+
+        var okResult = result.Result.ShouldBeOfType<OkObjectResult>();
+        var payload = okResult.Value.ShouldBeOfType<PasswordResetResult>();
+        payload.PasswordResetKey.ShouldBe("00000000-0000-0000-0000-000000000002");
+    }
+
+    [Test]
+    public void ResetPassword_ShouldReturnUnauthorized_WhenResetFails()
+    {
+        _passwordResetManager
+            .Setup(x => x.ResetPassword("user", "00000000-0000-0000-0000-000000000001", "new-password"))
+            .Returns(new PasswordResetResult(false, "Password reset failed.", "user", null));
+
+        var sut = CreateSut();
+
+        var result = sut.ResetPassword(new ResetPasswordRequest
+        {
+            LoginId = "user",
+            PasswordResetKey = "00000000-0000-0000-0000-000000000001",
+            NewPassword = "new-password"
+        });
+
+        result.Result.ShouldBeOfType<UnauthorizedObjectResult>();
+    }
+
+    [Test]
     public void Authorize_ShouldReturnOk_WhenAuthorizationSucceeds()
     {
         _authorizationManager
@@ -227,6 +285,7 @@ public class IdentityControllerTests
             _accountProvisioningManager.Object,
             _authenticationManager.Object,
             _authorizationManager.Object,
+            _passwordResetManager.Object,
             _identitySecurityConfiguration,
             _environment.Object,
             _logger.Object);

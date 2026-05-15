@@ -62,6 +62,7 @@ public class Program
         });
         builder.Services.AddSingleton<IAccountRepository, AccountRepository>();
         builder.Services.AddSingleton<IAccountProvisioningManager, AccountProvisioningManager>();
+        builder.Services.AddSingleton<IPasswordResetManager, PasswordResetManager>();
         builder.Services.AddSingleton<IAuthenticationManager, AuthenticationManager>();
         builder.Services.AddSingleton<IAuthorizationManager, AuthorizationManager>();
 

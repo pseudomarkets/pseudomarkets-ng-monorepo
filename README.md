@@ -98,10 +98,12 @@ If PostgreSQL was initialized before the database was renamed to `pseudomarkets_
 
 1. Open the IDP Swagger UI.
 2. Create or authenticate an account.
-3. Copy the returned JWT. The IDP also returns a refresh token that frontend or service clients can use to renew access tokens before the one-hour access-token lifetime expires.
-4. Open Market Data or Transaction Processing Swagger.
-5. Use the Swagger `Authorize` button and paste the JWT.
-6. Call protected endpoints.
+3. If you create a `USER` account, note the returned password reset key. The IDP only shows it at sign-up time or immediately after a successful password reset.
+4. Copy the returned JWT. The IDP also returns a refresh token that frontend or service clients can use to renew access tokens before the one-hour access-token lifetime expires.
+5. If needed, use the IDP `POST /api/identity/reset-password` endpoint with `loginId`, `passwordResetKey`, and `newPassword` to rotate the password and receive a new one-time reset key.
+6. Open Market Data or Transaction Processing Swagger.
+7. Use the Swagger `Authorize` button and paste the JWT.
+8. Call protected endpoints.
 
 Market Data and trading-instrument lookup require `VIEW_MARKET_DATA`. Transaction posting and void operations require `UPDATE_TRANSACTIONS`. Trading-instrument create and closing-price update operations require `UPDATE_INSTRUMENTS`. Order submission requires `EXECUTE_TRADES`.
 

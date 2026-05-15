@@ -21,6 +21,7 @@ public class IdentityController : ControllerBase
     private readonly IAccountProvisioningManager _accountProvisioningManager;
     private readonly IAuthenticationManager _authenticationManager;
     private readonly IAuthorizationManager _authorizationManager;
+    private readonly IPasswordResetManager _passwordResetManager;
     private readonly IdentitySecurityConfiguration _identitySecurityConfiguration;
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<IdentityController> _logger;
@@ -29,6 +30,7 @@ public class IdentityController : ControllerBase
         IAccountProvisioningManager accountProvisioningManager,
         IAuthenticationManager authenticationManager,
         IAuthorizationManager authorizationManager,
+        IPasswordResetManager passwordResetManager,
         IdentitySecurityConfiguration identitySecurityConfiguration,
         IWebHostEnvironment environment,
         ILogger<IdentityController> logger)
@@ -36,6 +38,7 @@ public class IdentityController : ControllerBase
         _accountProvisioningManager = accountProvisioningManager;
         _authenticationManager = authenticationManager;
         _authorizationManager = authorizationManager;
+        _passwordResetManager = passwordResetManager;
         _identitySecurityConfiguration = identitySecurityConfiguration;
         _environment = environment;
         _logger = logger;
@@ -91,6 +94,25 @@ public class IdentityController : ControllerBase
     {
         _logger.LogDebug("Processing refresh token request.");
         var result = _authenticationManager.Refresh(request.RefreshToken);
+        return result.Success ? Ok(result) : Unauthorized(result);
+    }
+
+    [HttpPost("reset-password")]
+    public ActionResult<PasswordResetResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.LoginId) ||
+            string.IsNullOrWhiteSpace(request.PasswordResetKey) ||
+            string.IsNullOrWhiteSpace(request.NewPassword))
+        {
+            return BadRequest(new PasswordResetResult(
+                false,
+                "Login ID, password reset key, and new password are required.",
+                request.LoginId,
+                null));
+        }
+
+        _logger.LogDebug("Processing password reset request for {LoginId}.", request.LoginId);
+        var result = _passwordResetManager.ResetPassword(request.LoginId, request.PasswordResetKey, request.NewPassword);
         return result.Success ? Ok(result) : Unauthorized(result);
     }
 

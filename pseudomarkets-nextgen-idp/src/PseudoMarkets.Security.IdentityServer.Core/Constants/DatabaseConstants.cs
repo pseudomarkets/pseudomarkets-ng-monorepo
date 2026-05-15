@@ -8,6 +8,7 @@ public static class DatabaseConstants
     public const string UserIdBin = "bUserId";
     public const string LoginIdBin = "bLoginId";
     public const string HashedPasswordBin = "bPass";
+    public const string HashedPasswordResetKeyBin = "bResetKey";
     public const string AccountTypeBin = "bType";
     public const string RolesBin = "bRoles";
     public const string ActiveBin = "bActive";

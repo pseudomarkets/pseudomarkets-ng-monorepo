@@ -40,6 +40,7 @@ public class AccountRepositoryTests
         {
             [DatabaseConstants.UserIdBin] = 1_234_567_890L,
             [DatabaseConstants.HashedPasswordBin] = "hashed",
+            [DatabaseConstants.HashedPasswordResetKeyBin] = "hashed-reset-key",
             [DatabaseConstants.AccountTypeBin] = AccountTypeConstants.SystemType,
             [DatabaseConstants.ActiveBin] = true,
             [DatabaseConstants.FailedLoginAttemptsBin] = 2L,
@@ -55,6 +56,7 @@ public class AccountRepositoryTests
         result!.LoginId.ShouldBe("mapped-user");
         result.UserId.ShouldBe(1_234_567_890L);
         result.HashedPassword.ShouldBe("hashed");
+        result.HashedPasswordResetKey.ShouldBe("hashed-reset-key");
         result.AccountType.ShouldBe(AccountTypeConstants.SystemType);
         result.IsActive.ShouldBeTrue();
         result.FailedLoginAttempts.ShouldBe(2);
