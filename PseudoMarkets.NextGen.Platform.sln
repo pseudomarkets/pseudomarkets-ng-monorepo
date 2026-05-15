@@ -89,7 +89,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7FAB9061-A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prd", "prd", "{78ED7CB2-4F71-421C-BE9F-E5BC7CB8027D}"
 	ProjectSection(SolutionItems) = preProject
+		docs\prd\API_Info_And_Health_Endpoint_Standardization_PRD.md = docs\prd\API_Info_And_Health_Endpoint_Standardization_PRD.md
+		docs\prd\IDP_Password_Reset_PRD.md = docs\prd\IDP_Password_Reset_PRD.md
 		docs\prd\IDP_Token_Refresh_And_Token_Type_PRD.md = docs\prd\IDP_Token_Refresh_And_Token_Type_PRD.md
+		docs\prd\Market_Data_FinnHubSharp_Migration_PRD.md = docs\prd\Market_Data_FinnHubSharp_Migration_PRD.md
 		docs\prd\Order_Execution_System_Core_PRD.md = docs\prd\Order_Execution_System_Core_PRD.md
 		docs\prd\PRD_TEMPLATE.md = docs\prd\PRD_TEMPLATE.md
 		docs\prd\Settled_Unsettled_Balances_Positions_PRD.md = docs\prd\Settled_Unsettled_Balances_Positions_PRD.md
@@ -99,6 +102,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "skills", "skills", "{E4F8DB9F-D96C-4AF3-8C57-3F54A52AC95A}"
 	ProjectSection(SolutionItems) = preProject
 		docs\skills\Trading_Instrument_Business_Rules.md = docs\skills\Trading_Instrument_Business_Rules.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "deployment", "deployment", "{FDDC06D2-F6C6-4DAB-9DFD-C65D0382D36E}"
+	ProjectSection(SolutionItems) = preProject
+		docs\deployment\Pseudo_Markets_DigitalOcean_Kubernetes_Deployment_Plan.md = docs\deployment\Pseudo_Markets_DigitalOcean_Kubernetes_Deployment_Plan.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pseudomarkets-nextgen-order-execution", "pseudomarkets-nextgen-order-execution", "{41EFF871-9CB5-AD7E-F233-8A3D60201E5E}"
@@ -116,6 +124,16 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D2798F2F-79D5-C828-6AB8-2CC304D4DE6F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.OrderExecution.Tests", "pseudomarkets-nextgen-order-execution\tests\PseudoMarkets.OrderExecution.Tests\PseudoMarkets.OrderExecution.Tests.csproj", "{37211018-9667-40F4-A029-53615F8C5320}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pseudomarkets-nextgen-shared-servicehelpers", "pseudomarkets-nextgen-shared-servicehelpers", "{DBE5D78A-A0FB-D30C-C07D-0BBFA9BA6467}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F68EAA80-5AEB-46BD-6FD3-208354069C51}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.Shared.ServiceHelpers", "pseudomarkets-nextgen-shared-servicehelpers\src\PseudoMarkets.Shared.ServiceHelpers\PseudoMarkets.Shared.ServiceHelpers.csproj", "{C78D61FF-563C-4846-9E8F-C5937B7E313A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A2531BFE-0C2C-81F2-F87A-831AE086AC41}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.Shared.ServiceHelpers.Tests", "pseudomarkets-nextgen-shared-servicehelpers\tests\PseudoMarkets.Shared.ServiceHelpers.Tests\PseudoMarkets.Shared.ServiceHelpers.Tests.csproj", "{C78E48C7-5664-4F60-B152-AF45182367C4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -463,6 +481,30 @@ Global
 		{37211018-9667-40F4-A029-53615F8C5320}.Release|x64.Build.0 = Release|Any CPU
 		{37211018-9667-40F4-A029-53615F8C5320}.Release|x86.ActiveCfg = Release|Any CPU
 		{37211018-9667-40F4-A029-53615F8C5320}.Release|x86.Build.0 = Release|Any CPU
+		{C78D61FF-563C-4846-9E8F-C5937B7E313A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C78D61FF-563C-4846-9E8F-C5937B7E313A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C78D61FF-563C-4846-9E8F-C5937B7E313A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C78D61FF-563C-4846-9E8F-C5937B7E313A}.Debug|x64.Build.0 = Debug|Any CPU
+		{C78D61FF-563C-4846-9E8F-C5937B7E313A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C78D61FF-563C-4846-9E8F-C5937B7E313A}.Debug|x86.Build.0 = Debug|Any CPU
+		{C78D61FF-563C-4846-9E8F-C5937B7E313A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C78D61FF-563C-4846-9E8F-C5937B7E313A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C78D61FF-563C-4846-9E8F-C5937B7E313A}.Release|x64.ActiveCfg = Release|Any CPU
+		{C78D61FF-563C-4846-9E8F-C5937B7E313A}.Release|x64.Build.0 = Release|Any CPU
+		{C78D61FF-563C-4846-9E8F-C5937B7E313A}.Release|x86.ActiveCfg = Release|Any CPU
+		{C78D61FF-563C-4846-9E8F-C5937B7E313A}.Release|x86.Build.0 = Release|Any CPU
+		{C78E48C7-5664-4F60-B152-AF45182367C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C78E48C7-5664-4F60-B152-AF45182367C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C78E48C7-5664-4F60-B152-AF45182367C4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C78E48C7-5664-4F60-B152-AF45182367C4}.Debug|x64.Build.0 = Debug|Any CPU
+		{C78E48C7-5664-4F60-B152-AF45182367C4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C78E48C7-5664-4F60-B152-AF45182367C4}.Debug|x86.Build.0 = Debug|Any CPU
+		{C78E48C7-5664-4F60-B152-AF45182367C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C78E48C7-5664-4F60-B152-AF45182367C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C78E48C7-5664-4F60-B152-AF45182367C4}.Release|x64.ActiveCfg = Release|Any CPU
+		{C78E48C7-5664-4F60-B152-AF45182367C4}.Release|x64.Build.0 = Release|Any CPU
+		{C78E48C7-5664-4F60-B152-AF45182367C4}.Release|x86.ActiveCfg = Release|Any CPU
+		{C78E48C7-5664-4F60-B152-AF45182367C4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -504,6 +546,7 @@ Global
 		{3A6CDD4C-F8B8-4FDF-851E-AD0C308E536E} = {99FA9AA8-F9B3-D335-7171-F6B4E5183560}
 		{78ED7CB2-4F71-421C-BE9F-E5BC7CB8027D} = {7FAB9061-AFA6-4063-A4AD-97FA18F768FD}
 		{E4F8DB9F-D96C-4AF3-8C57-3F54A52AC95A} = {7FAB9061-AFA6-4063-A4AD-97FA18F768FD}
+		{FDDC06D2-F6C6-4DAB-9DFD-C65D0382D36E} = {7FAB9061-AFA6-4063-A4AD-97FA18F768FD}
 		{2CF5AA32-B0E7-A96B-B25C-21E994A89418} = {41EFF871-9CB5-AD7E-F233-8A3D60201E5E}
 		{79AAEF6B-D4CE-4231-8E13-C1538B46AA3C} = {2CF5AA32-B0E7-A96B-B25C-21E994A89418}
 		{B90CE22F-1801-4739-A6AD-8E8F6F3E6DCF} = {2CF5AA32-B0E7-A96B-B25C-21E994A89418}
@@ -511,5 +554,9 @@ Global
 		{F97FA75D-F98D-4B07-9AC9-D52724C6EF86} = {2CF5AA32-B0E7-A96B-B25C-21E994A89418}
 		{D2798F2F-79D5-C828-6AB8-2CC304D4DE6F} = {41EFF871-9CB5-AD7E-F233-8A3D60201E5E}
 		{37211018-9667-40F4-A029-53615F8C5320} = {D2798F2F-79D5-C828-6AB8-2CC304D4DE6F}
+		{F68EAA80-5AEB-46BD-6FD3-208354069C51} = {DBE5D78A-A0FB-D30C-C07D-0BBFA9BA6467}
+		{C78D61FF-563C-4846-9E8F-C5937B7E313A} = {F68EAA80-5AEB-46BD-6FD3-208354069C51}
+		{A2531BFE-0C2C-81F2-F87A-831AE086AC41} = {DBE5D78A-A0FB-D30C-C07D-0BBFA9BA6467}
+		{C78E48C7-5664-4F60-B152-AF45182367C4} = {A2531BFE-0C2C-81F2-F87A-831AE086AC41}
 	EndGlobalSection
 EndGlobal

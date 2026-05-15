@@ -15,6 +15,10 @@
 
 ## API
 
+- `GET /info`
+  Returns the service name, version, and build timestamp.
+- `GET /health`
+  Returns the standardized JSON health payload and includes a lightweight PostgreSQL connectivity check through the shared EF Core DbContext.
 - `POST /api/orders`
   Requires `EXECUTE_TRADES`.
 

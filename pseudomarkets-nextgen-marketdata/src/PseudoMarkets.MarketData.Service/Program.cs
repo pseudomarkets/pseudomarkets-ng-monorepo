@@ -1,3 +1,4 @@
+using Aerospike.Client;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using PseudoMarkets.MarketData.Cache.DependencyInjection;
@@ -5,6 +6,7 @@ using PseudoMarkets.MarketData.Core.Configuration;
 using PseudoMarkets.MarketData.Core.DependencyInjection;
 using PseudoMarkets.MarketData.Providers.DependencyInjection;
 using PseudoMarkets.Shared.Authorization.DependencyInjection;
+using PseudoMarkets.Shared.ServiceHelpers;
 
 namespace PseudoMarkets.MarketData.Service;
 
@@ -19,7 +21,7 @@ public class Program
         builder.Services.AddControllers();
         builder.Services.AddAuthorization();
         builder.Services.AddProblemDetails();
-        builder.Services.AddHealthChecks();
+        var healthChecks = builder.Services.AddHealthChecks();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
         {
@@ -49,10 +51,16 @@ public class Program
         builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<AerospikeConfiguration>>().Value);
         builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<FinnHubConfiguration>>().Value);
         builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<MarketDataCacheConfiguration>>().Value);
+        builder.Services.AddSingleton<IAerospikeClient>(sp =>
+        {
+            var configuration = sp.GetRequiredService<AerospikeConfiguration>();
+            return new AerospikeClient(configuration.Host, configuration.Port);
+        });
         builder.Services.AddMarketDataCore();
         builder.Services.AddMarketDataProviders();
         builder.Services.AddMarketDataCache();
         builder.Services.AddPseudoMarketsSharedAuthorization(builder.Configuration);
+        healthChecks.AddCheck<AerospikeClientHealthCheck>("aerospike");
 
         var app = builder.Build();
 
@@ -73,7 +81,7 @@ public class Program
         }
 
         app.UseAuthorization();
-        app.MapHealthChecks("/health");
+        app.MapPseudoMarketsOperationalEndpoints<Program>();
         app.MapControllers();
 
         app.Run();

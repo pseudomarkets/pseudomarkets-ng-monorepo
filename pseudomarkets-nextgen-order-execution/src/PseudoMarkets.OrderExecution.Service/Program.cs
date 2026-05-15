@@ -6,6 +6,7 @@ using PseudoMarkets.OrderExecution.Persistence.DependencyInjection;
 using PseudoMarkets.OrderExecution.Service.Infrastructure;
 using PseudoMarkets.Shared.Authorization.DependencyInjection;
 using PseudoMarkets.Shared.Entities.Database;
+using PseudoMarkets.Shared.ServiceHelpers;
 
 namespace PseudoMarkets.OrderExecution.Service;
 
@@ -26,7 +27,7 @@ public class Program
         builder.Services.AddAuthorization();
         builder.Services.AddProblemDetails();
         builder.Services.AddExceptionHandler<OrderExecutionExceptionHandler>();
-        builder.Services.AddHealthChecks();
+        var healthChecks = builder.Services.AddHealthChecks();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
         {
@@ -52,6 +53,7 @@ public class Program
         builder.Services.AddOrderExecutionCore(builder.Configuration);
         builder.Services.AddOrderExecutionPersistence(builder.Configuration);
         builder.Services.AddPseudoMarketsSharedAuthorization(builder.Configuration);
+        healthChecks.AddCheck<DbContextConnectivityHealthCheck<PseudoMarketsDbContext>>("postgres");
 
         var app = builder.Build();
         ApplyEfCoreMigration(app);
@@ -73,7 +75,7 @@ public class Program
         }
 
         app.UseAuthorization();
-        app.MapHealthChecks("/health");
+        app.MapPseudoMarketsOperationalEndpoints<Program>();
         app.MapControllers();
 
         app.Run();

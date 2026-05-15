@@ -31,6 +31,8 @@ The platform is split into focused services and shared libraries:
   Shared authorization client and filters used by services that delegate authorization to the IDP, including propagation of authorized user ID and token type metadata.
 - `pseudomarkets-nextgen-shared-entities`
   Shared EF Core entity model, `PseudoMarketsDbContext`, migrations, and platform reference data for `pseudomarkets_db`.
+- `pseudomarkets-nextgen-shared-servicehelpers`
+  Shared operational endpoint and health-check helpers used by the platform APIs for standardized `/info` and `/health` behavior.
 - `infrastructure/aerospike`
   Shared Aerospike configuration.
 - `infrastructure/postgres`
@@ -47,6 +49,20 @@ These are the default HTTP ports exposed by Docker Compose. For local non-Docker
 - Order Execution Swagger: [http://localhost:8084/swagger/index.html](http://localhost:8084/swagger/index.html)
 - Aerospike: `localhost:3000`
 - PostgreSQL: `localhost:5432`
+
+## Operational Endpoints
+
+Each API now exposes these unauthenticated operational routes:
+
+- `GET /info`
+  Returns the application name, version, and build timestamp from the built service artifact.
+- `GET /health`
+  Returns a JSON-serialized health payload based on ASP.NET Core health checks.
+
+Dependency health is lightweight and service-specific:
+
+- IDP and Market Data report Aerospike connectivity from the shared `AerospikeClient`
+- Transaction Processing, Trading Instruments, and Order Execution report PostgreSQL connectivity from the shared EF Core DbContext
 
 ## Configuration
 

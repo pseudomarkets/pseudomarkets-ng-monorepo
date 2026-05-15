@@ -1,5 +1,7 @@
 using System.Threading.RateLimiting;
+using Aerospike.Client;
 using Microsoft.Extensions.Options;
+using PseudoMarkets.Shared.ServiceHelpers;
 using PseudoMarkets.Security.IdentityServer.Core.Accounts.Implementations;
 using PseudoMarkets.Security.IdentityServer.Core.Accounts.Interfaces;
 using PseudoMarkets.Security.IdentityServer.Core.Authentication.Implementations;
@@ -26,6 +28,7 @@ public class Program
         builder.Services.AddExceptionHandler<IdentityExceptionHandler>();
         builder.Services.AddProblemDetails();
         builder.Services.AddEndpointsApiExplorer();
+        var healthChecks = builder.Services.AddHealthChecks();
         builder.Services.AddSwaggerGen();
         builder.Services.Configure<AerospikeConfiguration>(builder.Configuration.GetRequiredSection("Aerospike"));
         builder.Services.Configure<JwtConfiguration>(builder.Configuration.GetRequiredSection("JwtConfiguration"));
@@ -34,6 +37,11 @@ public class Program
         builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<AerospikeConfiguration>>().Value);
         builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<JwtConfiguration>>().Value);
         builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<IdentitySecurityConfiguration>>().Value);
+        builder.Services.AddSingleton<IAerospikeClient>(sp =>
+        {
+            var configuration = sp.GetRequiredService<AerospikeConfiguration>();
+            return new AerospikeClient(configuration.Host, configuration.Port);
+        });
         builder.Services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -65,6 +73,7 @@ public class Program
         builder.Services.AddSingleton<IPasswordResetManager, PasswordResetManager>();
         builder.Services.AddSingleton<IAuthenticationManager, AuthenticationManager>();
         builder.Services.AddSingleton<IAuthorizationManager, AuthorizationManager>();
+        healthChecks.AddCheck<AerospikeClientHealthCheck>("aerospike");
 
         var app = builder.Build();
 
@@ -86,6 +95,7 @@ public class Program
 
         app.UseRateLimiter();
         app.UseAuthorization();
+        app.MapPseudoMarketsOperationalEndpoints<Program>();
         app.MapControllers();
 
         app.Run();

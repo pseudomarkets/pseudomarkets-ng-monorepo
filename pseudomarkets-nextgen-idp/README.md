@@ -191,6 +191,10 @@ The Compose files load `JwtConfiguration__Key` from the shared repo-root `.env` 
 
 Current primary endpoints include:
 
+- `GET /info`
+  Returns the service name, version, and build timestamp.
+- `GET /health`
+  Returns the standardized JSON health payload for the identity server, including Aerospike connectivity from the shared Aerospike client.
 - `POST /api/identity/create`
   Creates a `USER` account by default and returns a one-time password reset key for user accounts. `SYSTEM` account creation is allowed in Development, or outside Development when `X-PseudoMarkets-System-Key` matches the configured dedicated system-account bypass key. SYSTEM accounts do not receive a password reset key.
 - `POST /api/identity/authenticate`
@@ -239,6 +243,7 @@ dotnet test pseudomarkets-nextgen-idp/PseudoMarkets.Security.IdentityServer.sln 
 ### The app cannot connect to Aerospike
 
 - Verify Aerospike is running on `localhost:3000` for non-Docker runs.
+- Check `GET /health` to confirm whether the shared Aerospike client reports `Healthy` or `Unhealthy`.
 - In Docker Compose, verify both containers are up:
 
 ```bash

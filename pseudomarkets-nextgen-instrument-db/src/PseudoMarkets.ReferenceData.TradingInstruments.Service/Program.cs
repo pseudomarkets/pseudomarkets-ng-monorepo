@@ -5,6 +5,7 @@ using PseudoMarkets.ReferenceData.TradingInstruments.Persistence.DependencyInjec
 using PseudoMarkets.ReferenceData.TradingInstruments.Service.Infrastructure;
 using PseudoMarkets.Shared.Authorization.DependencyInjection;
 using PseudoMarkets.Shared.Entities.Database;
+using PseudoMarkets.Shared.ServiceHelpers;
 
 namespace PseudoMarkets.ReferenceData.TradingInstruments.Service;
 
@@ -20,7 +21,7 @@ public class Program
         builder.Services.AddAuthorization();
         builder.Services.AddProblemDetails();
         builder.Services.AddExceptionHandler<TradingInstrumentsExceptionHandler>();
-        builder.Services.AddHealthChecks();
+        var healthChecks = builder.Services.AddHealthChecks();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
         {
@@ -46,6 +47,7 @@ public class Program
         builder.Services.AddTradingInstrumentsCore();
         builder.Services.AddTradingInstrumentsPersistence(builder.Configuration);
         builder.Services.AddPseudoMarketsSharedAuthorization(builder.Configuration);
+        healthChecks.AddCheck<DbContextConnectivityHealthCheck<PseudoMarketsDbContext>>("postgres");
 
         var app = builder.Build();
         ApplyEfCoreMigration(app);
@@ -67,7 +69,7 @@ public class Program
         }
 
         app.UseAuthorization();
-        app.MapHealthChecks("/health");
+        app.MapPseudoMarketsOperationalEndpoints<Program>();
         app.MapControllers();
 
         app.Run();

@@ -13,6 +13,10 @@ The Trading Instrument Database service is the platform reference-data API for t
 
 ## API
 
+- `GET /info`
+  Returns the service name, version, and build timestamp.
+- `GET /health`
+  Returns the standardized JSON health payload and includes a lightweight PostgreSQL connectivity check through the shared EF Core DbContext.
 - `GET /api/trading-instruments/{symbol}`
   Requires `VIEW_MARKET_DATA`.
 - `POST /api/trading-instruments`

@@ -4,6 +4,10 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Version>1.0.0</Version>
+    <InformationalVersion>$(Version)</InformationalVersion>
+    <Product>Pseudo Markets Trading Instruments Service</Product>
+    <BuildTimestamp>$([System.DateTime]::UtcNow.ToString("O"))</BuildTimestamp>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +21,14 @@
     <ProjectReference Include="..\PseudoMarkets.ReferenceData.TradingInstruments.Core\PseudoMarkets.ReferenceData.TradingInstruments.Core.csproj" />
     <ProjectReference Include="..\PseudoMarkets.ReferenceData.TradingInstruments.Persistence\PseudoMarkets.ReferenceData.TradingInstruments.Persistence.csproj" />
     <ProjectReference Include="..\..\..\pseudomarkets-nextgen-shared-auth\src\PseudoMarkets.Shared.Authorization\PseudoMarkets.Shared.Authorization.csproj" />
+    <ProjectReference Include="..\..\..\pseudomarkets-nextgen-shared-servicehelpers\src\PseudoMarkets.Shared.ServiceHelpers\PseudoMarkets.Shared.ServiceHelpers.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>BuildTimestamp</_Parameter1>
+      <_Parameter2>$(BuildTimestamp)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
 </Project>

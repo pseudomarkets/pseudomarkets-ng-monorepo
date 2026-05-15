@@ -5,6 +5,10 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <Version>1.0.0</Version>
+        <InformationalVersion>$(Version)</InformationalVersion>
+        <Product>Pseudo Markets Identity Server</Product>
+        <BuildTimestamp>$([System.DateTime]::UtcNow.ToString("O"))</BuildTimestamp>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,12 +18,20 @@
 
     <ItemGroup>
       <ProjectReference Include="..\PseudoMarkets.Security.IdentityServer.Core\PseudoMarkets.Security.IdentityServer.Core.csproj" />
+      <ProjectReference Include="..\..\..\pseudomarkets-nextgen-shared-servicehelpers\src\PseudoMarkets.Shared.ServiceHelpers\PseudoMarkets.Shared.ServiceHelpers.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <Content Include="..\..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>BuildTimestamp</_Parameter1>
+        <_Parameter2>$(BuildTimestamp)</_Parameter2>
+      </AssemblyAttribute>
     </ItemGroup>
 
 </Project>

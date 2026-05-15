@@ -221,6 +221,10 @@ The Compose files load `FinnHub__ApiKey` from the shared repo-root `.env` file.
 
 Current primary endpoints include:
 
+- `GET /info`
+  Returns the service name, version, and build timestamp.
+- `GET /health`
+  Returns the standardized JSON health payload for the market data service, including Aerospike connectivity from the shared Aerospike client.
 - `GET /api/marketdata/quote/{symbol}`
   Returns the latest quote for a symbol. Cache hits are surfaced in the response source, for example `Finnhub Cached`.
 - `GET /api/marketdata/quote/{symbol}/detailed`
@@ -258,6 +262,7 @@ dotnet test pseudomarkets-nextgen-marketdata/PseudoMarkets.MarketData.Service.sl
 ### The app cannot connect to Aerospike
 
 - Verify Aerospike is running on `localhost:3000` for non-Docker runs.
+- Check `GET /health` to confirm whether the shared Aerospike client reports `Healthy` or `Unhealthy`.
 - In Docker Compose, verify both containers are up:
 
 ```bash

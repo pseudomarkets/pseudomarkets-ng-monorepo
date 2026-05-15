@@ -1,4 +1,5 @@
 using Aerospike.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PseudoMarkets.Security.IdentityServer.Core.Configuration;
 using PseudoMarkets.Security.IdentityServer.Core.Constants;
@@ -51,6 +52,7 @@ public class AccountRepository : IAccountRepository
         }
     }
 
+    [ActivatorUtilitiesConstructor]
     public AccountRepository(IAerospikeClient aerospikeClient, ILogger<AccountRepository> logger)
     {
         _aerospikeClient = aerospikeClient;

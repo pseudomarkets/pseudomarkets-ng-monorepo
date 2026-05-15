@@ -144,12 +144,15 @@ Cash deposits, withdrawals, and adjustments settle immediately. Buy trades debit
 
 ## API Surface
 
+- `GET /info`
+- `GET /health`
 - `POST /api/transactions/trades`
 - `POST /api/transactions/cash/deposit`
 - `POST /api/transactions/cash/withdrawal`
 - `POST /api/transactions/cash/adjustment`
 - `POST /api/transactions/{transactionId}/void`
-- `GET /health`
+
+`GET /info` returns the service name, version, and build timestamp. `GET /health` returns the standardized JSON health payload and includes a lightweight PostgreSQL connectivity check through the shared EF Core DbContext.
 
 ## Build
 

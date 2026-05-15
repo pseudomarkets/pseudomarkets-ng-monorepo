@@ -1,5 +1,6 @@
 using System.Globalization;
 using Aerospike.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using PseudoMarkets.MarketData.Contracts.Quotes;
@@ -56,6 +57,7 @@ public class AerospikeMarketDataCache : IMarketDataCache
         }
     }
 
+    [ActivatorUtilitiesConstructor]
     public AerospikeMarketDataCache(
         IAerospikeClient aerospikeClient,
         AerospikeConfiguration aerospikeConfiguration,

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using PseudoMarkets.Shared.Authorization.DependencyInjection;
 using PseudoMarkets.Shared.Entities.Database;
+using PseudoMarkets.Shared.ServiceHelpers;
 using PseudoMarkets.TransactionProcessing.Core.DependencyInjection;
 using PseudoMarkets.TransactionProcessing.Persistence.DependencyInjection;
 using PseudoMarkets.TransactionProcessing.Service.Infrastructure;
@@ -20,7 +21,7 @@ public class Program
         builder.Services.AddAuthorization();
         builder.Services.AddProblemDetails();
         builder.Services.AddExceptionHandler<TransactionProcessingExceptionHandler>();
-        builder.Services.AddHealthChecks();
+        var healthChecks = builder.Services.AddHealthChecks();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
         {
@@ -46,6 +47,7 @@ public class Program
         builder.Services.AddTransactionProcessingCore();
         builder.Services.AddTransactionProcessingPersistence(builder.Configuration);
         builder.Services.AddPseudoMarketsSharedAuthorization(builder.Configuration);
+        healthChecks.AddCheck<DbContextConnectivityHealthCheck<PseudoMarketsDbContext>>("postgres");
 
         var app = builder.Build();
         ApplyEfCoreMigration(app);
@@ -67,7 +69,7 @@ public class Program
         }
 
         app.UseAuthorization();
-        app.MapHealthChecks("/health");
+        app.MapPseudoMarketsOperationalEndpoints<Program>();
         app.MapControllers();
 
         app.Run();
