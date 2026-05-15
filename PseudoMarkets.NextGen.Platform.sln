@@ -101,6 +101,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prd", "prd", "{78ED7CB2-4F7
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "skills", "skills", "{E4F8DB9F-D96C-4AF3-8C57-3F54A52AC95A}"
 	ProjectSection(SolutionItems) = preProject
+		docs\skills\Service_Operational_Endpoints.md = docs\skills\Service_Operational_Endpoints.md
 		docs\skills\Trading_Instrument_Business_Rules.md = docs\skills\Trading_Instrument_Business_Rules.md
 	EndProjectSection
 EndProject
