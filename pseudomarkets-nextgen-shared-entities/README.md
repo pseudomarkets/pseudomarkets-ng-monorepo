@@ -13,7 +13,7 @@
 - platform reference entities
   Market holidays, including seeded 2026 NYSE full-day market holidays, and trading instruments.
 - order execution entities
-  Accepted order and immediate fill records persisted by the Order Execution Service, including quote fill price and downstream transaction references.
+  Accepted order and immediate fill records plus queued after-hours orders persisted by the Order Execution Service, including quote fill price and downstream transaction references for executed orders.
 
 ## Migration Ownership
 

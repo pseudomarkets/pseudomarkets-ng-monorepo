@@ -26,7 +26,7 @@ The platform is split into focused services and shared libraries:
 - `pseudomarkets-nextgen-instrument-db`
   Trading instrument reference-data API for creating tradable instruments, retrieving instruments by symbol, and updating closing prices.
 - `pseudomarkets-nextgen-order-execution`
-  Order entry and immediate simulated market-order execution service. It validates tradable symbols, settled buying power, settled sellable quantity, posts fills to Transaction Processing, and persists order execution records.
+  Order entry and simulated market-order execution service. It validates tradable symbols, executes market-hour submissions immediately, queues after-hours submissions for later processing, posts fills to Transaction Processing, and persists order state in PostgreSQL.
 - `pseudomarkets-nextgen-shared-auth`
   Shared authorization client and filters used by services that delegate authorization to the IDP, including propagation of authorized user ID and token type metadata.
 - `pseudomarkets-nextgen-shared-entities`
@@ -186,4 +186,4 @@ The shared EF Core model and migrations live in:
 pseudomarkets-nextgen-shared-entities/src/PseudoMarkets.Shared.Entities
 ```
 
-`PseudoMarketsDbContext` is applied at transaction-processing, trading-instruments, and order-execution startup. Current relational tables include transaction posting tables, settled/unsettled balance and position projection tables, trade lots, market holidays, trading instruments, order executions, and EF migration history.
+`PseudoMarketsDbContext` is applied at transaction-processing, trading-instruments, and order-execution startup. Current relational tables include transaction posting tables, settled/unsettled balance and position projection tables, trade lots, market holidays, trading instruments, order executions, queued orders, and EF migration history.

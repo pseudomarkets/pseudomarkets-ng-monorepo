@@ -24,6 +24,7 @@ public class PseudoMarketsDbContext : DbContext
     public DbSet<MarketHolidayEntity> MarketHolidays => Set<MarketHolidayEntity>();
     public DbSet<TradingInstrumentEntity> TradingInstruments => Set<TradingInstrumentEntity>();
     public DbSet<OrderExecutionEntity> OrderExecutions => Set<OrderExecutionEntity>();
+    public DbSet<QueuedOrderEntity> QueuedOrders => Set<QueuedOrderEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -268,6 +269,27 @@ public class PseudoMarketsDbContext : DbContext
             entity.HasIndex(x => x.Symbol);
             entity.HasIndex(x => x.TransactionId);
             entity.HasIndex(x => x.Status);
+        });
+
+        modelBuilder.Entity<QueuedOrderEntity>(entity =>
+        {
+            entity.ToTable("queued_orders");
+            entity.HasKey(x => x.OrderId);
+            entity.Property(x => x.OrderId).HasColumnName("order_id").ValueGeneratedNever();
+            entity.Property(x => x.UserId).HasColumnName("user_id").IsRequired();
+            entity.Property(x => x.Symbol).HasColumnName("symbol").HasMaxLength(32).IsRequired();
+            entity.Property(x => x.OrderSide).HasColumnName("order_side").HasMaxLength(20).IsRequired();
+            entity.Property(x => x.OrderType).HasColumnName("order_type").HasMaxLength(20).IsRequired();
+            entity.Property(x => x.Quantity).HasColumnName("quantity").HasPrecision(18, 6).IsRequired();
+            entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(40).IsRequired();
+            entity.Property(x => x.QueueReason).HasColumnName("queue_reason").HasMaxLength(40).IsRequired();
+            entity.Property(x => x.SubmittedAtUtc).HasColumnName("submitted_at_utc").IsRequired();
+            entity.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").IsRequired();
+            entity.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc").IsRequired();
+            entity.HasIndex(x => x.UserId);
+            entity.HasIndex(x => x.Symbol);
+            entity.HasIndex(x => x.Status);
+            entity.HasIndex(x => x.SubmittedAtUtc);
         });
     }
 }

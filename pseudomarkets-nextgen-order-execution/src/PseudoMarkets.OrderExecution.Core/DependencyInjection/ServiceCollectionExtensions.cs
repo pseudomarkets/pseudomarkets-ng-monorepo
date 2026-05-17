@@ -15,6 +15,7 @@ public static class ServiceCollectionExtensions
     {
         services.Configure<OrderExecutionConfiguration>(configuration.GetSection(OrderExecutionConfiguration.SectionName));
         services.AddSingleton<IClock, SystemClock>();
+        services.AddScoped<IMarketHoursEvaluator, MarketHoursEvaluator>();
         services.AddScoped<IOrderSubmissionService, OrderSubmissionService>();
 
         services.AddHttpClient("OrderExecution.Identity", (serviceProvider, client) =>

@@ -15,6 +15,13 @@ public sealed class OrderExecutionRepository : IOrderExecutionRepository
         _dbContext = dbContext;
     }
 
+    public Task<bool> IsMarketHolidayAsync(DateOnly date, CancellationToken cancellationToken)
+    {
+        return _dbContext.MarketHolidays
+            .AsNoTracking()
+            .AnyAsync(x => x.HolidayDate == date, cancellationToken);
+    }
+
     public Task<AccountBalanceEntity?> GetAccountBalanceAsync(long userId, CancellationToken cancellationToken)
     {
         return _dbContext.AccountBalances
@@ -32,6 +39,11 @@ public sealed class OrderExecutionRepository : IOrderExecutionRepository
     public async Task AddAsync(OrderExecutionEntity orderExecution, CancellationToken cancellationToken)
     {
         await _dbContext.OrderExecutions.AddAsync(orderExecution, cancellationToken);
+    }
+
+    public async Task AddQueuedOrderAsync(QueuedOrderEntity queuedOrder, CancellationToken cancellationToken)
+    {
+        await _dbContext.QueuedOrders.AddAsync(queuedOrder, cancellationToken);
     }
 
     public Task SaveChangesAsync(CancellationToken cancellationToken)

@@ -24,6 +24,7 @@ public sealed class OrderSubmissionServiceTests
     private Mock<ITransactionProcessingClient> _transactionProcessingClient = null!;
     private FakeOrderExecutionRepository _repository = null!;
     private FixedClock _clock = null!;
+    private IMarketHoursEvaluator _marketHoursEvaluator = null!;
     private OrderSubmissionService _sut = null!;
 
     [SetUp]
@@ -34,11 +35,13 @@ public sealed class OrderSubmissionServiceTests
         _transactionProcessingClient = new Mock<ITransactionProcessingClient>();
         _repository = new FakeOrderExecutionRepository();
         _clock = new FixedClock();
+        _marketHoursEvaluator = new MarketHoursEvaluator(_repository, _clock);
         _sut = new OrderSubmissionService(
             _tradingInstrumentsClient.Object,
             _marketDataClient.Object,
             _transactionProcessingClient.Object,
             _repository,
+            _marketHoursEvaluator,
             _clock);
     }
 
@@ -95,6 +98,7 @@ public sealed class OrderSubmissionServiceTests
             new OrderCallerContext(1000000001, PlatformTokenTypes.User),
             CancellationToken.None);
 
+        response.Disposition.ShouldBe(OrderDisposition.Executed);
         response.Symbol.ShouldBe("AAPL");
         response.FillPrice.ShouldBe(100m);
         response.GrossAmount.ShouldBe(200m);
@@ -182,8 +186,93 @@ public sealed class OrderSubmissionServiceTests
             new OrderCallerContext(1000000001, PlatformTokenTypes.System),
             CancellationToken.None);
 
+        response.Disposition.ShouldBe(OrderDisposition.Executed);
         response.UserId.ShouldBe(1000000002);
         response.Status.ShouldBe(OrderStatus.Filled);
+    }
+
+    [Test]
+    public async Task SubmitAsync_ShouldQueueAfterHoursWeekdayOrders()
+    {
+        _clock.UtcNow = new DateTime(2026, 5, 6, 21, 30, 0, DateTimeKind.Utc);
+        SetupTradableInstrument();
+
+        var response = await _sut.SubmitAsync(
+            CreateRequest(),
+            new OrderCallerContext(1000000001, PlatformTokenTypes.User),
+            CancellationToken.None);
+
+        response.Disposition.ShouldBe(OrderDisposition.Queued);
+        response.Status.ShouldBe(OrderStatus.Queued);
+        response.ExecutionId.ShouldBeNull();
+        response.FillPrice.ShouldBeNull();
+        _repository.QueuedOrders.Count.ShouldBe(1);
+        _repository.QueuedOrders.Single().QueueReason.ShouldBe("AfterClose");
+        _marketDataClient.Verify(x => x.GetQuoteAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        _transactionProcessingClient.Verify(x => x.PostTradeAsync(It.IsAny<PostTradeTransactionRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Test]
+    public async Task SubmitAsync_ShouldQueueWeekendOrders()
+    {
+        _clock.UtcNow = new DateTime(2026, 5, 9, 15, 0, 0, DateTimeKind.Utc);
+        SetupTradableInstrument();
+
+        var response = await _sut.SubmitAsync(
+            CreateRequest(),
+            new OrderCallerContext(1000000001, PlatformTokenTypes.User),
+            CancellationToken.None);
+
+        response.Disposition.ShouldBe(OrderDisposition.Queued);
+        _repository.QueuedOrders.Count.ShouldBe(1);
+        _repository.QueuedOrders.Single().QueueReason.ShouldBe("Weekend");
+        _marketDataClient.Verify(x => x.GetQuoteAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        _transactionProcessingClient.Verify(x => x.PostTradeAsync(It.IsAny<PostTradeTransactionRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Test]
+    public async Task SubmitAsync_ShouldQueueMarketHolidayOrders()
+    {
+        _clock.UtcNow = new DateTime(2026, 5, 25, 16, 0, 0, DateTimeKind.Utc);
+        _repository.MarketHolidays.Add(new DateOnly(2026, 5, 25));
+        SetupTradableInstrument();
+
+        var response = await _sut.SubmitAsync(
+            CreateRequest(),
+            new OrderCallerContext(1000000001, PlatformTokenTypes.User),
+            CancellationToken.None);
+
+        response.Disposition.ShouldBe(OrderDisposition.Queued);
+        _repository.QueuedOrders.Count.ShouldBe(1);
+        _repository.QueuedOrders.Single().QueueReason.ShouldBe("MarketHoliday");
+        _marketDataClient.Verify(x => x.GetQuoteAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        _transactionProcessingClient.Verify(x => x.PostTradeAsync(It.IsAny<PostTradeTransactionRequest>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Test]
+    public async Task SubmitAsync_ShouldRejectUnsupportedSymbolEvenWhenMarketIsClosed()
+    {
+        _clock.UtcNow = new DateTime(2026, 5, 6, 21, 30, 0, DateTimeKind.Utc);
+        _tradingInstrumentsClient
+            .Setup(x => x.GetBySymbolAsync("AAPL", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TradingInstrumentResponse
+            {
+                Symbol = "AAPL",
+                TradingStatus = false,
+                PrimaryInstrumentType = "Equity",
+                SecondaryInstrumentType = "Common Stock"
+            });
+
+        var exception = await Should.ThrowAsync<OrderExecutionValidationException>(() =>
+            _sut.SubmitAsync(
+                CreateRequest(),
+                new OrderCallerContext(1000000001, PlatformTokenTypes.User),
+                CancellationToken.None));
+
+        exception.Code.ShouldBe(OrderExecutionErrorCodes.SymbolNotTradable);
+        _repository.QueuedOrders.ShouldBeEmpty();
+        _marketDataClient.Verify(x => x.GetQuoteAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        _transactionProcessingClient.Verify(x => x.PostTradeAsync(It.IsAny<PostTradeTransactionRequest>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Test]

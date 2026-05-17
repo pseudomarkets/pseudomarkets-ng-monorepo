@@ -12,10 +12,12 @@ namespace PseudoMarkets.OrderExecution.Core.Services;
 
 public sealed class OrderSubmissionService : IOrderSubmissionService
 {
+    private const string QueuedOrderStatus = "Pending";
     private readonly ITradingInstrumentsClient _tradingInstrumentsClient;
     private readonly IMarketDataClient _marketDataClient;
     private readonly ITransactionProcessingClient _transactionProcessingClient;
     private readonly IOrderExecutionRepository _repository;
+    private readonly IMarketHoursEvaluator _marketHoursEvaluator;
     private readonly IClock _clock;
 
     public OrderSubmissionService(
@@ -23,12 +25,14 @@ public sealed class OrderSubmissionService : IOrderSubmissionService
         IMarketDataClient marketDataClient,
         ITransactionProcessingClient transactionProcessingClient,
         IOrderExecutionRepository repository,
+        IMarketHoursEvaluator marketHoursEvaluator,
         IClock clock)
     {
         _tradingInstrumentsClient = tradingInstrumentsClient;
         _marketDataClient = marketDataClient;
         _transactionProcessingClient = transactionProcessingClient;
         _repository = repository;
+        _marketHoursEvaluator = marketHoursEvaluator;
         _clock = clock;
     }
 
@@ -66,6 +70,12 @@ public sealed class OrderSubmissionService : IOrderSubmissionService
         var symbol = NormalizeAndValidateSymbol(request.Symbol);
         var instrument = await _tradingInstrumentsClient.GetBySymbolAsync(symbol, cancellationToken);
         ValidateTradableInstrument(symbol, instrument.Symbol, instrument.TradingStatus);
+
+        var marketHours = await _marketHoursEvaluator.EvaluateAsync(cancellationToken);
+        if (!marketHours.IsMarketOpen)
+        {
+            return await QueueOrderAsync(request, symbol, marketHours.QueueReason, cancellationToken);
+        }
 
         var quote = await _marketDataClient.GetQuoteAsync(symbol, cancellationToken);
         if (quote.Price <= 0)
@@ -149,6 +159,53 @@ public sealed class OrderSubmissionService : IOrderSubmissionService
             await _repository.SaveChangesAsync(cancellationToken);
             throw;
         }
+    }
+
+    private async Task<SubmitOrderResponse> QueueOrderAsync(
+        SubmitOrderRequest request,
+        string symbol,
+        string? queueReason,
+        CancellationToken cancellationToken)
+    {
+        var now = _clock.UtcNow;
+        var queuedOrder = new QueuedOrderEntity
+        {
+            OrderId = Guid.NewGuid(),
+            UserId = request.UserId,
+            Symbol = symbol,
+            OrderSide = request.Side.ToString(),
+            OrderType = request.OrderType.ToString(),
+            Quantity = request.Quantity,
+            Status = QueuedOrderStatus,
+            QueueReason = queueReason ?? "MarketClosed",
+            SubmittedAtUtc = now,
+            CreatedAtUtc = now,
+            UpdatedAtUtc = now
+        };
+
+        await _repository.AddQueuedOrderAsync(queuedOrder, cancellationToken);
+        await _repository.SaveChangesAsync(cancellationToken);
+
+        return new SubmitOrderResponse
+        {
+            Disposition = OrderDisposition.Queued,
+            OrderId = queuedOrder.OrderId,
+            ExecutionId = null,
+            TransactionId = null,
+            PostingBatchId = null,
+            UserId = queuedOrder.UserId,
+            Symbol = queuedOrder.Symbol,
+            Side = request.Side,
+            OrderType = request.OrderType,
+            Quantity = request.Quantity,
+            FillPrice = null,
+            GrossAmount = null,
+            Fees = null,
+            NetAmount = null,
+            Status = OrderStatus.Queued,
+            SubmittedAtUtc = queuedOrder.SubmittedAtUtc,
+            ExecutedAtUtc = null
+        };
     }
 
     private static void ValidateCaller(SubmitOrderRequest request, OrderCallerContext callerContext)
@@ -265,6 +322,7 @@ public sealed class OrderSubmissionService : IOrderSubmissionService
     {
         return new SubmitOrderResponse
         {
+            Disposition = OrderDisposition.Executed,
             OrderId = orderExecution.OrderId,
             ExecutionId = orderExecution.ExecutionId,
             TransactionId = orderExecution.TransactionId,

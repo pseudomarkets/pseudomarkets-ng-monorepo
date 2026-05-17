@@ -1,6 +1,6 @@
 # Pseudo Markets NextGen Order Execution
 
-`pseudomarkets-nextgen-order-execution` is the order-entry and immediate simulated execution service for the Pseudo Markets platform. The core foundation supports market orders for equities, validates settled buying power or settled sellable quantity, fills accepted orders at the latest quote price, posts completed fills to Transaction Processing, and persists order execution state in PostgreSQL.
+`pseudomarkets-nextgen-order-execution` is the order-entry and simulated execution service for the Pseudo Markets platform. The core foundation supports market orders for equities, validates tradable symbols, either executes orders immediately during NYSE market hours or queues them for later processing when the market is closed, posts completed fills to Transaction Processing, and persists order state in PostgreSQL.
 
 ## Tech Stack
 
@@ -40,7 +40,11 @@ The service rejects unmapped order fields such as `limitPrice`, `stopPrice`, and
 
 Order submission is authorized before business validation. The service reads the authorized `userId` and `tokenType` from the shared authorization context populated by the IDP authorization endpoint. `USER` tokens may submit orders only for the token's authorized user id. `SYSTEM` tokens may submit orders for any payload user id.
 
-The service trims and uppercases symbols, rejects non-alphanumeric symbols before downstream calls, validates tradability through Trading Instruments, reads quotes from Market Data, validates buy orders against `SettledCashBalance`, validates sell orders against symbol-level `SettledQuantity`, and posts completed trade executions to Transaction Processing. It does not directly mutate `account_balances` or `positions`.
+The service trims and uppercases symbols, rejects non-alphanumeric symbols before downstream calls, and validates tradability through Trading Instruments for all submissions.
+
+If the order is submitted on a market day between `9:30 AM` and `4:00 PM` New York time, the service continues through immediate execution. It reads quotes from Market Data, validates buy orders against `SettledCashBalance`, validates sell orders against symbol-level `SettledQuantity`, and posts completed trade executions to Transaction Processing.
+
+If the order is submitted after hours, on weekends, or on seeded market holidays, the service persists the order to a relational queue table and returns a queued response. Queued orders are not priced or posted immediately, and the future batch executor is handled separately from this service foundation.
 
 For downstream service-to-service calls, Order Execution authenticates with a configured system account, caches the access token and refresh token returned by the IDP, and automatically refreshes the system token before expiration when calling Trading Instruments, Market Data, or Transaction Processing.
 

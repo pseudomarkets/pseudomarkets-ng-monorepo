@@ -93,6 +93,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prd", "prd", "{78ED7CB2-4F7
 		docs\prd\IDP_Password_Reset_PRD.md = docs\prd\IDP_Password_Reset_PRD.md
 		docs\prd\IDP_Token_Refresh_And_Token_Type_PRD.md = docs\prd\IDP_Token_Refresh_And_Token_Type_PRD.md
 		docs\prd\Market_Data_FinnHubSharp_Migration_PRD.md = docs\prd\Market_Data_FinnHubSharp_Migration_PRD.md
+		docs\prd\Order_Execution_Order_Queue_PRD.md = docs\prd\Order_Execution_Order_Queue_PRD.md
 		docs\prd\Order_Execution_System_Core_PRD.md = docs\prd\Order_Execution_System_Core_PRD.md
 		docs\prd\PRD_TEMPLATE.md = docs\prd\PRD_TEMPLATE.md
 		docs\prd\Settled_Unsettled_Balances_Positions_PRD.md = docs\prd\Settled_Unsettled_Balances_Positions_PRD.md
