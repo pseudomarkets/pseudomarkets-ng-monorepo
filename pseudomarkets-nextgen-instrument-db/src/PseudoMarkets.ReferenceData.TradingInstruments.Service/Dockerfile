@@ -17,6 +17,7 @@ COPY ["pseudomarkets-nextgen-instrument-db/src/PseudoMarkets.ReferenceData.Tradi
 COPY ["pseudomarkets-nextgen-instrument-db/src/PseudoMarkets.ReferenceData.TradingInstruments.Persistence/PseudoMarkets.ReferenceData.TradingInstruments.Persistence.csproj", "pseudomarkets-nextgen-instrument-db/src/PseudoMarkets.ReferenceData.TradingInstruments.Persistence/"]
 COPY ["pseudomarkets-nextgen-shared-auth/src/PseudoMarkets.Shared.Authorization/PseudoMarkets.Shared.Authorization.csproj", "pseudomarkets-nextgen-shared-auth/src/PseudoMarkets.Shared.Authorization/"]
 COPY ["pseudomarkets-nextgen-shared-entities/src/PseudoMarkets.Shared.Entities/PseudoMarkets.Shared.Entities.csproj", "pseudomarkets-nextgen-shared-entities/src/PseudoMarkets.Shared.Entities/"]
+COPY ["pseudomarkets-nextgen-shared-servicehelpers/src/PseudoMarkets.Shared.ServiceHelpers/PseudoMarkets.Shared.ServiceHelpers.csproj", "pseudomarkets-nextgen-shared-servicehelpers/src/PseudoMarkets.Shared.ServiceHelpers/"]
 RUN dotnet restore "pseudomarkets-nextgen-instrument-db/src/PseudoMarkets.ReferenceData.TradingInstruments.Service/PseudoMarkets.ReferenceData.TradingInstruments.Service.csproj"
 COPY . .
 WORKDIR "/src/pseudomarkets-nextgen-instrument-db/src/PseudoMarkets.ReferenceData.TradingInstruments.Service"

@@ -13,6 +13,7 @@ COPY ["pseudomarkets-nextgen-marketdata/src/PseudoMarkets.MarketData.Contracts/P
 COPY ["pseudomarkets-nextgen-marketdata/src/PseudoMarkets.MarketData.Core/PseudoMarkets.MarketData.Core.csproj", "pseudomarkets-nextgen-marketdata/src/PseudoMarkets.MarketData.Core/"]
 COPY ["pseudomarkets-nextgen-marketdata/src/PseudoMarkets.MarketData.Providers/PseudoMarkets.MarketData.Providers.csproj", "pseudomarkets-nextgen-marketdata/src/PseudoMarkets.MarketData.Providers/"]
 COPY ["pseudomarkets-nextgen-shared-auth/src/PseudoMarkets.Shared.Authorization/PseudoMarkets.Shared.Authorization.csproj", "pseudomarkets-nextgen-shared-auth/src/PseudoMarkets.Shared.Authorization/"]
+COPY ["pseudomarkets-nextgen-shared-servicehelpers/src/PseudoMarkets.Shared.ServiceHelpers/PseudoMarkets.Shared.ServiceHelpers.csproj", "pseudomarkets-nextgen-shared-servicehelpers/src/PseudoMarkets.Shared.ServiceHelpers/"]
 RUN dotnet restore "pseudomarkets-nextgen-marketdata/src/PseudoMarkets.MarketData.Service/PseudoMarkets.MarketData.Service.csproj"
 COPY . .
 WORKDIR "/src/pseudomarkets-nextgen-marketdata/src/PseudoMarkets.MarketData.Service"

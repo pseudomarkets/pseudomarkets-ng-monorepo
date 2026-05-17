@@ -95,6 +95,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prd", "prd", "{78ED7CB2-4F7
 		docs\prd\Market_Data_FinnHubSharp_Migration_PRD.md = docs\prd\Market_Data_FinnHubSharp_Migration_PRD.md
 		docs\prd\Order_Execution_Order_Queue_PRD.md = docs\prd\Order_Execution_Order_Queue_PRD.md
 		docs\prd\Order_Execution_System_Core_PRD.md = docs\prd\Order_Execution_System_Core_PRD.md
+		docs\prd\Platform_Batch_Processing_Framework_PRD.md = docs\prd\Platform_Batch_Processing_Framework_PRD.md
 		docs\prd\PRD_TEMPLATE.md = docs\prd\PRD_TEMPLATE.md
 		docs\prd\Settled_Unsettled_Balances_Positions_PRD.md = docs\prd\Settled_Unsettled_Balances_Positions_PRD.md
 		docs\prd\Trading_Instrument_Database_PRD.md = docs\prd\Trading_Instrument_Database_PRD.md
@@ -136,6 +137,18 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A2531BFE-0C2C-81F2-F87A-831AE086AC41}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.Shared.ServiceHelpers.Tests", "pseudomarkets-nextgen-shared-servicehelpers\tests\PseudoMarkets.Shared.ServiceHelpers.Tests\PseudoMarkets.Shared.ServiceHelpers.Tests.csproj", "{C78E48C7-5664-4F60-B152-AF45182367C4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pseudomarkets-nextgen-batch-processing", "pseudomarkets-nextgen-batch-processing", "{C2856D95-C9C5-1EAD-7D76-9BC48A6070C9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E8182653-B853-C118-CFAB-35534ABC700E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.Platform.Batch.Core", "pseudomarkets-nextgen-batch-processing\src\PseudoMarkets.Platform.Batch.Core\PseudoMarkets.Platform.Batch.Core.csproj", "{995CE05A-4F7C-454F-8987-2E51662331CA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.Platform.Batch.Host", "pseudomarkets-nextgen-batch-processing\src\PseudoMarkets.Platform.Batch.Host\PseudoMarkets.Platform.Batch.Host.csproj", "{6BCDE01C-1E34-44FE-929B-DE8621CD3523}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{FAD667E1-BE57-F81D-FF77-AEC0FB4C541D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.Platform.Batch.Tests", "pseudomarkets-nextgen-batch-processing\tests\PseudoMarkets.Platform.Batch.Tests\PseudoMarkets.Platform.Batch.Tests.csproj", "{3AB5FBA7-39A2-49AE-80F9-EA2C432553FB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -507,6 +520,42 @@ Global
 		{C78E48C7-5664-4F60-B152-AF45182367C4}.Release|x64.Build.0 = Release|Any CPU
 		{C78E48C7-5664-4F60-B152-AF45182367C4}.Release|x86.ActiveCfg = Release|Any CPU
 		{C78E48C7-5664-4F60-B152-AF45182367C4}.Release|x86.Build.0 = Release|Any CPU
+		{995CE05A-4F7C-454F-8987-2E51662331CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{995CE05A-4F7C-454F-8987-2E51662331CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{995CE05A-4F7C-454F-8987-2E51662331CA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{995CE05A-4F7C-454F-8987-2E51662331CA}.Debug|x64.Build.0 = Debug|Any CPU
+		{995CE05A-4F7C-454F-8987-2E51662331CA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{995CE05A-4F7C-454F-8987-2E51662331CA}.Debug|x86.Build.0 = Debug|Any CPU
+		{995CE05A-4F7C-454F-8987-2E51662331CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{995CE05A-4F7C-454F-8987-2E51662331CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{995CE05A-4F7C-454F-8987-2E51662331CA}.Release|x64.ActiveCfg = Release|Any CPU
+		{995CE05A-4F7C-454F-8987-2E51662331CA}.Release|x64.Build.0 = Release|Any CPU
+		{995CE05A-4F7C-454F-8987-2E51662331CA}.Release|x86.ActiveCfg = Release|Any CPU
+		{995CE05A-4F7C-454F-8987-2E51662331CA}.Release|x86.Build.0 = Release|Any CPU
+		{6BCDE01C-1E34-44FE-929B-DE8621CD3523}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6BCDE01C-1E34-44FE-929B-DE8621CD3523}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6BCDE01C-1E34-44FE-929B-DE8621CD3523}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6BCDE01C-1E34-44FE-929B-DE8621CD3523}.Debug|x64.Build.0 = Debug|Any CPU
+		{6BCDE01C-1E34-44FE-929B-DE8621CD3523}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6BCDE01C-1E34-44FE-929B-DE8621CD3523}.Debug|x86.Build.0 = Debug|Any CPU
+		{6BCDE01C-1E34-44FE-929B-DE8621CD3523}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6BCDE01C-1E34-44FE-929B-DE8621CD3523}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6BCDE01C-1E34-44FE-929B-DE8621CD3523}.Release|x64.ActiveCfg = Release|Any CPU
+		{6BCDE01C-1E34-44FE-929B-DE8621CD3523}.Release|x64.Build.0 = Release|Any CPU
+		{6BCDE01C-1E34-44FE-929B-DE8621CD3523}.Release|x86.ActiveCfg = Release|Any CPU
+		{6BCDE01C-1E34-44FE-929B-DE8621CD3523}.Release|x86.Build.0 = Release|Any CPU
+		{3AB5FBA7-39A2-49AE-80F9-EA2C432553FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AB5FBA7-39A2-49AE-80F9-EA2C432553FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AB5FBA7-39A2-49AE-80F9-EA2C432553FB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3AB5FBA7-39A2-49AE-80F9-EA2C432553FB}.Debug|x64.Build.0 = Debug|Any CPU
+		{3AB5FBA7-39A2-49AE-80F9-EA2C432553FB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3AB5FBA7-39A2-49AE-80F9-EA2C432553FB}.Debug|x86.Build.0 = Debug|Any CPU
+		{3AB5FBA7-39A2-49AE-80F9-EA2C432553FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AB5FBA7-39A2-49AE-80F9-EA2C432553FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AB5FBA7-39A2-49AE-80F9-EA2C432553FB}.Release|x64.ActiveCfg = Release|Any CPU
+		{3AB5FBA7-39A2-49AE-80F9-EA2C432553FB}.Release|x64.Build.0 = Release|Any CPU
+		{3AB5FBA7-39A2-49AE-80F9-EA2C432553FB}.Release|x86.ActiveCfg = Release|Any CPU
+		{3AB5FBA7-39A2-49AE-80F9-EA2C432553FB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -560,5 +609,10 @@ Global
 		{C78D61FF-563C-4846-9E8F-C5937B7E313A} = {F68EAA80-5AEB-46BD-6FD3-208354069C51}
 		{A2531BFE-0C2C-81F2-F87A-831AE086AC41} = {DBE5D78A-A0FB-D30C-C07D-0BBFA9BA6467}
 		{C78E48C7-5664-4F60-B152-AF45182367C4} = {A2531BFE-0C2C-81F2-F87A-831AE086AC41}
+		{E8182653-B853-C118-CFAB-35534ABC700E} = {C2856D95-C9C5-1EAD-7D76-9BC48A6070C9}
+		{995CE05A-4F7C-454F-8987-2E51662331CA} = {E8182653-B853-C118-CFAB-35534ABC700E}
+		{6BCDE01C-1E34-44FE-929B-DE8621CD3523} = {E8182653-B853-C118-CFAB-35534ABC700E}
+		{FAD667E1-BE57-F81D-FF77-AEC0FB4C541D} = {C2856D95-C9C5-1EAD-7D76-9BC48A6070C9}
+		{3AB5FBA7-39A2-49AE-80F9-EA2C432553FB} = {FAD667E1-BE57-F81D-FF77-AEC0FB4C541D}
 	EndGlobalSection
 EndGlobal

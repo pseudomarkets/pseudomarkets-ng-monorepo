@@ -27,6 +27,8 @@ The platform is split into focused services and shared libraries:
   Trading instrument reference-data API for creating tradable instruments, retrieving instruments by symbol, and updating closing prices.
 - `pseudomarkets-nextgen-order-execution`
   Order entry and simulated market-order execution service. It validates tradable symbols, executes market-hour submissions immediately, queues after-hours submissions for later processing, posts fills to Transaction Processing, and persists order state in PostgreSQL.
+- `pseudomarkets-nextgen-batch-processing`
+  Shared Hangfire-based batch-processing host for scheduling and running recurring platform jobs against the shared PostgreSQL server, including the Hangfire dashboard UI.
 - `pseudomarkets-nextgen-shared-auth`
   Shared authorization client and filters used by services that delegate authorization to the IDP, including propagation of authorized user ID and token type metadata.
 - `pseudomarkets-nextgen-shared-entities`
@@ -47,12 +49,13 @@ These are the default HTTP ports exposed by Docker Compose. For local non-Docker
 - Transaction Processing Swagger: [http://localhost:8082/swagger/index.html](http://localhost:8082/swagger/index.html)
 - Trading Instruments Swagger: [http://localhost:8083/swagger/index.html](http://localhost:8083/swagger/index.html)
 - Order Execution Swagger: [http://localhost:8084/swagger/index.html](http://localhost:8084/swagger/index.html)
+- Batch Processing Dashboard: [http://localhost:8085/hangfire](http://localhost:8085/hangfire)
 - Aerospike: `localhost:3000`
 - PostgreSQL: `localhost:5432`
 
 ## Operational Endpoints
 
-Each API now exposes these unauthenticated operational routes:
+Each HTTP host now exposes unauthenticated operational routes:
 
 - `GET /info`
   Returns the application name, version, and build timestamp from the built service artifact.
@@ -62,7 +65,7 @@ Each API now exposes these unauthenticated operational routes:
 Dependency health is lightweight and service-specific:
 
 - IDP and Market Data report Aerospike connectivity from the shared `AerospikeClient`
-- Transaction Processing, Trading Instruments, and Order Execution report PostgreSQL connectivity from the shared EF Core DbContext
+- Transaction Processing, Trading Instruments, Order Execution, and Batch Processing report PostgreSQL connectivity from the shared EF Core DbContext
 
 ## Configuration
 
@@ -138,6 +141,7 @@ dotnet run --project pseudomarkets-nextgen-marketdata/src/PseudoMarkets.MarketDa
 dotnet run --project pseudomarkets-nextgen-transaction-processing/src/PseudoMarkets.TransactionProcessing.Service/PseudoMarkets.TransactionProcessing.Service.csproj
 dotnet run --project pseudomarkets-nextgen-instrument-db/src/PseudoMarkets.ReferenceData.TradingInstruments.Service/PseudoMarkets.ReferenceData.TradingInstruments.Service.csproj
 dotnet run --project pseudomarkets-nextgen-order-execution/src/PseudoMarkets.OrderExecution.Service/PseudoMarkets.OrderExecution.Service.csproj
+dotnet run --project pseudomarkets-nextgen-batch-processing/src/PseudoMarkets.Platform.Batch.Host/PseudoMarkets.Platform.Batch.Host.csproj
 ```
 
 The services load the root `.env` file for local development secrets.
@@ -149,6 +153,7 @@ Default local non-Docker URLs:
 - Transaction Processing: `http://localhost:8082` or `https://localhost:7282`
 - Trading Instruments: `http://localhost:8083` or `https://localhost:7183`
 - Order Execution: `http://localhost:8084` or `https://localhost:7284`
+- Batch Processing: `http://localhost:8085` or `https://localhost:7285`
 
 To seed trading instruments without Docker, apply shared EF migrations by starting the Trading Instruments service, then run the SQL scripts in this order:
 
@@ -186,4 +191,4 @@ The shared EF Core model and migrations live in:
 pseudomarkets-nextgen-shared-entities/src/PseudoMarkets.Shared.Entities
 ```
 
-`PseudoMarketsDbContext` is applied at transaction-processing, trading-instruments, and order-execution startup. Current relational tables include transaction posting tables, settled/unsettled balance and position projection tables, trade lots, market holidays, trading instruments, order executions, queued orders, and EF migration history.
+`PseudoMarketsDbContext` is applied at transaction-processing, trading-instruments, and order-execution startup. The batch-processing host uses the same database connection for Hangfire PostgreSQL storage and health reporting. Current relational tables include transaction posting tables, settled/unsettled balance and position projection tables, trade lots, market holidays, trading instruments, order executions, queued orders, Hangfire storage tables, and EF migration history.

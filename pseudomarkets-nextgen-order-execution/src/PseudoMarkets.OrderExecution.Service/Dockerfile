@@ -20,6 +20,7 @@ COPY ["pseudomarkets-nextgen-marketdata/src/PseudoMarkets.MarketData.Contracts/P
 COPY ["pseudomarkets-nextgen-transaction-processing/src/PseudoMarkets.TransactionProcessing.Contracts/PseudoMarkets.TransactionProcessing.Contracts.csproj", "pseudomarkets-nextgen-transaction-processing/src/PseudoMarkets.TransactionProcessing.Contracts/"]
 COPY ["pseudomarkets-nextgen-shared-auth/src/PseudoMarkets.Shared.Authorization/PseudoMarkets.Shared.Authorization.csproj", "pseudomarkets-nextgen-shared-auth/src/PseudoMarkets.Shared.Authorization/"]
 COPY ["pseudomarkets-nextgen-shared-entities/src/PseudoMarkets.Shared.Entities/PseudoMarkets.Shared.Entities.csproj", "pseudomarkets-nextgen-shared-entities/src/PseudoMarkets.Shared.Entities/"]
+COPY ["pseudomarkets-nextgen-shared-servicehelpers/src/PseudoMarkets.Shared.ServiceHelpers/PseudoMarkets.Shared.ServiceHelpers.csproj", "pseudomarkets-nextgen-shared-servicehelpers/src/PseudoMarkets.Shared.ServiceHelpers/"]
 RUN dotnet restore "pseudomarkets-nextgen-order-execution/src/PseudoMarkets.OrderExecution.Service/PseudoMarkets.OrderExecution.Service.csproj"
 COPY . .
 WORKDIR "/src/pseudomarkets-nextgen-order-execution/src/PseudoMarkets.OrderExecution.Service"
