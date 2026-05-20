@@ -101,6 +101,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prd", "prd", "{78ED7CB2-4F7
 		docs\prd\Platform_Batch_Processing_Framework_PRD.md = docs\prd\Platform_Batch_Processing_Framework_PRD.md
 		docs\prd\PRD_TEMPLATE.md = docs\prd\PRD_TEMPLATE.md
 		docs\prd\Settled_Unsettled_Balances_Positions_PRD.md = docs\prd\Settled_Unsettled_Balances_Positions_PRD.md
+		docs\prd\Swagger_To_Scalar_API_Exploration_Migration_PRD.md = docs\prd\Swagger_To_Scalar_API_Exploration_Migration_PRD.md
 		docs\prd\Trading_Instrument_Database_PRD.md = docs\prd\Trading_Instrument_Database_PRD.md
 	EndProjectSection
 EndProject
