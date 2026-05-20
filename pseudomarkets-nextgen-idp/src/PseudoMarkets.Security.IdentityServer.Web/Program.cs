@@ -1,7 +1,6 @@
 using System.Threading.RateLimiting;
 using Aerospike.Client;
 using Microsoft.Extensions.Options;
-using PseudoMarkets.Shared.ServiceHelpers;
 using PseudoMarkets.Security.IdentityServer.Core.Accounts.Implementations;
 using PseudoMarkets.Security.IdentityServer.Core.Accounts.Interfaces;
 using PseudoMarkets.Security.IdentityServer.Core.Authentication.Implementations;
@@ -12,6 +11,7 @@ using PseudoMarkets.Security.IdentityServer.Core.Configuration;
 using PseudoMarkets.Security.IdentityServer.Core.Database.Implementations;
 using PseudoMarkets.Security.IdentityServer.Core.Database.Interfaces;
 using PseudoMarkets.Security.IdentityServer.Web.Infrastructure;
+using PseudoMarkets.Shared.ServiceHelpers;
 
 namespace PseudoMarkets.Security.IdentityServer.Web;
 

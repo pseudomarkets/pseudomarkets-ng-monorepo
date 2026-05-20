@@ -5,10 +5,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
-using Shouldly;
 using PseudoMarkets.Shared.Authorization.Clients;
 using PseudoMarkets.Shared.Authorization.Configuration;
 using PseudoMarkets.Shared.Authorization.Contracts;
+using Shouldly;
 
 namespace PseudoMarkets.Shared.Authorization.Tests.Clients;
 

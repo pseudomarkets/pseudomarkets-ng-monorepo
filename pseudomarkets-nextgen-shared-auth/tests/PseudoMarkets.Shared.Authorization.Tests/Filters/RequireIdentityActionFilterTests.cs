@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using Shouldly;
 using PseudoMarkets.Shared.Authorization.Filters;
 using PseudoMarkets.Shared.Authorization.Interfaces;
 using PseudoMarkets.Shared.Authorization.Models;
+using Shouldly;
 
 namespace PseudoMarkets.Shared.Authorization.Tests.Filters;
 

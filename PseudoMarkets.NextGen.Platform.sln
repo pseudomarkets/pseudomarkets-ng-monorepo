@@ -22,7 +22,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.MarketData.Se
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A409F0E5-41A2-4C14-8859-61B165E3CBF4}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		compose.yaml = compose.yaml
+		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.MarketData.Contracts", "pseudomarkets-nextgen-marketdata\src\PseudoMarkets.MarketData.Contracts\PseudoMarkets.MarketData.Contracts.csproj", "{476CAAA4-0A03-4E36-A5F3-4FF95F3F6D22}"

@@ -5,11 +5,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using NUnit.Framework;
-using Shouldly;
 using PseudoMarkets.Security.IdentityServer.Core.Authorization.Implementations;
 using PseudoMarkets.Security.IdentityServer.Core.Configuration;
 using PseudoMarkets.Security.IdentityServer.Core.Database.Interfaces;
 using PseudoMarkets.Security.IdentityServer.Core.Models;
+using Shouldly;
 
 namespace PseudoMarkets.Security.IdentityServer.Core.Tests.Authorization.Implementations;
 

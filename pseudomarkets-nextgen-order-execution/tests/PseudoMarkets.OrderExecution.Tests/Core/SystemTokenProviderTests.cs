@@ -2,10 +2,10 @@ using System.Net;
 using System.Net.Http.Json;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
-using Shouldly;
 using PseudoMarkets.OrderExecution.Core.Configuration;
 using PseudoMarkets.OrderExecution.Core.Services;
 using PseudoMarkets.OrderExecution.Tests.Support;
+using Shouldly;
 
 namespace PseudoMarkets.OrderExecution.Tests.Core;
 

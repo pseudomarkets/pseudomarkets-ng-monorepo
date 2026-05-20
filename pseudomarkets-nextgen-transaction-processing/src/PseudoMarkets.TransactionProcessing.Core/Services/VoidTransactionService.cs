@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using PseudoMarkets.Shared.Entities.Database;
+using PseudoMarkets.Shared.Entities.Entities.TransactionProcessing;
 using PseudoMarkets.TransactionProcessing.Contracts.Enums;
 using PseudoMarkets.TransactionProcessing.Contracts.Transactions;
 using PseudoMarkets.TransactionProcessing.Core.Exceptions;
 using PseudoMarkets.TransactionProcessing.Core.Interfaces;
-using PseudoMarkets.Shared.Entities.Database;
-using PseudoMarkets.Shared.Entities.Entities.TransactionProcessing;
 
 namespace PseudoMarkets.TransactionProcessing.Core.Services;
 

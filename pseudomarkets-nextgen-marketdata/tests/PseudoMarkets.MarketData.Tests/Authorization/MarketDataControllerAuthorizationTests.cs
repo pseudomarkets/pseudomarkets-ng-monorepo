@@ -1,10 +1,10 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Routing;
 using NUnit.Framework;
-using Shouldly;
 using PseudoMarkets.MarketData.Service.Controllers;
 using PseudoMarkets.Shared.Authorization.Attributes;
 using PseudoMarkets.Shared.Authorization.Constants;
+using Shouldly;
 
 namespace PseudoMarkets.MarketData.Tests.Authorization;
 

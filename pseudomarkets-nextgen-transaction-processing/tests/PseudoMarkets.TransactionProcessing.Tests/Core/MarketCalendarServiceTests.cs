@@ -1,6 +1,6 @@
 using NUnit.Framework;
-using Shouldly;
 using PseudoMarkets.TransactionProcessing.Tests.Support;
+using Shouldly;
 
 namespace PseudoMarkets.TransactionProcessing.Tests.Core;
 

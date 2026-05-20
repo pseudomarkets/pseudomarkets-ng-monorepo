@@ -1,14 +1,14 @@
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
-using Shouldly;
 using PseudoMarkets.Security.IdentityServer.Core.Authentication.Implementations;
 using PseudoMarkets.Security.IdentityServer.Core.Configuration;
 using PseudoMarkets.Security.IdentityServer.Core.Database.Interfaces;
 using PseudoMarkets.Security.IdentityServer.Core.Exceptions;
 using PseudoMarkets.Security.IdentityServer.Core.Models;
+using Shouldly;
 
 namespace PseudoMarkets.Security.IdentityServer.Core.Tests.Authentication.Implementations;
 

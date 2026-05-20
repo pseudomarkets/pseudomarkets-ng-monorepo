@@ -1,11 +1,10 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using Shouldly;
 using PseudoMarkets.Security.IdentityServer.Core.Accounts.Interfaces;
 using PseudoMarkets.Security.IdentityServer.Core.Authentication.Interfaces;
 using PseudoMarkets.Security.IdentityServer.Core.Authorization.Interfaces;
@@ -13,8 +12,9 @@ using PseudoMarkets.Security.IdentityServer.Core.Configuration;
 using PseudoMarkets.Security.IdentityServer.Core.Constants;
 using PseudoMarkets.Security.IdentityServer.Core.Models;
 using PseudoMarkets.Security.IdentityServer.Web.Constants;
-using PseudoMarkets.Security.IdentityServer.Web.Controllers;
 using PseudoMarkets.Security.IdentityServer.Web.Contracts;
+using PseudoMarkets.Security.IdentityServer.Web.Controllers;
+using Shouldly;
 
 namespace PseudoMarkets.Security.IdentityServer.Web.Tests.Controllers;
 

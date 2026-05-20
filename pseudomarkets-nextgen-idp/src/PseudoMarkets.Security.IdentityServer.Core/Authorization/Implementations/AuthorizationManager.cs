@@ -25,7 +25,7 @@ public class AuthorizationManager : IAuthorizationManager
         _accountRepository = accountRepository;
         _logger = logger;
     }
-    
+
     public AuthorizationResult Authorize(AuthorizationRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Token) || string.IsNullOrWhiteSpace(request.Action))
@@ -51,7 +51,7 @@ public class AuthorizationManager : IAuthorizationManager
                 IssuerSigningKey = new SymmetricSecurityKey(key),
                 ClockSkew = TimeSpan.Zero
             };
-            
+
             var claimsPrincipal = tokenHandler.ValidateToken(request.Token, validationParameters, out var securityToken);
 
             if (claimsPrincipal != null && securityToken != null)
@@ -81,7 +81,7 @@ public class AuthorizationManager : IAuthorizationManager
                     {
                         return new AuthorizationResult(true, "Authorization Successful", id, tokenType);
                     }
-                    
+
                     return new AuthorizationResult(false, "Unauthorized", 0, tokenType);
                 }
             }
@@ -102,6 +102,6 @@ public class AuthorizationManager : IAuthorizationManager
             throw new IdentityServiceException("Unable to complete authorization.", ex);
         }
 
-        return new  AuthorizationResult(false, "Authorization Failed", 0);
+        return new AuthorizationResult(false, "Authorization Failed", 0);
     }
 }

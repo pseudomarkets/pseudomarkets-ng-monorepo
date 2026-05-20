@@ -1,7 +1,7 @@
 using NUnit.Framework;
-using Shouldly;
 using PseudoMarkets.TransactionProcessing.Contracts.Enums;
 using PseudoMarkets.TransactionProcessing.Core.Services;
+using Shouldly;
 
 namespace PseudoMarkets.TransactionProcessing.Tests.Core;
 

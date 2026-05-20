@@ -5,10 +5,10 @@ using FinnHubSharp.Models.Response.FinnHub;
 using FinnHubSharp.Models.Response.Raw;
 using Moq;
 using NUnit.Framework;
-using Shouldly;
 using PseudoMarkets.MarketData.Core.Configuration;
 using PseudoMarkets.MarketData.Core.Exceptions;
 using PseudoMarkets.MarketData.Providers.Implementations;
+using Shouldly;
 
 namespace PseudoMarkets.MarketData.Tests.Providers;
 

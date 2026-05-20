@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using Shouldly;
 using PseudoMarkets.Security.IdentityServer.Core.Exceptions;
 using PseudoMarkets.Security.IdentityServer.Web.Infrastructure;
+using Shouldly;
 
 namespace PseudoMarkets.Security.IdentityServer.Web.Tests.Infrastructure;
 

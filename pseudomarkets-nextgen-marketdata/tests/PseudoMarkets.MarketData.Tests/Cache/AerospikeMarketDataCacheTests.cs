@@ -2,10 +2,10 @@ using Aerospike.Client;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using Shouldly;
 using PseudoMarkets.MarketData.Cache.Implementations;
 using PseudoMarkets.MarketData.Contracts.Quotes;
 using PseudoMarkets.MarketData.Core.Configuration;
+using Shouldly;
 
 namespace PseudoMarkets.MarketData.Tests.Cache;
 

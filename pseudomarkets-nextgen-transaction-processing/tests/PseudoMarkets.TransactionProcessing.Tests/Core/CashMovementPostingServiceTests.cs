@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
-using Shouldly;
 using PseudoMarkets.TransactionProcessing.Contracts.Enums;
 using PseudoMarkets.TransactionProcessing.Contracts.Transactions;
 using PseudoMarkets.TransactionProcessing.Core.Exceptions;
 using PseudoMarkets.TransactionProcessing.Tests.Support;
+using Shouldly;
 
 namespace PseudoMarkets.TransactionProcessing.Tests.Core;
 

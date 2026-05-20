@@ -1,6 +1,6 @@
 using PseudoMarkets.Shared.Entities.Entities.OrderExecution;
-using PseudoMarkets.Shared.Entities.Entities.TransactionProcessing;
 using PseudoMarkets.Shared.Entities.Entities.Platform;
+using PseudoMarkets.Shared.Entities.Entities.TransactionProcessing;
 
 namespace PseudoMarkets.OrderExecution.Core.Interfaces;
 

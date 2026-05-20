@@ -1,8 +1,8 @@
 using System.Globalization;
+using System.Text.Json;
 using Aerospike.Client;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
 using PseudoMarkets.MarketData.Contracts.Quotes;
 using PseudoMarkets.MarketData.Core.Configuration;
 using PseudoMarkets.MarketData.Core.Interfaces;

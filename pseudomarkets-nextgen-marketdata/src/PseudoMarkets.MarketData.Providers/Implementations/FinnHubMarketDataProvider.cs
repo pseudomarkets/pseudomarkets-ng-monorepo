@@ -1,8 +1,8 @@
 using System.Globalization;
 using System.Net;
 using System.Text.Json;
-using FinnHubSharp.Interfaces;
 using FinnHubSharp.Implementations;
+using FinnHubSharp.Interfaces;
 using FinnHubSharp.Models.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PseudoMarkets.MarketData.Contracts.Quotes;

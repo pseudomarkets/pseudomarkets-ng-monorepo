@@ -3,11 +3,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
-using Shouldly;
 using PseudoMarkets.Shared.Authorization.Clients;
 using PseudoMarkets.Shared.Authorization.Configuration;
 using PseudoMarkets.Shared.Authorization.DependencyInjection;
 using PseudoMarkets.Shared.Authorization.Interfaces;
+using Shouldly;
 
 namespace PseudoMarkets.Shared.Authorization.Tests.DependencyInjection;
 

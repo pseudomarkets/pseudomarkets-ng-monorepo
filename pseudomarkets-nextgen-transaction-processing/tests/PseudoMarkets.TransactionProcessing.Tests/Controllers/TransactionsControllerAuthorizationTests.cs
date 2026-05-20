@@ -1,10 +1,10 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Routing;
 using NUnit.Framework;
-using Shouldly;
 using PseudoMarkets.Shared.Authorization.Attributes;
 using PseudoMarkets.Shared.Authorization.Constants;
 using PseudoMarkets.TransactionProcessing.Service.Controllers;
+using Shouldly;
 
 namespace PseudoMarkets.TransactionProcessing.Tests.Controllers;
 

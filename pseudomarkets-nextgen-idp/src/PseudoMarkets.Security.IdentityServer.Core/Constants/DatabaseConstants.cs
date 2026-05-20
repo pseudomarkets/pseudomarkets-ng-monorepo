@@ -14,7 +14,7 @@ public static class DatabaseConstants
     public const string ActiveBin = "bActive";
     public const string FailedLoginAttemptsBin = "bFailCnt";
     public const string LockoutUntilBin = "bLockoutTs";
-    
+
     public const string TokensSet = "sTokens";
     public const string TokenHashBin = "bTokHash";
     public const string IssuedAtBin = "bIssuedTs";

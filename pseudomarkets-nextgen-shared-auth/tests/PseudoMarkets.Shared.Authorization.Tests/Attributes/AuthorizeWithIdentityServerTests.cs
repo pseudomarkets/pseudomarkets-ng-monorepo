@@ -1,9 +1,9 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using NUnit.Framework;
-using Shouldly;
 using PseudoMarkets.Shared.Authorization.Attributes;
 using PseudoMarkets.Shared.Authorization.Filters;
+using Shouldly;
 
 namespace PseudoMarkets.Shared.Authorization.Tests.Attributes;
 

@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
-using Shouldly;
 using PseudoMarkets.MarketData.Contracts.Quotes;
 using PseudoMarkets.MarketData.Core.Exceptions;
 using PseudoMarkets.MarketData.Core.Interfaces;
 using PseudoMarkets.MarketData.Service.Controllers;
+using Shouldly;
 
 namespace PseudoMarkets.MarketData.Tests.Service;
 

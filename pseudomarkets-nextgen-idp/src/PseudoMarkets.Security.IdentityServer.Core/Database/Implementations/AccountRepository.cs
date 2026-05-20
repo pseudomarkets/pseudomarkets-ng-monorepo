@@ -36,7 +36,7 @@ public class AccountRepository : IAccountRepository
     {
         durableDelete = true
     };
-    
+
     public AccountRepository(AerospikeConfiguration aerospikeConfiguration, ILogger<AccountRepository> logger)
     {
         _logger = logger;
@@ -58,7 +58,7 @@ public class AccountRepository : IAccountRepository
         _aerospikeClient = aerospikeClient;
         _logger = logger;
     }
-    
+
     public Account? GetAccount(string loginId)
     {
         try
@@ -132,7 +132,7 @@ public class AccountRepository : IAccountRepository
             throw new IdentityDependencyException("Unable to update identity data.", ex);
         }
     }
-    
+
     public void CreateAccount(Account account)
     {
         try
@@ -238,7 +238,7 @@ public class AccountRepository : IAccountRepository
         var lockoutUntilBin = new Bin(
             DatabaseConstants.LockoutUntilBin,
             account.LockoutUntilUtc?.Ticks ?? 0L);
-        
+
         var bins = new List<Bin>()
         {
             userId,
@@ -250,7 +250,7 @@ public class AccountRepository : IAccountRepository
             failedLoginAttemptsBin,
             lockoutUntilBin
         };
-        
+
         return bins;
     }
 
@@ -289,7 +289,7 @@ public class AccountRepository : IAccountRepository
                 roles.Add(roleAsString);
             }
         }
-        
+
         return new Account()
         {
             LoginId = loginId,

@@ -82,8 +82,8 @@ public class Program
             var db = scope.ServiceProvider.GetRequiredService<PseudoMarketsDbContext>();
             db.Database.Migrate();
         }
-    } 
-    
+    }
+
     private static void LoadSharedEnvironmentFile()
     {
         var envFilePath = FindEnvironmentFile(Directory.GetCurrentDirectory())
