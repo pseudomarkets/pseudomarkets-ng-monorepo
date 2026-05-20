@@ -28,7 +28,7 @@ The platform is split into focused services and shared libraries:
 - `pseudomarkets-nextgen-order-execution`
   Order entry and simulated market-order execution service. It validates tradable symbols, executes market-hour submissions immediately, queues after-hours submissions for later processing, posts fills to Transaction Processing, and persists order state in PostgreSQL.
 - `pseudomarkets-nextgen-batch-processing`
-  Shared Hangfire-based batch-processing host for scheduling and running recurring platform jobs against the shared PostgreSQL server, including the Hangfire dashboard UI.
+  Shared Hangfire-based batch-processing host for scheduling and running recurring platform jobs against the shared PostgreSQL server, including the Hangfire dashboard UI and the market-open queued-order execution job.
 - `pseudomarkets-nextgen-shared-auth`
   Shared authorization client and filters used by services that delegate authorization to the IDP, including propagation of authorized user ID and token type metadata.
 - `pseudomarkets-nextgen-shared-entities`
@@ -89,8 +89,12 @@ Set these values in `.env`:
 - `Postgres__Password`
 - `OrderExecution__SystemAccountLoginId`
 - `OrderExecution__SystemAccountPassword`
+- `QueuedOrderExecution__SystemAccountLoginId`
+- `QueuedOrderExecution__SystemAccountPassword`
 
 The Docker stack loads this shared `.env` file into all services. PostgreSQL uses the database name `pseudomarkets_db`.
+
+The batch host uses the queued-order execution system credentials to authenticate with the IDP and submit queued orders back through Order Execution at market open while preserving the original order `userId`.
 
 ## Run With Docker
 

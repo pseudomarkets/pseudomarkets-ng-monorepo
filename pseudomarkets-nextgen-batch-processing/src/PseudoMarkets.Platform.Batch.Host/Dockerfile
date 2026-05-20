@@ -13,6 +13,7 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["pseudomarkets-nextgen-batch-processing/src/PseudoMarkets.Platform.Batch.Host/PseudoMarkets.Platform.Batch.Host.csproj", "pseudomarkets-nextgen-batch-processing/src/PseudoMarkets.Platform.Batch.Host/"]
 COPY ["pseudomarkets-nextgen-batch-processing/src/PseudoMarkets.Platform.Batch.Core/PseudoMarkets.Platform.Batch.Core.csproj", "pseudomarkets-nextgen-batch-processing/src/PseudoMarkets.Platform.Batch.Core/"]
+COPY ["pseudomarkets-nextgen-order-execution/src/PseudoMarkets.OrderExecution.Contracts/PseudoMarkets.OrderExecution.Contracts.csproj", "pseudomarkets-nextgen-order-execution/src/PseudoMarkets.OrderExecution.Contracts/"]
 COPY ["pseudomarkets-nextgen-shared-entities/src/PseudoMarkets.Shared.Entities/PseudoMarkets.Shared.Entities.csproj", "pseudomarkets-nextgen-shared-entities/src/PseudoMarkets.Shared.Entities/"]
 COPY ["pseudomarkets-nextgen-shared-servicehelpers/src/PseudoMarkets.Shared.ServiceHelpers/PseudoMarkets.Shared.ServiceHelpers.csproj", "pseudomarkets-nextgen-shared-servicehelpers/src/PseudoMarkets.Shared.ServiceHelpers/"]
 RUN dotnet restore "pseudomarkets-nextgen-batch-processing/src/PseudoMarkets.Platform.Batch.Host/PseudoMarkets.Platform.Batch.Host.csproj"

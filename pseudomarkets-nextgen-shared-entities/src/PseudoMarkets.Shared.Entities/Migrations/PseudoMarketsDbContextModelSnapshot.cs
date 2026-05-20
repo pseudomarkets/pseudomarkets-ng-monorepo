@@ -270,6 +270,15 @@ namespace PseudoMarkets.Shared.Entities.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at_utc");
 
+                    b.Property<string>("FailureMessage")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("failure_message");
+
+                    b.Property<DateTime?>("LastAttemptedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_attempted_at_utc");
+
                     b.Property<string>("OrderSide")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -292,6 +301,10 @@ namespace PseudoMarkets.Shared.Entities.Migrations
                         .HasMaxLength(40)
                         .HasColumnType("character varying(40)")
                         .HasColumnName("queue_reason");
+
+                    b.Property<DateTime?>("ProcessedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processed_at_utc");
 
                     b.Property<string>("Status")
                         .IsRequired()

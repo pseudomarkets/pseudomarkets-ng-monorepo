@@ -284,6 +284,9 @@ public class PseudoMarketsDbContext : DbContext
             entity.Property(x => x.Status).HasColumnName("status").HasMaxLength(40).IsRequired();
             entity.Property(x => x.QueueReason).HasColumnName("queue_reason").HasMaxLength(40).IsRequired();
             entity.Property(x => x.SubmittedAtUtc).HasColumnName("submitted_at_utc").IsRequired();
+            entity.Property(x => x.LastAttemptedAtUtc).HasColumnName("last_attempted_at_utc");
+            entity.Property(x => x.ProcessedAtUtc).HasColumnName("processed_at_utc");
+            entity.Property(x => x.FailureMessage).HasColumnName("failure_message").HasMaxLength(512);
             entity.Property(x => x.CreatedAtUtc).HasColumnName("created_at_utc").IsRequired();
             entity.Property(x => x.UpdatedAtUtc).HasColumnName("updated_at_utc").IsRequired();
             entity.HasIndex(x => x.UserId);

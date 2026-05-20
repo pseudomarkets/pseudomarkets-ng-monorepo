@@ -21,9 +21,9 @@ The component is split into three projects:
 - `src/PseudoMarkets.Platform.Batch.Host`
   Hosts the Hangfire server, Hangfire dashboard, PostgreSQL storage wiring, and standardized operational endpoints.
 - `tests/PseudoMarkets.Platform.Batch.Tests`
-  Covers framework behavior such as job registration, duplicate-name rejection, and concurrency-lock handling.
+  Covers framework behavior such as job registration, queued-order execution orchestration, and downstream client behavior.
 
-The first implementation pass focuses on the framework only. It does not yet include concrete platform batch jobs such as queued-order execution.
+The first concrete batch job is the queued-order execution job, which runs at market open, reads pending queued orders from PostgreSQL, authenticates with the IDP using a configured `SYSTEM` account, and resubmits those orders through the Order Execution API using the original queued-order `userId`.
 
 ## Runtime Behavior
 
@@ -36,6 +36,8 @@ The host reads batch configuration from the `BatchProcessing` section and regist
 - concurrency protection
 
 By default, the host uses the shared PostgreSQL database `pseudomarkets_db` and stores Hangfire data in the `hangfire` schema.
+
+The queued-order execution job is registered by default as `queued-order-execution` with a `9:30 AM America/New_York` schedule. It processes pending queued orders in submission order, uses a configurable max batch size, and marks each queue row as `Succeeded` or `Failed` after attempting execution.
 
 ## Operational Endpoints
 
@@ -53,6 +55,8 @@ For this implementation pass, the Hangfire dashboard is intentionally left unaut
 The host uses the shared root `.env` file or deployment secrets for:
 
 - `ConnectionStrings__PseudoMarketsDb`
+- `QueuedOrderExecution__SystemAccountLoginId`
+- `QueuedOrderExecution__SystemAccountPassword`
 
 Primary appsettings-driven batch configuration lives under:
 
@@ -71,6 +75,16 @@ Primary appsettings-driven batch configuration lives under:
 - `BatchProcessing:Jobs:{JobName}:Queue`
 - `BatchProcessing:Jobs:{JobName}:DisableConcurrentExecution`
 - `BatchProcessing:Jobs:{JobName}:TimeZoneId`
+
+Queued-order execution settings live under:
+
+- `QueuedOrderExecution:IdentityServerBaseUrl`
+- `QueuedOrderExecution:OrderExecutionBaseUrl`
+- `QueuedOrderExecution:SystemAccountLoginId`
+- `QueuedOrderExecution:SystemAccountPassword`
+- `QueuedOrderExecution:TimeoutSeconds`
+- `QueuedOrderExecution:TokenRefreshBufferSeconds`
+- `QueuedOrderExecution:MaxBatchSize`
 
 ## Run With Docker
 

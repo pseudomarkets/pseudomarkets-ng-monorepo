@@ -11,6 +11,9 @@ public class QueuedOrderEntity
     public string Status { get; set; } = string.Empty;
     public string QueueReason { get; set; } = string.Empty;
     public DateTime SubmittedAtUtc { get; set; }
+    public DateTime? LastAttemptedAtUtc { get; set; }
+    public DateTime? ProcessedAtUtc { get; set; }
+    public string? FailureMessage { get; set; }
     public DateTime CreatedAtUtc { get; set; }
     public DateTime UpdatedAtUtc { get; set; }
 }

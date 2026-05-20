@@ -4,6 +4,7 @@ using Hangfire.PostgreSql;
 using Microsoft.EntityFrameworkCore;
 using PseudoMarkets.Platform.Batch.Core.Configuration;
 using PseudoMarkets.Platform.Batch.Core.DependencyInjection;
+using PseudoMarkets.Platform.Batch.Host.DependencyInjection;
 using PseudoMarkets.Platform.Batch.Host.Infrastructure;
 using PseudoMarkets.Shared.Entities.Database;
 using PseudoMarkets.Shared.ServiceHelpers;
@@ -24,6 +25,7 @@ public class Program
         builder.Services.AddDbContext<PseudoMarketsDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("PseudoMarketsDb")));
         builder.Services.AddPseudoMarketsBatchCore(builder.Configuration);
+        builder.Services.AddQueuedOrderExecutionBatchProcessing(builder.Configuration);
         builder.Services.AddHealthChecks()
             .AddCheck<DbContextConnectivityHealthCheck<PseudoMarketsDbContext>>("postgres");
         builder.Services.AddHangfire((serviceProvider, configuration) =>

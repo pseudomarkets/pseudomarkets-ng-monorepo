@@ -213,10 +213,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      pseudomarkets.security.identityserver.web:
+        condition: service_healthy
+      pseudomarkets.orderexecution.service:
+        condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8085
       ConnectionStrings__PseudoMarketsDb: Host=postgres;Port=5432;Database=pseudomarkets_db;Username=postgres;Password=${Postgres__Password:-postgres}
+      QueuedOrderExecution__IdentityServerBaseUrl: http://pseudomarkets-nextgen-idp-web:8080
+      QueuedOrderExecution__OrderExecutionBaseUrl: http://pseudomarkets-nextgen-order-execution-service:8084
     ports:
       - "8085:8085"
     healthcheck:

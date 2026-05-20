@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PseudoMarkets.Platform.Batch.Core\PseudoMarkets.Platform.Batch.Core.csproj" />
+    <ProjectReference Include="..\..\..\pseudomarkets-nextgen-order-execution\src\PseudoMarkets.OrderExecution.Contracts\PseudoMarkets.OrderExecution.Contracts.csproj" />
     <ProjectReference Include="..\..\..\pseudomarkets-nextgen-shared-entities\src\PseudoMarkets.Shared.Entities\PseudoMarkets.Shared.Entities.csproj" />
     <ProjectReference Include="..\..\..\pseudomarkets-nextgen-shared-servicehelpers\src\PseudoMarkets.Shared.ServiceHelpers\PseudoMarkets.Shared.ServiceHelpers.csproj" />
   </ItemGroup>
@@ -27,6 +28,9 @@
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>BuildTimestamp</_Parameter1>
       <_Parameter2>$(BuildTimestamp)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>PseudoMarkets.Platform.Batch.Tests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
 

@@ -44,7 +44,7 @@ The service trims and uppercases symbols, rejects non-alphanumeric symbols befor
 
 If the order is submitted on a market day between `9:30 AM` and `4:00 PM` New York time, the service continues through immediate execution. It reads quotes from Market Data, validates buy orders against `SettledCashBalance`, validates sell orders against symbol-level `SettledQuantity`, and posts completed trade executions to Transaction Processing.
 
-If the order is submitted after hours, on weekends, or on seeded market holidays, the service persists the order to a relational queue table and returns a queued response. Queued orders are not priced or posted immediately, and the future batch executor is handled separately from this service foundation.
+If the order is submitted after hours, on weekends, or on seeded market holidays, the service persists the order to a relational queue table and returns a queued response. Queued orders are not priced or posted immediately. The platform batch host reads those pending rows at market open and resubmits them through this same API using a `SYSTEM` token while preserving the original queued-order `userId`.
 
 For downstream service-to-service calls, Order Execution authenticates with a configured system account, caches the access token and refresh token returned by the IDP, and automatically refreshes the system token before expiration when calling Trading Instruments, Market Data, or Transaction Processing.
 
