@@ -89,9 +89,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PseudoMarkets.ReferenceData
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7FAB9061-AFA6-4063-A4AD-97FA18F768FD}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "architecture", "architecture", "{C9E17B7A-E1E4-47E4-8B0E-7D4C70E278B4}"
+	ProjectSection(SolutionItems) = preProject
+		docs\architecture\Aerospike_Data_Dictionary.md = docs\architecture\Aerospike_Data_Dictionary.md
+		docs\architecture\Postgres_Data_Dictionary.md = docs\architecture\Postgres_Data_Dictionary.md
+	EndProjectSection
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prd", "prd", "{78ED7CB2-4F71-421C-BE9F-E5BC7CB8027D}"
 	ProjectSection(SolutionItems) = preProject
 		docs\prd\API_Info_And_Health_Endpoint_Standardization_PRD.md = docs\prd\API_Info_And_Health_Endpoint_Standardization_PRD.md
+		docs\prd\Batch_Trade_Settlement_Job_PRD.md = docs\prd\Batch_Trade_Settlement_Job_PRD.md
 		docs\prd\IDP_Password_Reset_PRD.md = docs\prd\IDP_Password_Reset_PRD.md
 		docs\prd\IDP_Token_Refresh_And_Token_Type_PRD.md = docs\prd\IDP_Token_Refresh_And_Token_Type_PRD.md
 		docs\prd\Market_Data_FinnHubSharp_Migration_PRD.md = docs\prd\Market_Data_FinnHubSharp_Migration_PRD.md
@@ -600,6 +607,7 @@ Global
 		{99FA9AA8-F9B3-D335-7171-F6B4E5183560} = {36F19584-9A82-07FC-9748-BBD163E9779F}
 		{3A6CDD4C-F8B8-4FDF-851E-AD0C308E536E} = {99FA9AA8-F9B3-D335-7171-F6B4E5183560}
 		{78ED7CB2-4F71-421C-BE9F-E5BC7CB8027D} = {7FAB9061-AFA6-4063-A4AD-97FA18F768FD}
+		{C9E17B7A-E1E4-47E4-8B0E-7D4C70E278B4} = {7FAB9061-AFA6-4063-A4AD-97FA18F768FD}
 		{E4F8DB9F-D96C-4AF3-8C57-3F54A52AC95A} = {7FAB9061-AFA6-4063-A4AD-97FA18F768FD}
 		{FDDC06D2-F6C6-4DAB-9DFD-C65D0382D36E} = {7FAB9061-AFA6-4063-A4AD-97FA18F768FD}
 		{2CF5AA32-B0E7-A96B-B25C-21E994A89418} = {41EFF871-9CB5-AD7E-F233-8A3D60201E5E}
