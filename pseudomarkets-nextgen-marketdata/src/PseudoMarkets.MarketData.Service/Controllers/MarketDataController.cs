@@ -9,6 +9,7 @@ namespace PseudoMarkets.MarketData.Service.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Produces("application/json")]
 public class MarketDataController : ControllerBase
 {
     private readonly IQuoteService _quoteService;
@@ -18,8 +19,22 @@ public class MarketDataController : ControllerBase
         _quoteService = quoteService;
     }
 
+    /// <summary>
+    /// Gets the latest quote for a symbol.
+    /// </summary>
+    /// <remarks>
+    /// Returns a lightweight latest-price quote for a tradable symbol. Responses may be served from Aerospike cache.
+    /// Requires the VIEW_MARKET_DATA action.
+    /// </remarks>
     [AuthorizeWithIdentityServer(PlatformAuthorizationActions.ViewMarketData)]
     [HttpGet("quote/{symbol}")]
+    [EndpointSummary("Get latest quote")]
+    [EndpointDescription("Returns the latest available quote for a symbol, including whether the response came from the provider or cache.")]
+    [ProducesResponseType<QuoteResponse>(StatusCodes.Status200OK, Description = "The latest quote was found.")]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, Description = "The symbol was invalid.")]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, Description = "No quote was found for the symbol.")]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status503ServiceUnavailable, Description = "The upstream market-data provider was unavailable.")]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError, Description = "The market data service encountered an unexpected error.")]
     public async Task<ActionResult<QuoteResponse>> GetQuote(string symbol, CancellationToken cancellationToken)
     {
         try
@@ -75,8 +90,22 @@ public class MarketDataController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Gets a detailed quote for a symbol.
+    /// </summary>
+    /// <remarks>
+    /// Returns open, high, low, close, previous close, and change fields supported by the configured data provider.
+    /// Requires the VIEW_MARKET_DATA action.
+    /// </remarks>
     [AuthorizeWithIdentityServer(PlatformAuthorizationActions.ViewMarketData)]
     [HttpGet("quote/{symbol}/detailed")]
+    [EndpointSummary("Get detailed quote")]
+    [EndpointDescription("Returns detailed quote fields for a symbol, including provider/cache source and quote timestamp.")]
+    [ProducesResponseType<DetailedQuoteResponse>(StatusCodes.Status200OK, Description = "The detailed quote was found.")]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, Description = "The symbol was invalid.")]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, Description = "No detailed quote was found for the symbol.")]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status503ServiceUnavailable, Description = "The upstream market-data provider was unavailable.")]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError, Description = "The market data service encountered an unexpected error.")]
     public async Task<ActionResult<DetailedQuoteResponse>> GetDetailedQuote(string symbol, CancellationToken cancellationToken = default)
     {
         try
@@ -107,8 +136,21 @@ public class MarketDataController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Gets major U.S. market index snapshots.
+    /// </summary>
+    /// <remarks>
+    /// Returns current values for the S&amp;P 500, Dow Jones Industrial Average, and NASDAQ indices.
+    /// Requires the VIEW_MARKET_DATA action.
+    /// </remarks>
     [AuthorizeWithIdentityServer(PlatformAuthorizationActions.ViewMarketData)]
     [HttpGet("indices")]
+    [EndpointSummary("Get U.S. market indices")]
+    [EndpointDescription("Returns current snapshots for the S&P 500, Dow Jones Industrial Average, and NASDAQ indices.")]
+    [ProducesResponseType<IndicesResponse>(StatusCodes.Status200OK, Description = "The index snapshots were found.")]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound, Description = "No U.S. market indices were found.")]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status503ServiceUnavailable, Description = "The upstream index-data provider was unavailable.")]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError, Description = "The market data service encountered an unexpected error.")]
     public async Task<ActionResult<IndicesResponse>> GetIndices(CancellationToken cancellationToken)
     {
         try

@@ -52,7 +52,7 @@ pseudomarkets-nextgen-transaction-processing/
 Purpose:
 
 - ASP.NET Core Web API host
-- Swagger/OpenAPI
+- Scalar/OpenAPI
 - configuration binding
 - health checks
 - shared authorization wiring
@@ -665,7 +665,6 @@ Configuration sections:
 
 - `ConnectionStrings:PseudoMarketsDb`
 - `IdentityAuthorization`
-- `Swagger`
 - `Logging`
 
 Example `appsettings.Development.json`:
@@ -732,7 +731,7 @@ services:
 
 Future root platform compose integration should expose:
 
-- transaction processing Swagger UI at `http://localhost:8082/swagger/index.html`
+- transaction processing Scalar UI at `http://localhost:8082/scalar`
 
 ## First Scaffolding Deliverable
 

@@ -79,7 +79,7 @@ At a high level:
 - Register lightweight dependency checks only for infrastructure each service directly owns a connection to
 - For Aerospike-connected services, implement the health check using `AerospikeClient.IsConnected`
 - For PostgreSQL-connected services, implement a lightweight connectivity validation appropriate for EF Core/Npgsql-backed services
-- Ensure Swagger and README documentation reflect the presence of both endpoints
+- Ensure Scalar and README documentation reflect the presence of both endpoints
 - Ensure Docker health checks and any service-specific documentation reference the standardized `/health` route
 
 If a service already has a `/health` endpoint, it should be updated to follow the standardized implementation rather than keeping a service-specific variation.

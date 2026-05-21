@@ -8,6 +8,8 @@ Swagger to Scalar API Exploration Migration
 
 Migrate Pseudo Markets API browser exploration from Swagger UI to Scalar. The platform should continue generating OpenAPI documents with ASP.NET Core OpenAPI support, but the interactive browser UI should move from `/swagger` to `/scalar`.
 
+Status: Implemented across all browser-facing API services.
+
 ## Problem Statement
 
 The platform currently uses Swagger UI through Swashbuckle for local and Docker-based API exploration. As the number of API services grows, API exploration should be standardized on a modern OpenAPI UI that aligns cleanly with ASP.NET Core's built-in OpenAPI document generation model.
@@ -75,21 +77,21 @@ The migration should be done service-by-service to reduce risk:
 
 ## Acceptance Criteria
 
-- [ ] Identity Server exposes Scalar at `/scalar` and OpenAPI JSON at `/openapi/v1.json` in Development.
-- [ ] Market Data Service exposes Scalar at `/scalar` and OpenAPI JSON at `/openapi/v1.json` in Development.
-- [ ] Transaction Processing Service exposes Scalar at `/scalar` and OpenAPI JSON at `/openapi/v1.json` in Development.
-- [ ] Trading Instruments Service exposes Scalar at `/scalar` and OpenAPI JSON at `/openapi/v1.json` in Development.
-- [ ] Order Execution Service exposes Scalar at `/scalar` and OpenAPI JSON at `/openapi/v1.json` in Development.
-- [ ] Swagger UI is no longer registered in any API service startup code.
-- [ ] `Swashbuckle.AspNetCore` package references are removed from API service projects unless a specific project still requires them for a non-UI reason.
-- [ ] `Scalar.AspNetCore` package references are added to each browser-facing API service project.
-- [ ] Launch settings open `scalar` instead of `swagger` for local browser launches.
-- [ ] Docker Compose service ports continue to expose each API service from the host machine.
-- [ ] Existing protected endpoints can still be tested from the browser by supplying a JWT bearer token through Scalar.
-- [ ] Root and service-level README files document Scalar URLs instead of Swagger URLs.
-- [ ] Deployment documentation uses Scalar terminology and URLs instead of Swagger terminology and URLs.
-- [ ] The full solution builds successfully.
-- [ ] The full test suite passes successfully.
+- [x] Identity Server exposes Scalar at `/scalar` and OpenAPI JSON at `/openapi/v1.json` in Development.
+- [x] Market Data Service exposes Scalar at `/scalar` and OpenAPI JSON at `/openapi/v1.json` in Development.
+- [x] Transaction Processing Service exposes Scalar at `/scalar` and OpenAPI JSON at `/openapi/v1.json` in Development.
+- [x] Trading Instruments Service exposes Scalar at `/scalar` and OpenAPI JSON at `/openapi/v1.json` in Development.
+- [x] Order Execution Service exposes Scalar at `/scalar` and OpenAPI JSON at `/openapi/v1.json` in Development.
+- [x] Swagger UI is no longer registered in any API service startup code.
+- [x] `Swashbuckle.AspNetCore` package references are removed from API service projects unless a specific project still requires them for a non-UI reason.
+- [x] `Scalar.AspNetCore` package references are added to each browser-facing API service project.
+- [x] Launch settings open `scalar` instead of `swagger` for local browser launches.
+- [x] Docker Compose service ports continue to expose each API service from the host machine.
+- [x] Existing protected endpoints can still be tested from the browser by supplying a JWT bearer token through Scalar.
+- [x] Root and service-level README files document Scalar URLs instead of Swagger URLs.
+- [x] Deployment documentation uses Scalar terminology and URLs instead of Swagger terminology and URLs.
+- [x] The full solution builds successfully.
+- [x] The full test suite passes successfully.
 
 ## Out Of Scope
 

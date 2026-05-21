@@ -9,7 +9,7 @@
 - Entity Framework Core with `Npgsql`
 - Shared EF Core model via `PseudoMarkets.Shared.Entities`
 - Shared IDP-backed authorization via `PseudoMarkets.Shared.Authorization`
-- Swagger UI / OpenAPI
+- Scalar / OpenAPI
 - Docker and Docker Compose
 - NUnit, Moq, and Shouldly
 
@@ -100,7 +100,7 @@ By default, the launch settings use:
 - `https://localhost:7282`
 - `http://localhost:8082`
 
-Swagger UI will be available at [https://localhost:7282/swagger/index.html](https://localhost:7282/swagger/index.html). Use the Swagger `Authorize` button with a JWT issued by the IDP before calling the write endpoints.
+Scalar API reference UI will be available at [https://localhost:7282/scalar](https://localhost:7282/scalar). The OpenAPI document is available at [https://localhost:7282/openapi/v1.json](https://localhost:7282/openapi/v1.json). Use Scalar authentication with a JWT issued by the IDP before calling the write endpoints.
 
 ## Running With Docker Compose
 
@@ -127,12 +127,13 @@ docker compose -f compose.yaml up -d --build
 
 Endpoints:
 
-- Identity server Swagger UI: [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
-- Transaction processing Swagger UI: [http://localhost:8082/swagger/index.html](http://localhost:8082/swagger/index.html)
+- Identity server Scalar UI: [http://localhost:8080/scalar](http://localhost:8080/scalar)
+- Transaction processing Scalar UI: [http://localhost:8082/scalar](http://localhost:8082/scalar)
+- Transaction processing OpenAPI document: [http://localhost:8082/openapi/v1.json](http://localhost:8082/openapi/v1.json)
 - PostgreSQL: `localhost:5432`
 - Aerospike: `localhost:3000`
 
-Use the IDP Swagger UI to authenticate first, then paste the returned JWT into the transaction processing Swagger UI `Authorize` dialog before calling the write endpoints.
+Use the IDP Scalar UI to authenticate first, then paste the returned JWT into the transaction processing Scalar Bearer authentication field before calling the write endpoints.
 
 ## Authorization
 

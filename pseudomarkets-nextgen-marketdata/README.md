@@ -10,7 +10,7 @@
 - Finnhub via the published `FinnHubSharp` NuGet package
 - Yahoo Finance chart API for U.S. indices
 - `PseudoMarkets.Shared.Authorization` for reusable IDP-backed authorization
-- Swagger UI / OpenAPI for local API exploration
+- Scalar / OpenAPI for local API exploration
 - Docker and Docker Compose for local containerized development
 - NUnit, Moq, and Shouldly for unit testing
 
@@ -19,7 +19,7 @@
 The project is split into five main service projects, with a shared platform dependency for authorization:
 
 - `src/PseudoMarkets.MarketData.Service`
-  Hosts the HTTP API, Swagger UI, configuration binding, and dependency injection.
+  Hosts the HTTP API, Scalar API reference UI, configuration binding, and dependency injection.
 - `src/PseudoMarkets.MarketData.Core`
   Contains service orchestration, interfaces, configuration models, and typed exceptions.
 - `src/PseudoMarkets.MarketData.Providers`
@@ -139,11 +139,15 @@ By default, the launch settings use:
 - `https://localhost:7228`
 - `http://localhost:8081`
 
-Swagger UI is available at:
+Scalar API reference UI is available at:
 
-- [https://localhost:7228/swagger/index.html](https://localhost:7228/swagger/index.html)
+- [https://localhost:7228/scalar](https://localhost:7228/scalar)
 
-Use the `Authorize` button in Swagger UI and paste a JWT issued by the IDP. The token must include the `VIEW_MARKET_DATA` role.
+The OpenAPI document is available at:
+
+- [https://localhost:7228/openapi/v1.json](https://localhost:7228/openapi/v1.json)
+
+Use Scalar authentication with the Bearer security scheme and paste a JWT issued by the IDP. The token must include the `VIEW_MARKET_DATA` role.
 
 ## Running With Docker Compose
 
@@ -178,9 +182,10 @@ docker compose -f compose.yaml down
 
 ### Service endpoints
 
-- Identity server Swagger UI: [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
+- Identity server Scalar UI: [http://localhost:8080/scalar](http://localhost:8080/scalar)
 - Market data service: [http://localhost:8081](http://localhost:8081)
-- Swagger UI: [http://localhost:8081/swagger/index.html](http://localhost:8081/swagger/index.html)
+- Scalar API reference UI: [http://localhost:8081/scalar](http://localhost:8081/scalar)
+- OpenAPI document: [http://localhost:8081/openapi/v1.json](http://localhost:8081/openapi/v1.json)
 - Aerospike: `localhost:3000`
 
 ### Notes about the Docker setup
@@ -189,7 +194,7 @@ docker compose -f compose.yaml down
 - The Compose file also starts the identity server, and market data authorization points at the IDP container over the Docker network.
 - The web container uses `Aerospike__Host=aerospike`, so it talks to the database over the Compose network instead of `localhost`.
 - Aerospike data is persisted in the shared repo-root directory `../.docker-data/aerospike`.
-- The Compose stack runs the market data service in `Development` mode so Swagger UI is available locally.
+- The Compose stack runs the market data service in `Development` mode so Scalar is available locally.
 - The service-local Compose file pins Aerospike to `linux/arm64`, which keeps it aligned with Apple Silicon / M-series development machines.
 - The Finnhub API key is read from the shared repo-root `.env` file through `../.env`.
 
@@ -233,7 +238,7 @@ Current primary endpoints include:
   Returns cached or provider-backed U.S. market index snapshots for the S&P 500, Dow Jones Industrial Average, and NASDAQ Composite using Yahoo Finance `regularMarketPrice`.
 
 All endpoints require a Bearer token issued by the IDP with the `VIEW_MARKET_DATA` role.
-Use Swagger UI to inspect request and response schemas interactively and supply the token through the built-in `Authorize` button.
+Use Scalar to inspect request and response schemas interactively and supply the token through the Bearer security scheme.
 
 ## Build
 
@@ -253,11 +258,11 @@ dotnet test pseudomarkets-nextgen-marketdata/PseudoMarkets.MarketData.Service.sl
 
 ## Troubleshooting
 
-### Swagger is not available
+### Scalar is not available
 
-- Non-Docker local runs expose Swagger at `https://localhost:7228/swagger/index.html`.
-- Docker Compose exposes Swagger at `http://localhost:8081/swagger/index.html`.
-- Swagger is enabled only in Development mode.
+- Non-Docker local runs expose Scalar at `https://localhost:7228/scalar`.
+- Docker Compose exposes Scalar at `http://localhost:8081/scalar`.
+- Scalar is enabled only in Development mode.
 
 ### The app cannot connect to Aerospike
 
@@ -277,7 +282,7 @@ docker compose -f compose.yaml ps
 ### Authorized requests fail with 401 or 403
 
 - Verify the identity server is running and reachable at the configured `IdentityAuthorization__IdentityServerBaseUrl`.
-- Authenticate through the IDP first and use the returned JWT in the market data Swagger `Authorize` button.
+- Authenticate through the IDP first and use the returned JWT in the market data Scalar Bearer authentication field.
 - Verify the token includes the `VIEW_MARKET_DATA` role.
 
 ### HTTPS certificate warnings locally

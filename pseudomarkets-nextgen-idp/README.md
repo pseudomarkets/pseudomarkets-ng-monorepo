@@ -8,7 +8,7 @@
 - C# class library for the identity domain and data access
 - Aerospike Community Edition as the backing data store
 - JWT bearer token generation and validation
-- Swagger UI / OpenAPI for local API exploration
+- Scalar / OpenAPI for local API exploration
 - Docker and Docker Compose for local containerized development
 - NUnit, Moq, and Shouldly for unit testing
 
@@ -17,7 +17,7 @@
 The project is split into two main application layers:
 
 - `src/PseudoMarkets.Security.IdentityServer.Web`
-  Exposes the HTTP API, Swagger UI, exception handling, request contracts, and environment-specific behavior.
+  Exposes the HTTP API, Scalar API reference UI, exception handling, request contracts, and environment-specific behavior.
 - `src/PseudoMarkets.Security.IdentityServer.Core`
   Contains the identity domain logic, Aerospike repository, account provisioning, authentication, authorization, configuration objects, and constants.
 - `tests/`
@@ -112,9 +112,13 @@ By default, the launch settings use:
 - `https://localhost:7092`
 - `http://localhost:5051`
 
-Swagger UI is available at:
+Scalar API reference UI is available at:
 
-- [https://localhost:7092/swagger/index.html](https://localhost:7092/swagger/index.html)
+- [https://localhost:7092/scalar](https://localhost:7092/scalar)
+
+The OpenAPI document is available at:
+
+- [https://localhost:7092/openapi/v1.json](https://localhost:7092/openapi/v1.json)
 
 The market data service expects to call the IDP authorization endpoint at `http://localhost:5051/api/identity/authorize` during local non-Docker development.
 
@@ -150,7 +154,8 @@ docker compose -f compose.yaml down
 ### Service endpoints
 
 - Identity server: [http://localhost:8080](http://localhost:8080)
-- Swagger UI: [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
+- Scalar API reference UI: [http://localhost:8080/scalar](http://localhost:8080/scalar)
+- OpenAPI document: [http://localhost:8080/openapi/v1.json](http://localhost:8080/openapi/v1.json)
 - Aerospike: `localhost:3000`
 
 ### Notes about the Docker setup
@@ -158,7 +163,7 @@ docker compose -f compose.yaml down
 - The Compose file waits for Aerospike to become healthy before starting the identity server.
 - The web container uses `Aerospike__Host=aerospike`, so it talks to the database over the Compose network instead of `localhost`.
 - Aerospike data is persisted in the shared repo-root directory `../.docker-data/aerospike`.
-- The Compose stack runs the identity server in `Development` mode so Swagger UI and development-only flows are available locally.
+- The Compose stack runs the identity server in `Development` mode so Scalar and development-only flows are available locally.
 - The service-local Compose file pins Aerospike to `linux/arm64`, which keeps it aligned with Apple Silicon / M-series development machines.
 - The JWT signing key is read from the shared repo-root `.env` file through `../.env`.
 
@@ -214,7 +219,7 @@ Current primary endpoints include:
 - Refresh-token consumption is atomic so one refresh token cannot be rotated successfully more than once.
 - The system-account bypass secret is separate from the JWT signing key.
 
-Use Swagger UI to inspect request and response schemas interactively.
+Use Scalar to inspect request and response schemas interactively.
 
 ## Build
 
@@ -234,11 +239,11 @@ dotnet test pseudomarkets-nextgen-idp/PseudoMarkets.Security.IdentityServer.sln 
 
 ## Troubleshooting
 
-### Swagger is not available
+### Scalar is not available
 
-- Non-Docker local runs expose Swagger at `https://localhost:7092/swagger/index.html`.
-- Docker Compose exposes Swagger at `http://localhost:8080/swagger/index.html`.
-- Swagger is enabled only in Development mode.
+- Non-Docker local runs expose Scalar at `https://localhost:7092/scalar`.
+- Docker Compose exposes Scalar at `http://localhost:8080/scalar`.
+- Scalar is enabled only in Development mode.
 
 ### The app cannot connect to Aerospike
 

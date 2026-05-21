@@ -8,7 +8,7 @@ The Trading Instrument Database service is the platform reference-data API for t
 - PostgreSQL with EF Core and Npgsql
 - Shared `PseudoMarketsDbContext` from `pseudomarkets-nextgen-shared-entities`
 - Shared IDP-backed authorization from `pseudomarkets-nextgen-shared-auth`
-- Swagger / OpenAPI for browser testing
+- Scalar / OpenAPI for browser testing
 - NUnit, Moq, and Shouldly for unit tests
 
 ## API
@@ -24,7 +24,7 @@ The Trading Instrument Database service is the platform reference-data API for t
 - `PATCH /api/trading-instruments/{symbol}/closing-price`
   Requires `UPDATE_INSTRUMENTS`.
 
-Swagger is available at [http://localhost:8083/swagger/index.html](http://localhost:8083/swagger/index.html) when running locally or through Docker.
+Scalar is available at [http://localhost:8083/scalar](http://localhost:8083/scalar) when running locally or through Docker. The OpenAPI document is available at [http://localhost:8083/openapi/v1.json](http://localhost:8083/openapi/v1.json).
 
 ## Database
 

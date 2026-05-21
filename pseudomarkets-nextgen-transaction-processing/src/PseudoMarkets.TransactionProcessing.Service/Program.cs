@@ -6,6 +6,7 @@ using PseudoMarkets.Shared.ServiceHelpers;
 using PseudoMarkets.TransactionProcessing.Core.DependencyInjection;
 using PseudoMarkets.TransactionProcessing.Persistence.DependencyInjection;
 using PseudoMarkets.TransactionProcessing.Service.Infrastructure;
+using Scalar.AspNetCore;
 
 namespace PseudoMarkets.TransactionProcessing.Service;
 
@@ -23,25 +24,41 @@ public class Program
         builder.Services.AddExceptionHandler<TransactionProcessingExceptionHandler>();
         var healthChecks = builder.Services.AddHealthChecks();
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen(options =>
+        builder.Services.AddOpenApi(options =>
         {
-            var bearerScheme = new OpenApiSecurityScheme
+            options.AddDocumentTransformer((document, context, cancellationToken) =>
             {
-                Name = "Authorization",
-                Type = SecuritySchemeType.Http,
-                Scheme = "bearer",
-                BearerFormat = "JWT",
-                In = ParameterLocation.Header,
-                Description = "Enter a valid IDP JWT Bearer token."
-            };
-
-            options.AddSecurityDefinition("Bearer", bearerScheme);
-            options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
-            {
+                document.Components ??= new OpenApiComponents();
+                document.Components.SecuritySchemes = new Dictionary<string, IOpenApiSecurityScheme>
                 {
-                    new OpenApiSecuritySchemeReference("Bearer", document, null!),
-                    []
+                    ["Bearer"] = new OpenApiSecurityScheme
+                    {
+                        Type = SecuritySchemeType.Http,
+                        Scheme = "bearer",
+                        BearerFormat = "JWT",
+                        In = ParameterLocation.Header,
+                        Description = "Enter a valid IDP JWT Bearer token."
+                    }
+                };
+
+                foreach (var path in document.Paths.Values)
+                {
+                    if (path.Operations is null)
+                    {
+                        continue;
+                    }
+
+                    foreach (var operation in path.Operations.Values)
+                    {
+                        operation.Security ??= [];
+                        operation.Security.Add(new OpenApiSecurityRequirement
+                        {
+                            [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+                        });
+                    }
                 }
+
+                return Task.CompletedTask;
             });
         });
         builder.Services.AddTransactionProcessingCore();
@@ -54,8 +71,11 @@ public class Program
 
         if (app.Environment.IsDevelopment())
         {
-            app.UseSwagger();
-            app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1"));
+            app.MapOpenApi();
+            app.MapScalarApiReference(options =>
+            {
+                options.AddPreferredSecuritySchemes("Bearer");
+            });
         }
 
         app.UseExceptionHandler();

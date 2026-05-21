@@ -12,6 +12,7 @@ using PseudoMarkets.Security.IdentityServer.Core.Database.Implementations;
 using PseudoMarkets.Security.IdentityServer.Core.Database.Interfaces;
 using PseudoMarkets.Security.IdentityServer.Web.Infrastructure;
 using PseudoMarkets.Shared.ServiceHelpers;
+using Scalar.AspNetCore;
 
 namespace PseudoMarkets.Security.IdentityServer.Web;
 
@@ -29,7 +30,7 @@ public class Program
         builder.Services.AddProblemDetails();
         builder.Services.AddEndpointsApiExplorer();
         var healthChecks = builder.Services.AddHealthChecks();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddOpenApi();
         builder.Services.Configure<AerospikeConfiguration>(builder.Configuration.GetRequiredSection("Aerospike"));
         builder.Services.Configure<JwtConfiguration>(builder.Configuration.GetRequiredSection("JwtConfiguration"));
         builder.Services.Configure<IdentitySecurityConfiguration>(
@@ -68,7 +69,9 @@ public class Program
                     });
             });
         });
-        builder.Services.AddSingleton<IAccountRepository, AccountRepository>();
+        builder.Services.AddSingleton<IAccountRepository>(sp => new AccountRepository(
+            sp.GetRequiredService<IAerospikeClient>(),
+            sp.GetRequiredService<ILogger<AccountRepository>>()));
         builder.Services.AddSingleton<IAccountProvisioningManager, AccountProvisioningManager>();
         builder.Services.AddSingleton<IPasswordResetManager, PasswordResetManager>();
         builder.Services.AddSingleton<IAuthenticationManager, AuthenticationManager>();
@@ -79,8 +82,8 @@ public class Program
 
         if (app.Environment.IsDevelopment())
         {
-            app.UseSwagger();
-            app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1"));
+            app.MapOpenApi();
+            app.MapScalarApiReference();
         }
 
         app.UseExceptionHandler();

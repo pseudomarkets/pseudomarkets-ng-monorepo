@@ -214,7 +214,7 @@ After implementation, validate:
 2. GitHub Actions workflows lint and execute cleanly
 3. A fresh cluster bootstrap works end-to-end
 4. Public hostnames resolve correctly through Cloudflare
-5. Swagger is reachable on each service hostname
+5. Scalar is reachable on each service hostname
 6. Migration and seed jobs are repeatable enough for redeployments
 
 ## Recommended Order Of Work

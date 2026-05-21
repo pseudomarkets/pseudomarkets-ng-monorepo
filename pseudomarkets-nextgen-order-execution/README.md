@@ -9,7 +9,7 @@
 - Shared `PseudoMarketsDbContext` from `pseudomarkets-nextgen-shared-entities`
 - Shared IDP-backed authorization from `pseudomarkets-nextgen-shared-auth`
 - Downstream calls to Trading Instruments, Market Data, and Transaction Processing
-- Swagger / OpenAPI
+- Scalar / OpenAPI
 - Docker and Docker Compose
 - NUnit, Moq, and Shouldly
 
@@ -76,7 +76,7 @@ Or run the full platform:
 docker compose -f compose.yaml up -d --build
 ```
 
-Swagger is available at [http://localhost:8084/swagger/index.html](http://localhost:8084/swagger/index.html).
+Scalar is available at [http://localhost:8084/scalar](http://localhost:8084/scalar). The OpenAPI document is available at [http://localhost:8084/openapi/v1.json](http://localhost:8084/openapi/v1.json).
 
 ## Run Without Docker
 
@@ -93,7 +93,7 @@ By default, the launch settings use:
 - `https://localhost:7284`
 - `http://localhost:8084`
 
-Swagger UI is available at [https://localhost:7284/swagger/index.html](https://localhost:7284/swagger/index.html) for non-Docker local runs, or [http://localhost:8084/swagger/index.html](http://localhost:8084/swagger/index.html) through Docker Compose.
+Scalar API reference UI is available at [https://localhost:7284/scalar](https://localhost:7284/scalar) for non-Docker local runs, or [http://localhost:8084/scalar](http://localhost:8084/scalar) through Docker Compose.
 
 ## Build And Test
 

@@ -16,6 +16,7 @@ namespace PseudoMarkets.Security.IdentityServer.Web.Controllers;
 [ApiController]
 [Route("api/identity")]
 [EnableRateLimiting("identity-sensitive")]
+[Produces("application/json")]
 public class IdentityController : ControllerBase
 {
     private readonly IAccountProvisioningManager _accountProvisioningManager;
@@ -44,7 +45,29 @@ public class IdentityController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Creates an identity account.
+    /// </summary>
+    /// <remarks>
+    /// Creates a USER account by default. SYSTEM accounts can be created only in Development mode, or when the
+    /// configured system-account bypass key is supplied in the X-PseudoMarkets-System-Key header.
+    /// USER account creation returns a password reset key that is shown only at sign-up or after password reset.
+    /// </remarks>
     [HttpPost("create")]
+    [EndpointSummary("Create an identity account")]
+    [EndpointDescription("Creates a USER account by default. SYSTEM creation is restricted to Development mode or a valid system-account bypass header.")]
+    [ProducesResponseType<AccountCreationResult>(
+        StatusCodes.Status200OK,
+        Description = "The account was created successfully.")]
+    [ProducesResponseType<AccountCreationResult>(
+        StatusCodes.Status400BadRequest,
+        Description = "The request contains an unsupported account type or invalid account creation data.")]
+    [ProducesResponseType<AccountCreationResult>(
+        StatusCodes.Status403Forbidden,
+        Description = "SYSTEM account creation was requested outside Development without a valid bypass header.")]
+    [ProducesResponseType<AccountCreationResult>(
+        StatusCodes.Status409Conflict,
+        Description = "The requested account could not be created because it conflicts with existing identity data.")]
     public ActionResult<AccountCreationResult> Create([FromBody] CreateAccountRequest request)
     {
         var requestedAccountType = NormalizeAccountType(request.AccountType);
@@ -81,7 +104,21 @@ public class IdentityController : ControllerBase
         return Conflict(result);
     }
 
+    /// <summary>
+    /// Authenticates an identity account.
+    /// </summary>
+    /// <remarks>
+    /// Validates the login ID and password, then returns a signed JWT access token and an opaque refresh token.
+    /// </remarks>
     [HttpPost("authenticate")]
+    [EndpointSummary("Authenticate an identity account")]
+    [EndpointDescription("Validates credentials and returns access-token plus refresh-token material when authentication succeeds.")]
+    [ProducesResponseType<AuthenticationResult>(
+        StatusCodes.Status200OK,
+        Description = "Authentication succeeded and token material was issued.")]
+    [ProducesResponseType<AuthenticationResult>(
+        StatusCodes.Status401Unauthorized,
+        Description = "Authentication failed because the credentials are invalid or the account is locked.")]
     public ActionResult<AuthenticationResult> Authenticate([FromBody] AuthenticateRequest request)
     {
         _logger.LogDebug("Processing authentication request for {LoginId}.", request.LoginId);
@@ -89,7 +126,22 @@ public class IdentityController : ControllerBase
         return result.Success ? Ok(result) : Unauthorized(result);
     }
 
+    /// <summary>
+    /// Refreshes authentication tokens.
+    /// </summary>
+    /// <remarks>
+    /// Consumes a valid refresh token, rotates it, and returns a new JWT access token plus replacement refresh token.
+    /// Refresh tokens are single-use.
+    /// </remarks>
     [HttpPost("refresh")]
+    [EndpointSummary("Refresh authentication tokens")]
+    [EndpointDescription("Rotates a valid refresh token and returns a new access token plus replacement refresh token.")]
+    [ProducesResponseType<AuthenticationResult>(
+        StatusCodes.Status200OK,
+        Description = "Refresh succeeded and replacement token material was issued.")]
+    [ProducesResponseType<AuthenticationResult>(
+        StatusCodes.Status401Unauthorized,
+        Description = "Refresh failed because the refresh token is invalid, expired, or already consumed.")]
     public ActionResult<AuthenticationResult> Refresh([FromBody] RefreshTokenRequest request)
     {
         _logger.LogDebug("Processing refresh token request.");
@@ -97,7 +149,25 @@ public class IdentityController : ControllerBase
         return result.Success ? Ok(result) : Unauthorized(result);
     }
 
+    /// <summary>
+    /// Resets a USER account password.
+    /// </summary>
+    /// <remarks>
+    /// Validates the one-time password reset key, updates the password, clears login lockout state, and returns a
+    /// replacement password reset key. SYSTEM accounts cannot reset passwords through this endpoint.
+    /// </remarks>
     [HttpPost("reset-password")]
+    [EndpointSummary("Reset a USER account password")]
+    [EndpointDescription("Uses a one-time password reset key to set a new USER account password and returns a replacement reset key.")]
+    [ProducesResponseType<PasswordResetResult>(
+        StatusCodes.Status200OK,
+        Description = "The password was reset successfully and a replacement reset key was issued.")]
+    [ProducesResponseType<PasswordResetResult>(
+        StatusCodes.Status400BadRequest,
+        Description = "The login ID, password reset key, or new password was missing.")]
+    [ProducesResponseType<PasswordResetResult>(
+        StatusCodes.Status401Unauthorized,
+        Description = "Password reset failed because the reset key is invalid, the account is not a USER account, or the account was not found.")]
     public ActionResult<PasswordResetResult> ResetPassword([FromBody] ResetPasswordRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.LoginId) ||
@@ -116,7 +186,22 @@ public class IdentityController : ControllerBase
         return result.Success ? Ok(result) : Unauthorized(result);
     }
 
+    /// <summary>
+    /// Authorizes a token for a platform action.
+    /// </summary>
+    /// <remarks>
+    /// Validates a JWT issued by the IDP, rechecks the current account state in Aerospike, and confirms that the
+    /// token has the role required for the requested platform action.
+    /// </remarks>
     [HttpPost("authorize")]
+    [EndpointSummary("Authorize a platform action")]
+    [EndpointDescription("Validates a JWT and verifies that the authenticated account is allowed to perform the requested platform action.")]
+    [ProducesResponseType<AuthorizationResult>(
+        StatusCodes.Status200OK,
+        Description = "The token is valid and authorized for the requested action.")]
+    [ProducesResponseType<AuthorizationResult>(
+        StatusCodes.Status403Forbidden,
+        Description = "The token is invalid, the account is inactive or missing, or the token lacks the required role for the action.")]
     public ActionResult<AuthorizationResult> Authorize([FromBody] AuthorizeRequest request)
     {
         _logger.LogDebug("Processing authorization request for action {Action}.", request.Action);

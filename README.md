@@ -10,7 +10,7 @@ Pseudo Markets NextGen is a .NET-based stock trading simulation platform. This m
 - PostgreSQL for relational platform data
 - Entity Framework Core with Npgsql for PostgreSQL access and migrations
 - Docker and Docker Compose for local orchestration
-- Swagger / OpenAPI for browser-based API exploration
+- Scalar / OpenAPI for browser-based API exploration
 - NUnit, Moq, and Shouldly for tests
 
 ## Architecture
@@ -44,11 +44,11 @@ The platform is split into focused services and shared libraries:
 
 These are the default HTTP ports exposed by Docker Compose. For local non-Docker runs, the same HTTP ports are used for every service except the IDP, which keeps its local HTTP endpoint on `http://localhost:5051` so dependent services can use the default development configuration without overrides.
 
-- IDP Swagger: [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
-- Market Data Swagger: [http://localhost:8081/swagger/index.html](http://localhost:8081/swagger/index.html)
-- Transaction Processing Swagger: [http://localhost:8082/swagger/index.html](http://localhost:8082/swagger/index.html)
-- Trading Instruments Swagger: [http://localhost:8083/swagger/index.html](http://localhost:8083/swagger/index.html)
-- Order Execution Swagger: [http://localhost:8084/swagger/index.html](http://localhost:8084/swagger/index.html)
+- IDP Scalar: [http://localhost:8080/scalar](http://localhost:8080/scalar)
+- Market Data Scalar: [http://localhost:8081/scalar](http://localhost:8081/scalar)
+- Transaction Processing Scalar: [http://localhost:8082/scalar](http://localhost:8082/scalar)
+- Trading Instruments Scalar: [http://localhost:8083/scalar](http://localhost:8083/scalar)
+- Order Execution Scalar: [http://localhost:8084/scalar](http://localhost:8084/scalar)
 - Batch Processing Dashboard: [http://localhost:8085/hangfire](http://localhost:8085/hangfire)
 - Aerospike: `localhost:3000`
 - PostgreSQL: `localhost:5432`
@@ -117,15 +117,15 @@ Docker data is persisted under:
 
 If PostgreSQL was initialized before the database was renamed to `pseudomarkets_db`, recreate `./.docker-data/postgres` or manually create `pseudomarkets_db` in the existing local PostgreSQL instance.
 
-## Auth Flow For Swagger Testing
+## Auth Flow For Browser API Testing
 
-1. Open the IDP Swagger UI.
+1. Open the IDP Scalar UI.
 2. Create or authenticate an account.
 3. If you create a `USER` account, note the returned password reset key. The IDP only shows it at sign-up time or immediately after a successful password reset.
 4. Copy the returned JWT. The IDP also returns a refresh token that frontend or service clients can use to renew access tokens before the one-hour access-token lifetime expires.
 5. If needed, use the IDP `POST /api/identity/reset-password` endpoint with `loginId`, `passwordResetKey`, and `newPassword` to rotate the password and receive a new one-time reset key.
-6. Open Market Data or Transaction Processing Swagger.
-7. Use the Swagger `Authorize` button and paste the JWT.
+6. Open the Scalar UI for the service you want to test.
+7. Use Scalar authentication with the Bearer security scheme and paste the JWT.
 8. Call protected endpoints.
 
 Market Data and trading-instrument lookup require `VIEW_MARKET_DATA`. Transaction posting and void operations require `UPDATE_TRANSACTIONS`. Trading-instrument create and closing-price update operations require `UPDATE_INSTRUMENTS`. Order submission requires `EXECUTE_TRADES`.
