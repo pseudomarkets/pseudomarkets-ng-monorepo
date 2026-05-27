@@ -120,6 +120,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "skills", "skills", "{E4F8DB
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "deployment", "deployment", "{FDDC06D2-F6C6-4DAB-9DFD-C65D0382D36E}"
 	ProjectSection(SolutionItems) = preProject
+		docs\deployment\Pseudo_Markets_Cloudflare_Deployment_Plan.md = docs\deployment\Pseudo_Markets_Cloudflare_Deployment_Plan.md
 		docs\deployment\Pseudo_Markets_DigitalOcean_Kubernetes_Deployment_Plan.md = docs\deployment\Pseudo_Markets_DigitalOcean_Kubernetes_Deployment_Plan.md
 	EndProjectSection
 EndProject
