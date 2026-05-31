@@ -23,6 +23,8 @@ The platform is split into focused services and shared libraries:
   Market data API for quotes, detailed quotes, and indices. It uses Finnhub for quote data, Yahoo Finance for U.S. indices, and Aerospike for caching.
 - `pseudomarkets-nextgen-transaction-processing`
   Write-side transaction processor for cash movements, trade postings, voids, settled/unsettled balances, settled/unsettled positions, lots, and settlement-date calculation.
+- `pseudomarkets-nextgen-balances-positions`
+  Read-side balances and positions API. It serves aggregate, settled, and unsettled cash and position snapshots from PostgreSQL and enriches positions with current market value from Market Data.
 - `pseudomarkets-nextgen-instrument-db`
   Trading instrument reference-data API for creating tradable instruments, retrieving instruments by symbol, and updating closing prices.
 - `pseudomarkets-nextgen-order-execution`
@@ -49,6 +51,7 @@ These are the default HTTP ports exposed by Docker Compose. For local non-Docker
 - Transaction Processing Scalar: [http://localhost:8082/scalar](http://localhost:8082/scalar)
 - Trading Instruments Scalar: [http://localhost:8083/scalar](http://localhost:8083/scalar)
 - Order Execution Scalar: [http://localhost:8084/scalar](http://localhost:8084/scalar)
+- Balances and Positions Scalar: [http://localhost:8086/scalar](http://localhost:8086/scalar)
 - Batch Processing Dashboard: [http://localhost:8085/hangfire](http://localhost:8085/hangfire)
 - Aerospike: `localhost:3000`
 - PostgreSQL: `localhost:5432`
@@ -65,7 +68,7 @@ Each HTTP host now exposes unauthenticated operational routes:
 Dependency health is lightweight and service-specific:
 
 - IDP and Market Data report Aerospike connectivity from the shared `AerospikeClient`
-- Transaction Processing, Trading Instruments, Order Execution, and Batch Processing report PostgreSQL connectivity from the shared EF Core DbContext
+- Transaction Processing, Balances and Positions, Trading Instruments, Order Execution, and Batch Processing report PostgreSQL connectivity from the shared EF Core DbContext
 
 ## Configuration
 
@@ -89,6 +92,8 @@ Set these values in `.env`:
 - `Postgres__Password`
 - `OrderExecution__SystemAccountLoginId`
 - `OrderExecution__SystemAccountPassword`
+- `BalancesAndPositions__SystemAccountLoginId`
+- `BalancesAndPositions__SystemAccountPassword`
 - `QueuedOrderExecution__SystemAccountLoginId`
 - `QueuedOrderExecution__SystemAccountPassword`
 
@@ -128,7 +133,7 @@ If PostgreSQL was initialized before the database was renamed to `pseudomarkets_
 7. Use Scalar authentication with the Bearer security scheme and paste the JWT.
 8. Call protected endpoints.
 
-Market Data and trading-instrument lookup require `VIEW_MARKET_DATA`. Transaction posting and void operations require `UPDATE_TRANSACTIONS`. Trading-instrument create and closing-price update operations require `UPDATE_INSTRUMENTS`. Order submission requires `EXECUTE_TRADES`.
+Market Data and trading-instrument lookup require `VIEW_MARKET_DATA`. Transaction posting and void operations require `UPDATE_TRANSACTIONS`. Balances and Positions reads require `VIEW_TRANSACTIONS`. Trading-instrument create and closing-price update operations require `UPDATE_INSTRUMENTS`. Order submission requires `EXECUTE_TRADES`.
 
 ## Run Without Docker
 
@@ -143,6 +148,7 @@ Then run services from the repository root:
 dotnet run --project pseudomarkets-nextgen-idp/src/PseudoMarkets.Security.IdentityServer.Web/PseudoMarkets.Security.IdentityServer.Web.csproj
 dotnet run --project pseudomarkets-nextgen-marketdata/src/PseudoMarkets.MarketData.Service/PseudoMarkets.MarketData.Service.csproj
 dotnet run --project pseudomarkets-nextgen-transaction-processing/src/PseudoMarkets.TransactionProcessing.Service/PseudoMarkets.TransactionProcessing.Service.csproj
+dotnet run --project pseudomarkets-nextgen-balances-positions/src/PseudoMarkets.BalancesAndPositions.Service/PseudoMarkets.BalancesAndPositions.Service.csproj
 dotnet run --project pseudomarkets-nextgen-instrument-db/src/PseudoMarkets.ReferenceData.TradingInstruments.Service/PseudoMarkets.ReferenceData.TradingInstruments.Service.csproj
 dotnet run --project pseudomarkets-nextgen-order-execution/src/PseudoMarkets.OrderExecution.Service/PseudoMarkets.OrderExecution.Service.csproj
 dotnet run --project pseudomarkets-nextgen-batch-processing/src/PseudoMarkets.Platform.Batch.Host/PseudoMarkets.Platform.Batch.Host.csproj
@@ -155,6 +161,7 @@ Default local non-Docker URLs:
 - IDP: `http://localhost:5051` or `https://localhost:7092`
 - Market Data: `http://localhost:8081` or `https://localhost:7228`
 - Transaction Processing: `http://localhost:8082` or `https://localhost:7282`
+- Balances and Positions: `http://localhost:8086` or `https://localhost:7286`
 - Trading Instruments: `http://localhost:8083` or `https://localhost:7183`
 - Order Execution: `http://localhost:8084` or `https://localhost:7284`
 - Batch Processing: `http://localhost:8085` or `https://localhost:7285`
@@ -195,4 +202,4 @@ The shared EF Core model and migrations live in:
 pseudomarkets-nextgen-shared-entities/src/PseudoMarkets.Shared.Entities
 ```
 
-`PseudoMarketsDbContext` is applied at transaction-processing, trading-instruments, and order-execution startup. The batch-processing host uses the same database connection for Hangfire PostgreSQL storage and health reporting. Current relational tables include transaction posting tables, settled/unsettled balance and position projection tables, trade lots, market holidays, trading instruments, order executions, queued orders, Hangfire storage tables, and EF migration history.
+`PseudoMarketsDbContext` is applied at transaction-processing, trading-instruments, and order-execution startup. The balances-and-positions service reads the same shared schema without owning migrations. The batch-processing host uses the same database connection for Hangfire PostgreSQL storage and health reporting. Current relational tables include transaction posting tables, settled/unsettled balance and position projection tables, trade lots, market holidays, trading instruments, order executions, queued orders, Hangfire storage tables, and EF migration history.

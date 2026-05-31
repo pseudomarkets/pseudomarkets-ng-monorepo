@@ -139,7 +139,7 @@ Use the IDP Scalar UI to authenticate first, then paste the returned JWT into th
 
 All write endpoints are protected using the shared authorization library and require the `UPDATE_TRANSACTIONS` action from the IDP.
 
-Balance and position reads are intentionally out of scope for this service and will live in a future read-oriented service.
+Balance and position reads are intentionally out of scope for this service and now live in `pseudomarkets-nextgen-balances-positions`.
 
 Cash deposits, withdrawals, and adjustments settle immediately. Buy trades debit settled cash immediately and create unsettled position and lot inventory. Sell trades require settled position quantity and settled lot inventory, then credit sale proceeds as unsettled cash until a future settlement batch promotes them.
 

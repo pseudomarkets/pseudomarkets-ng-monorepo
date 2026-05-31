@@ -202,6 +202,41 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  pseudomarkets.balancesandpositions.service:
+    image: pseudomarkets.balancesandpositions.service
+    build:
+      context: .
+      dockerfile: pseudomarkets-nextgen-balances-positions/src/PseudoMarkets.BalancesAndPositions.Service/Dockerfile
+    container_name: pseudomarkets-nextgen-balances-positions-service
+    env_file:
+      - ./.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      pseudomarkets.security.identityserver.web:
+        condition: service_healthy
+      pseudomarkets.marketdata.service:
+        condition: service_started
+      pseudomarkets.transactionprocessing.service:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8086
+      ConnectionStrings__PseudoMarketsDb: Host=postgres;Port=5432;Database=pseudomarkets_db;Username=postgres;Password=${Postgres__Password:-postgres}
+      IdentityAuthorization__IdentityServerBaseUrl: http://pseudomarkets-nextgen-idp-web:8080
+      BalancesAndPositions__MarketDataBaseUrl: http://pseudomarkets-nextgen-marketdata-service:8081
+      BalancesAndPositions__SystemAccountLoginId: ${BalancesAndPositions__SystemAccountLoginId:-}
+      BalancesAndPositions__SystemAccountPassword: ${BalancesAndPositions__SystemAccountPassword:-}
+    ports:
+      - "8086:8086"
+    healthcheck:
+      test: ["CMD-SHELL", "grep -q ':1F96' /proc/net/tcp /proc/net/tcp6"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
   pseudomarkets.platform.batch.host:
     image: pseudomarkets.platform.batch.host
     build:

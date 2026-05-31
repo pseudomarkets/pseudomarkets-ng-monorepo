@@ -1,0 +1,177 @@
+using System.Net.Http.Json;
+using Microsoft.Extensions.Options;
+using PseudoMarkets.BalancesAndPositions.Core.Configuration;
+using PseudoMarkets.BalancesAndPositions.Core.Exceptions;
+using PseudoMarkets.BalancesAndPositions.Core.Interfaces;
+using PseudoMarkets.BalancesAndPositions.Core.Models;
+
+namespace PseudoMarkets.BalancesAndPositions.Core.Services;
+
+public sealed class SystemTokenProvider : ISystemTokenProvider
+{
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly BalancesAndPositionsConfiguration _configuration;
+    private readonly IClock _clock;
+    private readonly SemaphoreSlim _refreshLock = new(1, 1);
+    private string? _cachedToken;
+    private DateTime _accessTokenExpiresAtUtc;
+    private string? _cachedRefreshToken;
+    private DateTime _refreshTokenExpiresAtUtc;
+
+    public SystemTokenProvider(
+        IHttpClientFactory httpClientFactory,
+        IOptions<BalancesAndPositionsConfiguration> configuration,
+        IClock clock)
+    {
+        _httpClientFactory = httpClientFactory;
+        _configuration = configuration.Value;
+        _clock = clock;
+    }
+
+    public async Task<string> GetTokenAsync(CancellationToken cancellationToken)
+    {
+        if (HasValidCachedToken())
+        {
+            return _cachedToken!;
+        }
+
+        await _refreshLock.WaitAsync(cancellationToken);
+        try
+        {
+            if (HasValidCachedToken())
+            {
+                return _cachedToken!;
+            }
+
+            if (HasUsableRefreshToken() && await TryRefreshAsync(cancellationToken))
+            {
+                return _cachedToken!;
+            }
+
+            return await AuthenticateAsync(cancellationToken);
+        }
+        finally
+        {
+            _refreshLock.Release();
+        }
+    }
+
+    private async Task<string> AuthenticateAsync(CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(_configuration.SystemAccountLoginId) ||
+            string.IsNullOrWhiteSpace(_configuration.SystemAccountPassword))
+        {
+            throw new BalancesAndPositionsDependencyException("Balances and Positions system account credentials are not configured.");
+        }
+
+        try
+        {
+            var client = _httpClientFactory.CreateClient("BalancesAndPositionsIdentityServer");
+            using var response = await client.PostAsJsonAsync(
+                "/api/identity/authenticate",
+                new AuthenticateRequest(_configuration.SystemAccountLoginId, _configuration.SystemAccountPassword),
+                cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new BalancesAndPositionsDependencyException("Balances and Positions could not obtain a valid system account token.");
+            }
+
+            var payload = await response.Content.ReadFromJsonAsync<AuthenticateResponse>(cancellationToken);
+            if (payload is null || !payload.Success || string.IsNullOrWhiteSpace(payload.Token))
+            {
+                throw new BalancesAndPositionsDependencyException("Balances and Positions received an invalid system account token response.");
+            }
+
+            CacheTokens(payload);
+            return _cachedToken!;
+        }
+        catch (BalancesAndPositionsDependencyException)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            throw new BalancesAndPositionsDependencyException(
+                "Balances and Positions could not reach the identity provider for system account authentication.",
+                ex);
+        }
+    }
+
+    private async Task<bool> TryRefreshAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var client = _httpClientFactory.CreateClient("BalancesAndPositionsIdentityServer");
+            using var response = await client.PostAsJsonAsync(
+                "/api/identity/refresh",
+                new RefreshTokenRequest(_cachedRefreshToken!),
+                cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                ClearCachedRefreshToken();
+                return false;
+            }
+
+            var payload = await response.Content.ReadFromJsonAsync<AuthenticateResponse>(cancellationToken);
+            if (payload is null || !payload.Success || string.IsNullOrWhiteSpace(payload.Token) ||
+                string.IsNullOrWhiteSpace(payload.RefreshToken))
+            {
+                ClearCachedRefreshToken();
+                return false;
+            }
+
+            CacheTokens(payload);
+            return true;
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return false;
+        }
+        catch (HttpRequestException)
+        {
+            return false;
+        }
+    }
+
+    private bool HasValidCachedToken()
+    {
+        var refreshBuffer = TimeSpan.FromSeconds(_configuration.TokenRefreshBufferSeconds > 0
+            ? _configuration.TokenRefreshBufferSeconds
+            : 60);
+
+        return !string.IsNullOrWhiteSpace(_cachedToken) &&
+               _clock.UtcNow < _accessTokenExpiresAtUtc.Subtract(refreshBuffer);
+    }
+
+    private bool HasUsableRefreshToken()
+    {
+        return !string.IsNullOrWhiteSpace(_cachedRefreshToken) &&
+               _clock.UtcNow < _refreshTokenExpiresAtUtc;
+    }
+
+    private void CacheTokens(AuthenticateResponse payload)
+    {
+        _cachedToken = payload.Token;
+        _accessTokenExpiresAtUtc = DateTime.SpecifyKind(payload.Expires, DateTimeKind.Utc);
+        _cachedRefreshToken = payload.RefreshToken;
+        _refreshTokenExpiresAtUtc = DateTime.SpecifyKind(payload.RefreshTokenExpires, DateTimeKind.Utc);
+    }
+
+    private void ClearCachedRefreshToken()
+    {
+        _cachedRefreshToken = null;
+        _refreshTokenExpiresAtUtc = DateTime.MinValue;
+    }
+
+    private sealed record AuthenticateRequest(string LoginId, string Password);
+    private sealed record RefreshTokenRequest(string RefreshToken);
+
+    private sealed record AuthenticateResponse(
+        bool Success,
+        string Token,
+        DateTime Expires,
+        string RefreshToken,
+        DateTime RefreshTokenExpires);
+}

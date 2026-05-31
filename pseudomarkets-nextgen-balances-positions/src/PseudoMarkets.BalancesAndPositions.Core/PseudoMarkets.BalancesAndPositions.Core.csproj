@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\PseudoMarkets.BalancesAndPositions.Contracts\PseudoMarkets.BalancesAndPositions.Contracts.csproj" />
+    <ProjectReference Include="..\PseudoMarkets.BalancesAndPositions.Persistence\PseudoMarkets.BalancesAndPositions.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\pseudomarkets-nextgen-marketdata\src\PseudoMarkets.MarketData.Contracts\PseudoMarkets.MarketData.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\pseudomarkets-nextgen-shared-auth\src\PseudoMarkets.Shared.Authorization\PseudoMarkets.Shared.Authorization.csproj" />
+    <ProjectReference Include="..\..\..\pseudomarkets-nextgen-shared-entities\src\PseudoMarkets.Shared.Entities\PseudoMarkets.Shared.Entities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
